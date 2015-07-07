@@ -15,8 +15,8 @@ int16_t ax, ay, az;
 int16_t gx, gy, gz;
 int16_t mx, my, mz;
 float magX, magY, magZ, rawX, rawY, rawZ;
-float hardBias[3] = {10.5, 9.6, -51.9};
-float softBias[3] = {0.97, 0.99, 1.04};
+float hardBias[3] = {7.80, 6.45, -51.75};
+float softBias[3] = {1.01, 0.97, 1.02};
 
 //datasheet p.13: resolution of 0.3 uT/LSB
 float conversionFactor = 0.3;
