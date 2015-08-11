@@ -153,7 +153,7 @@ def textAcquistion(fileName, timeStamp = False):
 
 def structDataBLE(inp):
     dataHex = []
-#    print "STRUCTINPUT inp ", inp
+    #print "STRUCTINPUT inp ", inp
     inp = inp.split()
     for x in inp:
         if len(x) == 2:
@@ -161,12 +161,12 @@ def structDataBLE(inp):
     if ((len(dataHex)<=0) or (len(dataHex)%4)) :
         print 'not enough numbers!'
         print dataHex
-        return np.array([0.,0.,0.])
+        return np.array([0.,0.,0.,0.])
         
     dataHex = [chr(int(x, base=16)) for x in dataHex] 
     d = []
     tmp = []
-    value = np.array([0., 0.,0.])
+    value = np.array([0., 0., 0.,0.])
     i=0
     for i in range(len(dataHex)/4):
         d.append("".join(dataHex[(i*4):(i*4)+4]))
@@ -219,7 +219,7 @@ def pipeAcquisition(arg, fileName=None, measNr=None, offset=0):
     """
     
     # "gatttool -t random -b E3:C0:07:76:53:70 --char-write-req --handle=0x000f --value=0300 --listen"
-    mat = np.empty(shape=[0,3])
+    mat = [[0.,0.,0.,0.]]
     if "/dev/tty" in arg:
         proc = subprocess.Popen(arg, stdout=subprocess.PIPE, 
                                 close_fds=True, shell=True)
@@ -229,15 +229,13 @@ def pipeAcquisition(arg, fileName=None, measNr=None, offset=0):
     if fileName != None:
         fl = open(fileName, 'w')   
     i=0                 
-#    data = np.array([0.,0.,0.])
+    data = np.array([0.,0.,0.,0.])
     if measNr == None: 
         measNr = np.inf
     try:
         while i<measNr+offset:     
             
             output = proc.stdout.readline()
-            print "output: ", output
-            data = np.array([0.,0.,0.])
             # read the input file only till the end!            
             if output != '':                
                 if "gatttool" in arg:                
@@ -249,10 +247,12 @@ def pipeAcquisition(arg, fileName=None, measNr=None, offset=0):
                 if fileName != None:
                     fl.write(str(data[0]) + "\t" + 
                             str(data[1]) + "\t" + 
-                            str(data[2]) + "\n")
+                            str(data[2]) + "\t" + 
+                            str(data[3]) + "\n")
+                    print "Data written: ", data
                 else:
                     print "Data: ", data
-                mat = np.append(mat, data)                
+                mat = np.append(mat, [data], axis=0)                
     #                print "writing...", data
 #                if i%10 == 0: print "measurement nr ", i
                 
@@ -268,10 +268,10 @@ def pipeAcquisition(arg, fileName=None, measNr=None, offset=0):
 #        proc.kill()
 #        raise
         
-    mat = np.reshape(mat, (mat.size/3, 3))
+#    mat = np.reshape(mat, (mat.size/4, 4))
     proc.stdout.close()
     proc.kill()
     if fileName != None:
         fl.close()
-    mat = mat[offset:]
+    mat = mat[offset+2:]
     return mat

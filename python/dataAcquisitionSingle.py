@@ -229,15 +229,13 @@ def pipeAcquisition(arg, fileName=None, measNr=None, offset=0):
     if fileName != None:
         fl = open(fileName, 'w')   
     i=0                 
-#    data = np.array([0.,0.,0.])
+    data = np.array([0.,0.,0.])
     if measNr == None: 
         measNr = np.inf
     try:
         while i<measNr+offset:     
             
             output = proc.stdout.readline()
-            print "output: ", output
-            data = np.array([0.,0.,0.])
             # read the input file only till the end!            
             if output != '':                
                 if "gatttool" in arg:                
