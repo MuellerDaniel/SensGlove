@@ -1,5 +1,5 @@
 /application.linux32/
 /application.linux64/
 *.pyc
-/python/!*.py
-/python/!*.png
+*/python/!*.py
+*/python/!*.png
