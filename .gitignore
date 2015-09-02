@@ -2,5 +2,3 @@
 /application.linux64/
 python/*
 python/!*.*
-python/!*.py
-python/!*.png
