@@ -13,19 +13,29 @@ estimation equations
 """
 
 def evalfuncMag(P,S):
-    H = 1*(P-S)
-    R = (S-P)
-    factor = np.array([-1, 1, 1])
+    """returns the magnetic field
+    
+    Parameters
+    ----------
+    P : array
+        the position
+    S : array
+        the position of the sensor    
+    """
+    H = 1*(P-S)        # this worked for the example on the flat paper...    
+    R = 1*(S-P)
+#    H = -R+(P-S)
+    factor = np.array([1, 1, 1])
     return np.array([((3*(np.cross(H,R)*R)/(np.linalg.norm(R)**5)) - 
                                         (H/(np.linalg.norm(R)**3)))] * factor)
                                     
 def funcMagY(P,S,B):    
     val = evalfuncMag(P,S)    
     res = np.linalg.norm(B - val)       
-    #print "funcMag res: ",res 
+#    print "funcMag res: ",res
     return res
   
-def estimatePos(P,S,B):
+def estimatePos(P,S,B,bnds):
     """returns the estimated position
     
     Parameters
@@ -36,6 +46,9 @@ def estimatePos(P,S,B):
         the position of the sensor
     B : array
         the magnetic field
+    bnds : tuple
+            the lower and upper bounds for the position coordinates
+            ((lbx,ubx),(lby,uby),(lbz,ubz))
         
     Returns
     -------
@@ -43,14 +56,43 @@ def estimatePos(P,S,B):
         the result of the minimize function, i.e. the estimated position
     
     """
-    res = minimize(funcMagY,P,args=(S,B),method='bfgs',tol=1e-5)
-    return res.x        # as result you will get the P vector! 
+#    print "P: ", type(P)
+    cons = ({'type':'ineq',
+             'fun':lambda x: 0.0009 - P[0]+x[0]},
+            {'type':'ineq',
+             'fun':lambda x: 0.0009 - P[1]+x[1]},
+            {'type':'ineq',
+             'fun':lambda x: 0.0009 - P[2]+x[2]},)
+    
+    # has to be adjusted for every position/finger
+#    bnds = ((-0.04,0.04),   # for board example
+#            (-0.06,0.06),
+#            (-0.08,0.08))
+#    bnds = ((-0.03,0.03),   # for index finger
+#            (-0.2,0.2),
+#            (-0.1,0.1))
+             
+#    res = minimize(funcMagY,P,args=(S,B),method='bfgs',tol=1e-5)
+   
+    res = minimize(funcMagY, P, args=(S,B), method='slsqp', 
+                   constraints=cons, tol=1e-5, bounds=bnds)
+#    print "The whole result thing"
+#    print res
+    if res.success:
+#        print "Success!"
+#        if (P-res.x).any() > 0.5:
+#            print "delta: ", (P-res.x)
+#        else: print "BELOW!!!!"
+        return res.x        # as result you will get the P vector! 
+    else:
+        print "No solution found!", B
+#        print res.message
+        return res.x
     
     
 """
 fitting the data to the model
 """    
-
 def fitMeasurements(ref, meas, valOffset):
     """returns the measurement data fitted to the reference data
     
@@ -83,6 +125,8 @@ def scaleMeasurements(real, meas):
     for i in range(3):
         raReal = max(real[:,i]) - min(real[:,i])
         raMeas = max(meas[:,i]) - min(meas[:,i])
+        print "raMeas ", raMeas
+        print "raReal ", raReal
         scale[i] = raReal/raMeas
         i+=1    
     print "scale " + str(scale)
@@ -119,7 +163,26 @@ def shiftMeasurements(real, meas, valOffset):
     print "offset: " + str(offset)
     return resMat
 
-
+def moving_average(data, n) :
+    """simple moving average filter, returns the filtered data
+    
+    Parameters
+    ----------
+    data : array
+        the dataset to be filtered
+    n : int
+        nr of points used for the avg filter
+        
+    Returns
+    -------
+    dataFiltered : array
+        the filtered dataset
+    """
+    ret = np.cumsum(data, dtype=float, axis=0)
+#    print ret
+    
+    ret[n:] = ret[n:] - ret[:-n]
+    return ret[n - 1:] / n
 
 def movingAvg(data, n):
     """simple moving average filter, returns the filtered data
