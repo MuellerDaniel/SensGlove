@@ -14,7 +14,8 @@ int maxPoints = 500;
 
 void setup () {
   size(900, 900, P3D);
-  mserialPort = new Serial(this, Serial.list()[0], 115200);
+  //mserialPort = new Serial(this, Serial.list()[0], 9600);
+  mserialPort = new Serial(this, "/dev/ttyUSB0", 9600);
   mserialPort.bufferUntil(10);
   
  // f = createFont("Arial", 8, true);
@@ -28,6 +29,7 @@ void setup () {
 
 
 void serialEvent(Serial serialPort){
+  System.out.println("serialEvent()");
   try{    
     serialMsg = serialPort.readString();
     //System.out.println("SerialEvent: " + serialMsg);      
