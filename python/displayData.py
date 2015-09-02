@@ -91,11 +91,11 @@ def estimate(P,S,B):
 # 2)    MCP 90    PIP 0    DIP 0
 # 3)    MCP 0     PIP 0    DIP 0
 
-#dataStraight = scanData("150707_dataFlatY0")
-#dataBend = scanData("150707_dataFlatX0")
-#datay2 = scanData("150707_dataFlatY2")
-dataMove = scanData("150707_dataMoveVert2")
-dataMoveHo = scanData("150707_dataMoveHo2")
+dataStraight = scanData("150707_dataFlatY0")
+dataBend = scanData("150707_dataFlatX0")
+datay2 = scanData("150707_dataFlatY2")
+#dataMove = scanData("150707_dataMoveVert2")
+#dataMoveHo = scanData("150707_dataMoveHo2")
 
 py0 = np.array([-0.04,0.05,0])
 px0 = np.array([-0.1,-0.01,0])
@@ -135,82 +135,82 @@ Plotting one value
 """
 Plotting two valules
 """
-f,(ho, vert) = plt.subplots(1,2, sharey=True)
-vert.plot(dataMove[:,1], color='r', label='x')
-vert.plot(dataMove[:,2], color='g', label='y')
-vert.plot(dataMove[:,3], color='b', label='z')
-vert.set_title("vertical orientation")
-vert.legend()
-
-ho.plot(dataMoveHo[:,1], color='r', label='x')
-ho.plot(dataMoveHo[:,2], color='g', label='y')
-ho.plot(dataMoveHo[:,3], color='b', label='z')
-ho.set_title("horizontal orientation")
+#f,(ho, vert) = plt.subplots(1,2, sharey=True)
+#vert.plot(dataMove[:,1], color='r', label='x')
+#vert.plot(dataMove[:,2], color='g', label='y')
+#vert.plot(dataMove[:,3], color='b', label='z')
+#vert.set_title("vertical orientation")
+#vert.legend()
+#
+#ho.plot(dataMoveHo[:,1], color='r', label='x')
+#ho.plot(dataMoveHo[:,2], color='g', label='y')
+#ho.plot(dataMoveHo[:,3], color='b', label='z')
+#ho.set_title("horizontal orientation")
 
 """
 Plotting three values 
 """
-#f, (y2, bend, straight) = plt.subplots(1,3, sharey = True)
-##straight.subplot(121)
-#straight.plot(dataStraight[:,1], color='r', label='x') 
-#straight.plot(dataStraight[:,2], color='g', label='y') 
-#straight.plot(dataStraight[:,3], color='b', label='z')
-#straight.set_ylabel('Magnetic field strength [ugauss]')
-#straight.legend()
-##plt.legend(('x','y','z'), loc='best')
-#straight.set_title('Y0')
-## get min, max and avg value of magMat
-#resVect1 = np.array([min(dataStraight[:,1]), max(dataStraight[:,1]), mean(dataStraight[:,1])])
-#resVect1 = np.append(resVect1, np.array([min(dataStraight[:,2]), max(dataStraight[:,2]), mean(dataStraight[:,2])]))
-#resVect1 = np.append(resVect1, np.array([min(dataStraight[:,3]), max(dataStraight[:,3]), mean(dataStraight[:,3])]))
-#resVect1 = np.reshape(resVect1, (resVect1.size/3, 3))
-#print "resVect1 MCP 0 DIP 0 PIP 0\n", resVect1
-#straight.text(5,50,"meas: " + str(resVect1[:,2]))
-#straight.axhline(resVect1[0][2], color='y')
-#straight.axhline(resVect1[1][2], color='y')
-#straight.axhline(resVect1[2][2], color='y')
-#estY0 = evalfuncMag(py0,s0)
-#straight.text(5, 60, "estimated: " + str(estY0))
-#
-#
-#bend.plot(dataBend[:,1], color='r', label='x') 
-#bend.plot(dataBend[:,2], color='g', label='y') 
-#bend.plot(dataBend[:,3], color='b', label='z')
-#bend.set_ylabel('Magnetic field strength [ugauss]')
-##plt.legend(('x','y','z'), loc='best')
-#bend.set_title('X0')
-## get min, max and avg value of magMat
-#resVect2 = np.array([min(dataBend[:,1]), max(dataBend[:,1]), mean(dataBend[:,1])])
-#resVect2 = np.append(resVect2, np.array([min(dataBend[:,2]), max(dataBend[:,2]), mean(dataBend[:,2])]))
-#resVect2 = np.append(resVect2, np.array([min(dataBend[:,3]), max(dataBend[:,3]), mean(dataBend[:,3])]))
-#resVect2 = np.reshape(resVect2, (resVect2.size/3, 3))
-#print "resVect2 MCP 0 DIP 0 PIP 0\n", resVect2
-#bend.text(5,50,"meas: " + str(resVect2[:,2]))
-#bend.axhline(resVect2[0][2], color='y')
-#bend.axhline(resVect2[1][2], color='y')
-#bend.axhline(resVect2[2][2], color='y')
-#estX0 = evalfuncMag(px0,s0)
-#bend.text(5, 60, "estimated: " + str(estX0))
-#
-#
-#y2.plot(datay2[:,1], color='r', label='x') 
-#y2.plot(datay2[:,2], color='g', label='y') 
-#y2.plot(datay2[:,3], color='b', label='z')
-#y2.set_ylabel('Magnetic field strength [ugauss]')
-##plt.legend(('x','y','z'), loc='best')
-#y2.set_title('Y2')
-## get min, max and avg value of magMat
-#resVect3 = np.array([min(datay2[:,1]), max(datay2[:,1]), mean(datay2[:,1])])
-#resVect3 = np.append(resVect3, np.array([min(datay2[:,2]), max(datay2[:,2]), mean(datay2[:,2])]))
-#resVect3 = np.append(resVect3, np.array([min(datay2[:,3]), max(datay2[:,3]), mean(datay2[:,3])]))
-#resVect3 = np.reshape(resVect3, (resVect3.size/3, 3))
-#print "resVect3 MCP 0 DIP 0 PIP 0\n", resVect3
-#y2.text(5,50,"meas: " + str(resVect3[:,2]))
-#y2.axhline(resVect3[0][2], color='y')
-#y2.axhline(resVect3[1][2], color='y')
-#y2.axhline(resVect3[2][2], color='y')
-#estY2 = evalfuncMag(py2,s0)
-#y2.text(5, 60, "estimated: " + str(estY2))
+f, (y2, bend, straight) = plt.subplots(1,3, sharey = True)
+#straight.subplot(121)
+straight.plot(dataStraight[:,1], color='r', label='x') 
+straight.plot(dataStraight[:,2], color='g', label='y') 
+straight.plot(dataStraight[:,3], color='b', label='z')
+straight.set_ylabel('Magnetic field strength [ugauss]')
+straight.legend()
+#plt.legend(('x','y','z'), loc='best')
+straight.set_title('Y0')
+# get min, max and avg value of magMat
+resVect1 = np.array([min(dataStraight[:,1]), max(dataStraight[:,1]), mean(dataStraight[:,1])])
+resVect1 = np.append(resVect1, np.array([min(dataStraight[:,2]), max(dataStraight[:,2]), mean(dataStraight[:,2])]))
+resVect1 = np.append(resVect1, np.array([min(dataStraight[:,3]), max(dataStraight[:,3]), mean(dataStraight[:,3])]))
+resVect1 = np.reshape(resVect1, (resVect1.size/3, 3))
+print "resVect1 MCP 0 DIP 0 PIP 0\n", resVect1
+straight.text(5,50,"meas: " + str(resVect1[:,2]))
+straight.axhline(resVect1[0][2], color='y')
+straight.axhline(resVect1[1][2], color='y')
+straight.axhline(resVect1[2][2], color='y')
+estY0 = evalfuncMag(py0,s0)
+straight.text(5, 60, "estimated: " + str(estY0))
+
+
+bend.plot(dataBend[:,1], color='r', label='x') 
+bend.plot(dataBend[:,2], color='g', label='y') 
+bend.plot(dataBend[:,3], color='b', label='z')
+bend.set_ylabel('Magnetic field strength [ugauss]')
+#plt.legend(('x','y','z'), loc='best')
+bend.set_title('X0')
+# get min, max and avg value of magMat
+resVect2 = np.array([min(dataBend[:,1]), max(dataBend[:,1]), mean(dataBend[:,1])])
+resVect2 = np.append(resVect2, np.array([min(dataBend[:,2]), max(dataBend[:,2]), mean(dataBend[:,2])]))
+resVect2 = np.append(resVect2, np.array([min(dataBend[:,3]), max(dataBend[:,3]), mean(dataBend[:,3])]))
+resVect2 = np.reshape(resVect2, (resVect2.size/3, 3))
+print "resVect2 MCP 0 DIP 0 PIP 0\n", resVect2
+bend.text(5,50,"meas: " + str(resVect2[:,2]))
+bend.axhline(resVect2[0][2], color='y')
+bend.axhline(resVect2[1][2], color='y')
+bend.axhline(resVect2[2][2], color='y')
+estX0 = evalfuncMag(px0,s0)
+bend.text(5, 60, "estimated: " + str(estX0))
+
+
+y2.plot(datay2[:,1], color='r', label='x') 
+y2.plot(datay2[:,2], color='g', label='y') 
+y2.plot(datay2[:,3], color='b', label='z')
+y2.set_ylabel('Magnetic field strength [ugauss]')
+#plt.legend(('x','y','z'), loc='best')
+y2.set_title('Y2')
+# get min, max and avg value of magMat
+resVect3 = np.array([min(datay2[:,1]), max(datay2[:,1]), mean(datay2[:,1])])
+resVect3 = np.append(resVect3, np.array([min(datay2[:,2]), max(datay2[:,2]), mean(datay2[:,2])]))
+resVect3 = np.append(resVect3, np.array([min(datay2[:,3]), max(datay2[:,3]), mean(datay2[:,3])]))
+resVect3 = np.reshape(resVect3, (resVect3.size/3, 3))
+print "resVect3 MCP 0 DIP 0 PIP 0\n", resVect3
+y2.text(5,50,"meas: " + str(resVect3[:,2]))
+y2.axhline(resVect3[0][2], color='y')
+y2.axhline(resVect3[1][2], color='y')
+y2.axhline(resVect3[2][2], color='y')
+estY2 = evalfuncMag(py2,s0)
+y2.text(5, 60, "estimated: " + str(estY2))
 
 
 """
