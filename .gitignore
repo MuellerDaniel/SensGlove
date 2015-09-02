@@ -2,3 +2,4 @@
 /application.linux64/
 python/*
 !python/*.*
+python/*.pyc
