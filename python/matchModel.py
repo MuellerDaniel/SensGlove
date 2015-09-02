@@ -13,7 +13,7 @@ from scipy.optimize import *
 
 def evalfuncMag(P,S):
     #H=getH(P,S)
-    H = P-S
+    H = 1*(P-S)
     #H = np.array([0,0,0])
     R = (S-P)
     factor = np.array([-1, 1, 1])
@@ -75,20 +75,74 @@ def getStatDynOffset(estValues, measValues):
     meanMeas = np.array([np.mean(startMat[:,0]),
                          np.mean(startMat[:,1]),
                          np.mean(startMat[:,2])])
-    staticOff = resMat[0] - meanMeas
+    staticOff = estValues[0] - meanMeas
     print "staticOff:\n" + str(staticOff)
     
     # scale factor
     i=0
     for i in range(3):
-        dynOffEst[i] = np.mean([np.max(estValues[:,i]), np.min(estValues[:,i])])
-        dynOffMeas[i] = np.mean([np.max(measValues[:,i]), np.min(measValues[:,i])])
+        #dynOffEst[i] = np.mean([np.max(estValues[:,i]), np.min(estValues[:,i])])
+        #dynOffMeas[i] = np.mean([np.max(measValues[:,i]), np.min(measValues[:,i])])
         print "dynOffEst[i]/dynOffMeas[i] " + str(dynOffEst[i]) + " " + str(dynOffMeas[i])  
         scale[i] = dynOffEst[i]/dynOffMeas[i]        
         i+=1
     
     print "scale:\n" + str(scale)
     return (staticOff, scale)
+    
+    
+def scaleMeasurements(real, meas):
+    i=0
+    raReal=0
+    raMeas=0
+    scale = np.array([0.,0.,0.])
+    resMat = meas.copy()
+    
+    for i in range(3):
+        raReal = max(real[:,i]) - min(real[:,i])
+        raMeas = max(meas[:,i]) - min(meas[:,i])
+        scale[i] = raReal/raMeas
+        i+=1    
+    print "scale " + str(scale)
+    
+    i=0
+    for i in range(resMat.shape[0]):
+        resMat[i][0] *= scale[0]
+        resMat[i][1] *= scale[1]
+        resMat[i][2] *= scale[2]
+        i+=1
+        
+    return resMat
+    
+    
+def shiftMeasurements(real, meas):
+    offset = real[0] - meas[0]
+    resMat = meas.copy()   
+    
+    startMat = meas[10:40]
+    meanMeas = np.array([np.mean(startMat[:,0]),
+                         np.mean(startMat[:,1]),
+                         np.mean(startMat[:,2])])
+    offset = real[0] - meanMeas
+    
+    i=0
+    for i in range (resMat.shape[0]):
+        resMat[i][0] += offset[0]
+        resMat[i][1] += offset[1]
+        resMat[i][2] += offset[2]
+    #    yShiftArr[i][0] += offset[0]*scale[0]
+    #    yShiftArr[i][1] += offset[1]*scale[1]
+    #    yShiftArr[i][2] += offset[2]*scale[2]
+        i+=1
+    print "offset: " + str(offset)
+    return resMat
+
+def fitMeasurements(ref, meas):
+    scaled = scaleMeasurements(ref, meas)
+    fitted = shiftMeasurements(ref, scaled)
+    return fitted
+
+
 
 """""""""""""""""""""
 main program flow
@@ -146,64 +200,50 @@ measMat = dataMat[:,1:,]
 """
 calculate the offsets
 """
-(staticOff, dynOff) = getStatDynOffset(resMat, measMat)
-# add the static offset to the measurements
-i=0
-for i in range (measMat.shape[0]):
-    measMat[i][0] += staticOff[0]
-    measMat[i][1] += staticOff[1]
-    measMat[i][2] += staticOff[2]
-    i+=1
-
-# apply the dynamic offset to the measurements
-#i=0
-#for i in range (measMat.shape[0]):
-#    measMat[i][0] *= dynOff[0]
-#    measMat[i][1] *= dynOff[1]
-#    measMat[i][2] *= dynOff[2]
-#    i+=1
+measMat = fitMeasurements(resMat, measMat)
 
 """
 estimate the position
 """
 p0 = np.array([-0.07, -0.1, 0])
 # for the calculated magnetic data
-i=0
-for i in range (resMat.shape[0]):
-    print "estimating the perfect positions..." + str(i)
-    if (i == 0):     
-        estPosReal = np.append(estPosReal, estimate(p0, s0, resMat[i]))
-        estPosReal = np.reshape(estPosReal, (estPosReal.size/3, 3))
-        #print "calc position nr: " + str(i) + " " + str(estPos[i])
-        #print "real position: " + str(values[i])
-    else:
-        estPosReal = np.append(estPosReal, estimate(estPosReal[i-1], s0, resMat[i]))        
-        estPosReal = np.reshape(estPosReal, (estPosReal.size/3, 3))
-        #print "calc position nr: " + str(i) + " " + str(estPos[i])
-        #print "real position: " + str(values[i])
-    i+=1
-    
+#i=0
+#for i in range (resMat.shape[0]):
+#    print "estimating the perfect positions..." + str(i)
+#    if (i == 0):     
+#        estPosReal = np.append(estPosReal, estimate(p0, s0, resMat[i]))
+#        estPosReal = np.reshape(estPosReal, (estPosReal.size/3, 3))
+#        #print "calc position nr: " + str(i) + " " + str(estPos[i])
+#        #print "real position: " + str(values[i])
+#    else:
+#        estPosReal = np.append(estPosReal, estimate(estPosReal[i-1], s0, resMat[i]))        
+#        estPosReal = np.reshape(estPosReal, (estPosReal.size/3, 3))
+#        #print "calc position nr: " + str(i) + " " + str(estPos[i])
+#        #print "real position: " + str(values[i])
+#    i+=1
+#    
 # for the measured magnetic data    
-i=0
-for i in range (measMat.shape[0]):
-    print "estimating the measured positions..." + str(i)
-    if (i == 0):     
-        estPosMeas = np.append(estPosMeas, estimate(p0, s0, measMat[i]))
-        estPosMeas = np.reshape(estPosMeas, (estPosMeas.size/3, 3))
-        #print "calc position nr: " + str(i) + " " + str(estPos[i])
-        #print "real position: " + str(values[i])
-    else:
-        estPosMeas = np.append(estPosMeas, estimate(estPosMeas[i-1], s0, measMat[i]))        
-        estPosMeas = np.reshape(estPosMeas, (estPosMeas.size/3, 3))
-        #print "calc position nr: " + str(i) + " " + str(estPos[i])
-        #print "real position: " + str(values[i])
-    i+=1  
+#i=0
+#for i in range (measMat.shape[0]):
+#    print "estimating the measured positions..." + str(i)
+#    if (i == 0):     
+#        estPosMeas = np.append(estPosMeas, estimate(p0, s0, measMat[i]))
+#        estPosMeas = np.reshape(estPosMeas, (estPosMeas.size/3, 3))
+#        #print "calc position nr: " + str(i) + " " + str(estPos[i])
+#        #print "real position: " + str(values[i])
+#    else:
+#        estPosMeas = np.append(estPosMeas, estimate(estPosMeas[i-1], s0, measMat[i]))        
+#        estPosMeas = np.reshape(estPosMeas, (estPosMeas.size/3, 3))
+#        #print "calc position nr: " + str(i) + " " + str(estPos[i])
+#        #print "real position: " + str(values[i])
+#    i+=1  
 
 """
 plot your results
 """
-f, (bfield, pos) =  plt.subplots(1,2)
 #plt.cla()
+#f, (bfield) =  plt.subplots(1,1)
+f, (bfield, pos) =  plt.subplots(1,2)
 #plt.plot(values[:,0], values[:,1], color='y', label='values')
 #plt.plot(values, color = 'y', label='values')
 bfield.plot(resMat[:,0], linestyle='dashed', color='r', label='estX')
@@ -217,7 +257,7 @@ bfield.plot(measMat[:,0], linestyle='solid', color='r', label='measX')
 bfield.plot(measMat[:,1], linestyle='solid', color='g', label='measY')
 bfield.plot(measMat[:,2], linestyle='solid', color='b', label='measZ')
 
-#pos.plot(estPosReal[:,0], estPosReal[:,1], color='r')
+pos.plot(estPosReal[:,0], estPosReal[:,1], color='r')
 #pos.plot(estPosMeas[:,0], estPosMeas[:,1], color='g')
 
 #plt.plot(estPosReal[:,0], estPosReal[:,1], color='r')
