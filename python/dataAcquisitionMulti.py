@@ -11,7 +11,6 @@ import time
 import subprocess
 import struct
 
-
 def serialAcquisition(serPort, fileName, offset, measNr, timeStamp = True):
     """function for acquiring data from the serial port
     
@@ -113,39 +112,45 @@ def textAcquistion(fileName, timeStamp = False):
         print "File not found!"    
   
     line = f.readline() 
-    dataMat = np.empty(shape=[0,3])
-    
-    if timeStamp:
-        dataMat = np.empty(shape=[0,4])     
+    dataString = string.split(line, "\t")
+    form=0
+    if len(dataString) == 4:
+        form=4
+        dataMat = [[0.,0.,0.,0.]]
+        dataMat[0] = [float(dataString[0]), 
+                     float(dataString[1]), 
+                     float(dataString[2]), 
+                     float(dataString[3])]
+                     
+    elif len(dataString) == 3:
+        form=3
+        dataMat = [[0.,0.,0.]]
+        dataMat[0] = [float(dataString[0]), 
+                       float(dataString[1]), 
+                       float(dataString[2])]
+    else: 
+        print "wrong data format!!!!"
     
     while(line != ""):    
         if (line.startswith("#")):
             print line
         else:  
             dataString = string.split(line, "\t")
-            #print dataString
-            if len(dataString) == 4:
-                if timeStamp:
-                    dataMat = np.append(dataMat, 
-                                        [[float(dataString[0]), 
-                                          float(dataString[1]), 
-                                          float(dataString[2]), 
-                                          float(dataString[3])]],axis=0)        
-                else:
-                     dataMat = np.append(dataMat, 
-                                    [[float(dataString[1]), 
-                                      float(dataString[2]), 
-                                      float(dataString[3])]],axis=0)
-            elif len(dataString) == 3:
-                dataMat = np.append(dataMat,
-                                    [[float(dataString[0]), 
-                                      float(dataString[1]), 
-                                      float(dataString[2])]],axis=0)
-        line = f.readline() 
-    
-    if timeStamp:
-        print "with timestamp!"
-        
+            
+        if form == 4:
+            dataMat = np.append(dataMat, 
+                            [[float(dataString[0]),
+                              float(dataString[1]), 
+                              float(dataString[2]), 
+                              float(dataString[3])]],axis=0)
+        elif form == 3:
+             dataMat = np.append(dataMat, 
+                            [[float(dataString[1]), 
+                              float(dataString[2]), 
+                              float(dataString[3])]],axis=0)
+
+        line = f.readline()    
+    dataMat = sortData(dataMat)
     return dataMat
     
 
@@ -166,7 +171,7 @@ def structDataBLE(inp):
     dataHex = [chr(int(x, base=16)) for x in dataHex] 
     d = []
     tmp = []
-    value = np.array([0., 0., 0.,0.])
+    value = np.array([0., 0., 0., 0.])
     i=0
     for i in range(len(dataHex)/4):
         d.append("".join(dataHex[(i*4):(i*4)+4]))
@@ -193,6 +198,31 @@ def structDataSer(data):
     else: 
         return np.array([0.,0.,0.])
 
+
+
+def invertX(data):
+    return data*[1.,-1.,1.,1.]
+
+def sortData(data): 
+    
+    # erasing the first [0.,0.,0.] in the dataarray
+    cnt=0
+    for i in data:
+        if i[1:].any() == False:
+            data = np.delete(data, cnt, 0)
+            cnt-=1
+        cnt+=1
+    # removing surplus taken measurements
+    nrSens = int(max(data[:,0])+1)
+    if len(data)%nrSens:
+        data = np.delete(data, np.s_[-1*(len(data)%nrSens):], axis=0)
+    # matrix for results
+    s=np.zeros(shape=[nrSens, (len(data)/nrSens), 3])
+    cnt = np.zeros(shape=[nrSens,1], dtype=np.int)
+    for j in data:
+        s[int(j[0])][int(cnt[int(j[0])])] = j[1:]              
+        cnt[int(j[0])] += 1        
+    return s
 
 def pipeAcquisition(arg, fileName=None, measNr=None, offset=0):
     """function for acquiring data via pipe
@@ -240,18 +270,16 @@ def pipeAcquisition(arg, fileName=None, measNr=None, offset=0):
             if output != '':                
                 if "gatttool" in arg:                
                     data = structDataBLE(output)
+#                    data = invertX(data)
                     #print "raw output: ", output
                 if "/dev/tty" in arg:
                     data = structDataSer(output)
+#                    data = invertX(data)
     #                print data
-                if fileName != None:
-                    fl.write(str(data[0]) + "\t" + 
-                            str(data[1]) + "\t" + 
-                            str(data[2]) + "\t" + 
-                            str(data[3]) + "\n")
+                if i>offset:                    
                     print "Data written: ", data
-                else:
-                    print "Data: ", data
+                else: print "below offset ", i
+#                print "data: ",data
                 mat = np.append(mat, [data], axis=0)                
     #                print "writing...", data
 #                if i%10 == 0: print "measurement nr ", i
@@ -271,7 +299,15 @@ def pipeAcquisition(arg, fileName=None, measNr=None, offset=0):
 #    mat = np.reshape(mat, (mat.size/4, 4))
     proc.stdout.close()
     proc.kill()
-    if fileName != None:
-        fl.close()
+    
     mat = mat[offset+2:]
+    if fileName != None:
+        for i in mat:
+            fl.write(str(i[0]) + "\t" +
+                    str(i[1]) + "\t" + 
+                    str(i[2]) + "\t" +
+                    str(i[3]) + "\n")
+        fl.close()
+        
+    mat = sortData(mat)
     return mat
