@@ -120,40 +120,40 @@ cnt=0
 # calculate the magnetic fields for each sensor and each magnet
 for i in range(pos.shape[1]):
     calcBInd[0] = np.append(calcBInd[0],
-                      modE.evalfuncMagOne(pos[0][i],s1), axis=0)
+                      modE.evalfuncMag(pos[0][i],s1), axis=0)
     calcBInd[1] = np.append(calcBInd[1],
-                      modE.evalfuncMagOne(pos[1][i],s1), axis=0)
+                      modE.evalfuncMag(pos[1][i],s1), axis=0)
     calcBInd[2] = np.append(calcBInd[2],
-                      modE.evalfuncMagOne(pos[2][i],s1), axis=0)  
+                      modE.evalfuncMag(pos[2][i],s1), axis=0)  
     calcBInd[3] = np.append(calcBInd[3],
-                      modE.evalfuncMagOne(pos[3][i],s1), axis=0)
+                      modE.evalfuncMag(pos[3][i],s1), axis=0)
                       
     calcBMid[0] = np.append(calcBMid[0],
-                      modE.evalfuncMagOne(pos[0][i],s2), axis=0)
+                      modE.evalfuncMag(pos[0][i],s2), axis=0)
     calcBMid[1] = np.append(calcBMid[1],
-                      modE.evalfuncMagOne(pos[1][i],s2), axis=0)
+                      modE.evalfuncMag(pos[1][i],s2), axis=0)
     calcBMid[2] = np.append(calcBMid[2],
-                      modE.evalfuncMagOne(pos[2][i],s2), axis=0)                      
+                      modE.evalfuncMag(pos[2][i],s2), axis=0)                      
     calcBMid[3] = np.append(calcBMid[3],
-                      modE.evalfuncMagOne(pos[3][i],s2), axis=0)
+                      modE.evalfuncMag(pos[3][i],s2), axis=0)
 
     calcBRin[0] = np.append(calcBRin[0],
-                      modE.evalfuncMagOne(pos[0][i],s3), axis=0)
+                      modE.evalfuncMag(pos[0][i],s3), axis=0)
     calcBRin[1] = np.append(calcBRin[1],
-                      modE.evalfuncMagOne(pos[1][i],s3), axis=0)
+                      modE.evalfuncMag(pos[1][i],s3), axis=0)
     calcBRin[2] = np.append(calcBRin[2],
-                      modE.evalfuncMagOne(pos[2][i],s3), axis=0)                            
+                      modE.evalfuncMag(pos[2][i],s3), axis=0)                            
     calcBRin[3] = np.append(calcBRin[3],
-                      modE.evalfuncMagOne(pos[3][i],s3), axis=0) 
+                      modE.evalfuncMag(pos[3][i],s3), axis=0) 
 
     calcBPin[0] = np.append(calcBPin[0],
-                      modE.evalfuncMagOne(pos[0][i],s4), axis=0)
+                      modE.evalfuncMag(pos[0][i],s4), axis=0)
     calcBPin[1] = np.append(calcBPin[1],
-                      modE.evalfuncMagOne(pos[1][i],s4), axis=0)
+                      modE.evalfuncMag(pos[1][i],s4), axis=0)
     calcBPin[2] = np.append(calcBPin[2],
-                      modE.evalfuncMagOne(pos[2][i],s4), axis=0)
+                      modE.evalfuncMag(pos[2][i],s4), axis=0)
     calcBPin[3] = np.append(calcBPin[3],
-                      modE.evalfuncMagOne(pos[3][i],s4), axis=0)
+                      modE.evalfuncMag(pos[3][i],s4), axis=0)
 
 calcBInd = np.delete(calcBInd,0,1)    
 calcBMid = np.delete(calcBMid,0,1)        
@@ -188,21 +188,21 @@ estPos[2][0] = pos[2][0]
 estPos[3][0] = pos[3][0]
                 
 # fixed bnds                  
-bnds=((angInd[0]-0.003,angInd[0]+0.003),    # index finger
-      (angInd[1],angInd[1]+rInd),
-      (angInd[2],angInd[2]+rInd),
-
-      (angMid[0]-0.003,angMid[0]+0.003),    # middle finger
-      (angMid[1],angMid[1]+rMid),
-      (angMid[2],angMid[2]+rMid),
-      
-      (angRin[0]-0.003,angRin[0]+0.003),    # ring finger
-      (angRin[1],angRin[1]+rRin),
-      (angRin[2],angRin[2]+rRin),
-      
-      (angPin[0]-0.003,angPin[0]+0.003),    # pinky finger
-      (angPin[1],angPin[1]+rPin),
-      (angPin[2],angPin[2]+rPin))                   
+#bnds=((angInd[0]-0.003,angInd[0]+0.003),    # index finger
+#      (angInd[1],angInd[1]+rInd),
+#      (angInd[2],angInd[2]+rInd),
+#
+#      (angMid[0]-0.003,angMid[0]+0.003),    # middle finger
+#      (angMid[1],angMid[1]+rMid),
+#      (angMid[2],angMid[2]+rMid),
+#      
+#      (angRin[0]-0.003,angRin[0]+0.003),    # ring finger
+#      (angRin[1],angRin[1]+rRin),
+#      (angRin[2],angRin[2]+rRin),
+#      
+#      (angPin[0]-0.003,angPin[0]+0.003),    # pinky finger
+#      (angPin[1],angPin[1]+rPin),
+#      (angPin[2],angPin[2]+rPin))                   
 
 # using the new version         
 startTime = time.time()
@@ -240,21 +240,23 @@ for i in range(len(summedMid[0])-1):
 #    estPos2[1][i+1] = tmp2[1]
 
 # flexible bnds
-#    bnds=((angMid[0]-0.003,angMid[0]+0.003),    # middle finger
-#          (angMid[1],angMid[1]+rMid),
-#          (angMid[2],angMid[2]+rMid),
-#          
-#          (angPin[0]-0.003,angPin[0]+0.003),    # pinky finger
-#          (angPin[1],angPin[1]+rPin),
-#          (angPin[2],angPin[2]+rPin),
-#    
-#          (angInd[0]-0.003,angInd[0]+0.003),    # index finger
-#          (angInd[1],angInd[1]+rInd),
-#          (angInd[2],angInd[2]+rInd),
-#    
-#          (angRin[0]-0.003,angRin[0]+0.003),    # ring finger
-#          (angRin[1],angRin[1]+rRin),
-#          (angRin[2],angRin[2]+rRin))    
+    stepX = 0.003   # 3mm
+    step = 0.08     # 8cm
+    bnds=((estPos[0][i][0]-stepX,estPos[0][i][0]+stepX),    # index finger
+          (estPos[0][i][0]-step,estPos[0][i][1]+step),
+          (estPos[0][i][0]-step,estPos[0][i][2]+step),
+          
+          (estPos[1][i][0]-stepX,estPos[1][i][0]+stepX),    # middle finger
+          (estPos[1][i][1]-step,estPos[1][i][1]+step),
+          (estPos[1][i][2]-step,estPos[1][i][2]+step),
+    
+          (estPos[2][i][0]-stepX,estPos[2][i][0]+stepX),    # ring finger
+          (estPos[2][i][1]-step,estPos[2][i][1]+step),
+          (estPos[2][i][2]-step,estPos[2][i][2]+step),
+    
+          (estPos[3][i][0]-stepX,estPos[3][i][0]+stepX),    # pinky finger
+          (estPos[3][i][1]-step,estPos[3][i][1]+step),
+          (estPos[3][i][2]-step,estPos[3][i][2]+step))    
 
 # for four magnets(index, middle, pinky) and four sensors (middle, pinky, index)    
     tmp = modE.estimatePos(np.concatenate((estPos[0][i],estPos[1][i],estPos[2][i],estPos[3][i])), 
@@ -276,8 +278,8 @@ estPos[2]=np.round(estPos[2],6)
 estPos[3]=np.round(estPos[3],6)
       
 """ plotting stuff """
-plo.plotter3d((pos[0],pos[1],pos[2], pos[3]),("Ind real","mid Real", "ring Real", "pin Real"))
-plo.plotter2d((summedInd,summedMid,summedRin,summedPin),("index","Mid","Rin","Pin"))
+#plo.plotter3d((pos[0],pos[1],pos[2], pos[3]),("Ind real","mid Real", "ring Real", "pin Real"))
+#plo.plotter2d((summedInd,summedMid,summedRin,summedPin),("index","Mid","Rin","Pin"))
 
 plo.multiPlotter(estPos[0],"Index",pos[0])
 plo.multiPlotter(estPos[1],"Middle",pos[1])

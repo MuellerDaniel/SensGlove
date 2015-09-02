@@ -6,45 +6,46 @@ Created on Wed Jul 15 09:53:19 2015
 """
 
 import numpy as np
+import calcJacobian as cal
 from scipy.optimize import *
 
 """
 estimation equations
 """
 
-def evalfuncMag(P,S):
-    """returns the magnetic field
-    
-    Parameters
-    ----------
-    P : array
-        the position
-    S : array
-        the position of the sensor    
-    """
-    magnets = P.shape[0]/3      # improvement needed...
-    if magnets>1:
-        tmp=P.reshape(magnets,1,3)
-        P=tmp
-#    print "P ",P
-    H = np.zeros(shape=(P.shape[0],1,3))
-    R = np.zeros(shape=(P.shape[0],1,3))
-    cnt=0
-    for i in P:
-        H[cnt] = 1*(i-S)        
-        R[cnt] = 1*(S-i)
-        cnt+=1
-    
-    factor = np.array([1, 1, 1])
-    B = np.zeros(shape=(magnets,1,3))
-    for k in range(magnets):
-        B[k] = [((3*(np.cross(H[k],R[k])*R[k])/(np.linalg.norm(R[k])**5)) - 
-                                        (H[k]/(np.linalg.norm(R[k])**3)))] * factor
-#    print "B ",B
-    return B
+#def evalfuncMag(P,S):
+#    """returns the magnetic field
+#    
+#    Parameters
+#    ----------
+#    P : array
+#        the position
+#    S : array
+#        the position of the sensor    
+#    """
+#    magnets = P.shape[0]/3      # improvement needed...
+#    if magnets>1:
+#        tmp=P.reshape(magnets,1,3)
+#        P=tmp
+##    print "P ",P
+#    H = np.zeros(shape=(P.shape[0],1,3))
+#    R = np.zeros(shape=(P.shape[0],1,3))
+#    cnt=0
+#    for i in P:
+#        H[cnt] = 1*(i-S)        
+#        R[cnt] = 1*(S-i)
+#        cnt+=1
+#    
+#    factor = np.array([1, 1, 1])
+#    B = np.zeros(shape=(magnets,1,3))
+#    for k in range(magnets):
+#        B[k] = [((3*(np.cross(H[k],R[k])*R[k])/(np.linalg.norm(R[k])**5)) - 
+#                                        (H[k]/(np.linalg.norm(R[k])**3)))] * factor
+##    print "B ",B
+#    return B
              
 
-def evalfuncMagOne(P,S):
+def evalfuncMag(P,S):
     """returns the magnetic field
     
     Parameters
@@ -57,10 +58,36 @@ def evalfuncMagOne(P,S):
     H = 1*(P-S)        # this worked for the example on the flat paper...    
     R = 1*(S-P)
 #    H = -R+(P-S)
-    factor = np.array([15, 15, 15])
-    return [((3*(np.cross(H,R)*R)/(np.linalg.norm(R)**5)) - 
-                                        (H/(np.linalg.norm(R)**3)))] * factor
-                       
+    factor = np.array([1, 1, 1])
+#    return [((3*(np.cross(H,R)*R)/(np.linalg.norm(R)**5)) - 
+#                                        (H/(np.linalg.norm(R)**3)))] * factor
+    no = np.sqrt(R[0]**2+R[1]**2+R[2]**2)
+    return [((3*(np.cross(H,R)*R)/(no**5)) - 
+                                        (H/(no**3)))] * factor
+  
+
+def deriv(P,S):
+    # calculated by 
+    a = cal.evaluate()
+    
+    dfxdx = a[0][0]
+    dfxdy = 
+    dfxdz =
+
+    dfydx = 
+    dfydy = 
+    dfydz = 
+    
+    dfzdx = 
+    dfzdy = 
+    dfzdz = 
+
+    return np.array([[dfxdx,dfxdy,dfxdz],
+                     [dfydx,dfydy,dfydz],
+                     [dfzdx,dfzdy,dfzdz]])    
+    
+
+                     
 def funcMagY(P,S,B):
     val = np.zeros(shape=(B.shape))
 
@@ -68,7 +95,7 @@ def funcMagY(P,S,B):
 #        print "P.shape ",val
         b = 0.
         for j in range(len(P)/3):
-            b += evalfuncMagOne(P[j*3:j*3+3],S[i]) 
+            b += evalfuncMag(P[j*3:j*3+3],S[i]) 
 #            print j
 
 #        b = evalfuncMagOne(P[:3],S[i]) + evalfuncMagOne(P[3:],S[i])     # for more than one magnet
@@ -81,7 +108,7 @@ def funcMagY(P,S,B):
 #    res = np.linalg.norm(B - b)
     return res
   
-def estimatePos(P,S,B,cnt,bnds=None):
+def estimatePos(P,S,B,cnt,bnds=None,jaco=None):
     """returns the estimated position
     
     Parameters
@@ -121,14 +148,16 @@ def estimatePos(P,S,B,cnt,bnds=None):
         
 #    val = minimize(funcMagY,P,args=(S,B),method='slsqp',tol=1e-5,options={'disp':True})
     val = minimize(funcMagY, P, args=(S,B), method='slsqp', 
-                   tol=1e-8, bounds=bnds)
+                   tol=1e-5, bounds=bnds, jac=jaco)
 #    val.x is a 2d-vector, so reshape it!
     res = np.reshape(val.x,(len(P)/3,1,3))     # improve it!
 #    res = np.reshape(val.x,(1,1,3))
     if val.success:
+#        print "jacobian ", val.jac
         return res        # as result you will get the P vector! 
     else:
         print "No solution found! Iteration Nr ",cnt
+        print "Error message ",val.message
 #        print res.message        
 #        return np.zeros(shape=(2,1,3))
         return res
