@@ -22,6 +22,7 @@ def plotter2d(inputlist, titlelist, shareAxis = True):
             
        
     """        
+#    plt.close("all")
     print "len(inputlist) ", len(inputlist)
     print "len(titlelist) ", len(titlelist)
     if len(inputlist) != len(titlelist):
@@ -30,78 +31,37 @@ def plotter2d(inputlist, titlelist, shareAxis = True):
     else:
         plotIt2d(inputlist,titlelist, len(inputlist), shareAxis)
     
-    
-def plotIt2d(data, title, sizeData, shareAxis):
-    initPos = 0
-        
-    if len(data[0][0]) == 4:
-        initPos = 1
-    
+
+
+def plotIt2d(data, title, sizeData, shareAxis):   
+    colorList = ('b','g','r','y')
+    cnt = 0
     if sizeData == 1:
-#        for i in range(len(data[0])):
-        if max(data[0][:,0]) == 0:
-            plt.plot(data[0][:,initPos], color='b', ls='-', label='x')
-            plt.plot(data[0][:,initPos + 1], color='b', ls='--', label='y')
-            plt.plot(data[0][:,initPos + 2], color='b', ls=':', label='z')
-            plt.title(title[0])
-            plt.legend()
-        
-        if max(data[0][:,0]) == 1:
-            data0=[[0.,0.,0.]]
-            data1=[[0.,0.,0.]]
-            for i in range(len(data[0])):
-                tmp = data[0][i]                
-                if tmp[0] == 0:
-                    data0=np.append(data0, [data[0][i][1:]], axis=0)
-                elif tmp[0] == 1:
-                    data1=np.append(data1, [data[0][i][1:]], axis=0)
+        for i in data:
+            cnt = 0        
+            for j in i:
+                linCol = colorList[cnt]
+                plt.plot(j[:,0], color=linCol, ls='-', label='x')
+                plt.plot(j[:,1], color=linCol, ls='--', label='y')
+                plt.plot(j[:,2], color=linCol, ls=':', label='z')
+                plt.title(title[0])
+                if cnt==0: plt.legend()
+                cnt+=1
                 
-            plt.plot(data0[:,0], color='b', ls='-', label='x')
-            plt.plot(data0[:,1], color='b', ls='--', label='y')
-            plt.plot(data0[:,2], color='b', ls=':', label='z')
-            plt.plot(data1[:,0], color='r', ls='-', label='x')
-            plt.plot(data1[:,1], color='r', ls='--', label='y')
-            plt.plot(data1[:,2], color='r', ls=':', label='z')
-            
-            plt.title(title[0])
-            plt.legend()
-                
-#        plt.plot(data[0][:,initPos], color='b', ls='-', label='x')
-#        plt.plot(data[0][:,initPos + 1], color='b', ls='--', label='y')
-#        plt.plot(data[0][:,initPos + 2], color='b', ls=':', label='z')
-#        plt.title(title[0])
-#        plt.legend()
-        
-    elif sizeData == 2:
-        f,(one, two) = plt.subplots(1,2, sharey=shareAxis)
-        one.plot(data[0][:,initPos], color='b', ls='-', label='x')
-        one.plot(data[0][:,initPos + 1], color='b', ls='--', label='y')
-        one.plot(data[0][:,initPos + 2], color='b', ls=':', label='z')
-        one.set_title(title[0])
-        one.legend()
-        
-        two.plot(data[1][:,initPos], color='b', ls='-', label='x')
-        two.plot(data[1][:,initPos + 1], color='b', ls='--', label='y')
-        two.plot(data[1][:,initPos + 2], color='b', ls=':', label='z')
-        two.set_title(title[1])
-        
-    elif sizeData == 3:
-        f, (one, two, three) = plt.subplots(1,3, sharey=shareAxis)
-        one.plot(data[0][:,initPos], color='b', ls='-', label='x')
-        one.plot(data[0][:,initPos + 1], color='b', ls='--', label='y')
-        one.plot(data[0][:,initPos + 2], color='b', ls=':', label='z')
-        one.set_title(title[0])
-        one.legend()
-        
-        two.plot(data[1][:,initPos], color='b', ls='-', label='x')
-        two.plot(data[1][:,initPos + 1], color='b', ls='--', label='y')
-        two.plot(data[1][:,initPos + 2], color='b', ls=':', label='z')
-        two.set_title(title[1])
-    
-        three.plot(data[2][:,initPos], color='b', ls='-', label='x')
-        three.plot(data[2][:,initPos + 1], color='b', ls='--', label='y')
-        three.plot(data[2][:,initPos + 2], color='b', ls=':', label='z')
-        three.set_title(title[2])
+    if sizeData >= 2:
+        lst = [sizeData]
+        f, lst = plt.subplots(1,sizeData, sharey=shareAxis)        
+        for i in range(sizeData):
+            cnt = 0
+            for j in data[i]:
+                linCol = colorList[cnt]
+                lst[i].plot(j[:,0], color=linCol, ls='-', label='x')
+                lst[i].plot(j[:,1], color=linCol, ls='--', label='y')
+                lst[i].plot(j[:,2], color=linCol, ls=':', label='z')
+                lst[i].set_title(title[i])
+                if cnt==0: plt.legend()
+                cnt+=1
+ 
         
 def plotter3d(inputlist, titlelist):
     """plot the data
@@ -129,20 +89,56 @@ def plotIt3d(data, title, sizeData):
     if len(data[0][0]) == 4:
         initPos = 1
     
-    if sizeData == 1:
-        ax = fig.gca(projection='3d')
-        ax.plot(data[0][:,initPos], data[0][:,initPos+1], data[0][:,initPos+2])
-    elif sizeData == 2:
-        ax = fig.add_subplot(1,2,1, projection='3d', title=title[0])
-        ax.plot(data[0][:,initPos], data[0][:,initPos+1], data[0][:,initPos+2])
-        ax = fig.add_subplot(1,2,2, projection='3d', title=title[1])
-        ax.plot(data[1][:,initPos], data[1][:,initPos+1], data[1][:,initPos+2])
-    elif sizeData == 3:
-        ax = fig.add_subplot(1,3,1, projection='3d', title=title[0])
-        ax.plot(data[0][:,initPos], data[0][:,initPos+1], data[0][:,initPos+2])
-        ax = fig.add_subplot(1,3,2, projection='3d', title=title[1])
-        ax.plot(data[1][:,initPos], data[1][:,initPos+1], data[1][:,initPos+2])
-        ax = fig.add_subplot(1,3,3, projection='3d', title=title[2])
-        ax.plot(data[2][:,initPos], data[2][:,initPos+1], data[2][:,initPos+2])
+#    if sizeData == 1:
+#        ax = fig.gca(projection='3d')
+#        ax.plot(data[0][:,initPos], data[0][:,initPos+1], data[0][:,initPos+2])
+#    elif sizeData >= 2:
+    for i in range(sizeData):
+        ax = fig.add_subplot(1,sizeData,i, projection='3d', title=title[i])
+        ax.plot(data[i][:,initPos], data[i][:,initPos+1], data[i][:,initPos+2])
+#            ax = fig.add_subplot(1,2,2, projection='3d', title=title[1])
+#            ax.plot(data[1][:,initPos], data[1][:,initPos+1], data[1][:,initPos+2])
+#    elif sizeData == 3:
+#        ax = fig.add_subplot(1,3,1, projection='3d', title=title[0])
+#        ax.plot(data[0][:,initPos], data[0][:,initPos+1], data[0][:,initPos+2])
+#        ax = fig.add_subplot(1,3,2, projection='3d', title=title[1])
+#        ax.plot(data[1][:,initPos], data[1][:,initPos+1], data[1][:,initPos+2])
+#        ax = fig.add_subplot(1,3,3, projection='3d', title=title[2])
+#        ax.plot(data[2][:,initPos], data[2][:,initPos+1], data[2][:,initPos+2])
+      
+
+def multiPlotter(data, title, comp=None):
+    f = plt.figure(title)
+    
+    a = f.add_subplot(2,3,1, projection='3d', title='3d projection')
+    a.plot(data[:,0],data[:,1],data[:,2], color='b')
+    if comp != None:    
+        a.plot(comp[:,0],comp[:,1],comp[:,2], color='r')
+    
+    b = f.add_subplot(2,3,2, title='x vs y')
+    b.plot(data[:,0],data[:,1], color='b')
+    if comp != None:
+        b.plot(comp[:,0],comp[:,1], color='r')
+    
+    c = f.add_subplot(2,3,3, title='z vs y')
+    c.plot(data[:,2],data[:,1], color='b')
+    if comp != None:
+        c.plot(comp[:,2],comp[:,1], color='r')
+    
+    if comp != None:
+#        bla=float(10/len(data[:,0]))
+        bla=0.06329113924050633
+#        print "nr ", len(data[:,0])*0.001
+        d = f.add_subplot(2,3,4, title='errorPlot x')
+        d.scatter(np.arange(0,10,bla),comp[:,0]-data[:,0])      
+             
         
+        e = f.add_subplot(2,3,5, title='errorPlot y',sharey=d)
+        e.scatter(np.arange(0,10,bla),comp[:,1]-data[:,1])
+        e.set_yticklabels([])
+        
+        g = f.add_subplot(2,3,6, title='errorPlot z',sharey=d)
+        g.scatter(np.arange(0,10,bla),comp[:,2]-data[:,2])
+        g.set_yticklabels([])
+            
     
