@@ -31,10 +31,12 @@ float magX, magY, magZ, rawX, rawY, rawZ;
 //float hardBias[3] = {40.50, -7.80, -22.95};
 //float softBias[3] = {0.96, 0.98,  1.06};
 //150811
-float hardBias[2][3] = {{-13.50, 1.65, -20.85},
+float hardBias[2][3] = //{{-6.90, -1.35, -40.05},         //not on hand 
+                       {{-6.15, 8.25,  -37.05},         //attached on hand
                         {-0.15, 0.60,  -53.10}};
-float softBias[2][3] = {{0.97, 0.96,  1.07},
-                        {1.03, 0.97,  1.00}};
+float softBias[2][3] = //{{0.96, 1.01, 1.03},             //not on hand
+                       {{0.98, 0.99,  1.03},             //attached on hand
+                        {1.07, 0.92,  1.02}};
 
 
 
@@ -47,18 +49,21 @@ unsigned long delta[sampleNr];
 
 //datasheet p.13: resolution of 0.3 uT/LSB
 float conversionFactor = 0.3;
-char data[16];
+
 //char data[12];
 float one, two, three;
-float fData[4];
+
 //float fData[3];
 int cnt;
-int chNr = 0;
+int chNr = 1;
 int s0 = 0;
 int s1 = 1;
 int s2 = 2;
 int s3 = 3;
-int devCnt = 2;    //total nr of sensors
+const int devCnt = 1;    //total nr of sensors
+
+float fData[4];
+char data[4*4];
 
 void setup() {
     // join I2C bus (I2Cdev library doesn't do this automatically)
@@ -104,21 +109,25 @@ void setup() {
 }
 
 void loop() {   
-  
+     
    for(int i=0; i<devCnt; i++){
       setChannel(i);
-      getMagnetCali(i);
-      
+      getMagnetCali(i);      
+
       fData[0] = i;
       fData[1] = magX;
       fData[2] = magY;
-      fData[3] = magZ;
+      fData[3] = magZ;     
 
-      for(int i=0; i<4; i++){
-        memcpy(&data[i*sizeof(float)], &fData[i], sizeof(float));
+      for(int j=0; j<4; j++){
+       memcpy(&data[j*sizeof(float)], &fData[j], sizeof(float));
       }
-      RFduinoBLE.send(data, 16);
+      RFduinoBLE.send(data, (4*4));
    }
+
+      
+
+   
   
    
 //   setChannel(chNr);

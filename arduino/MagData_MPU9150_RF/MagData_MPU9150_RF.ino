@@ -27,10 +27,13 @@ float magX, magY, magZ, rawX, rawY, rawZ;
 //150714
 //float hardBias[3] = {-2.40, -15.75, -40.35};
 //float softBias[3] = {0.87, 1.26, 0.95};
-//150730 desk adverse to Philipp
-float hardBias[3] = {-0.15, 0.60,  -53.10};
-float softBias[3] = {1.03, 0.97,  1.00};
-
+//150813 desk adverse to Philipp
+//float hardBias[3] = {-6.90, -1.35, -40.05};   //lying flat
+//float softBias[3] = {0.96, 1.01, 1.03};       //lying flat
+//float hardBias[3] = {-6.15, 8.25,  -37.05};     //attached to hand
+//float softBias[3] = {0.98, 0.99,  1.03};       //attached to hand
+float hardBias[3] = {0,0,0};
+float softBias[3] = {1,1,1};
 
 uint8_t buffer[14];
 boolean passStat = true;
@@ -40,9 +43,9 @@ unsigned long delta[sampleNr];
 
 //datasheet p.13: resolution of 0.3 uT/LSB
 float conversionFactor = 0.3;
-char data[12];
+char data[16];
 float one, two, three;
-float fData[3];
+float fData[4];
 int cnt;
 
 void setup() {
@@ -56,12 +59,12 @@ void setup() {
     Serial.begin(9600);
 
     // initialize device
-    Serial.println("Initializing I2C devices...");
+    //Serial.println("Initializing I2C devices...");
     accelgyro.initialize();
 
     // verify connection
-    Serial.println("Testing device connections...");
-    Serial.println(accelgyro.testConnection() ? "MPU6050 connection successful" : "MPU6050 connection failed");
+    //Serial.println("Testing device connections...");
+    //Serial.println(accelgyro.testConnection() ? "MPU6050 connection successful" : "MPU6050 connection failed");
 
     RFduinoBLE.deviceName = "magnetic";
     RFduinoBLE.advertisementData = "magField";
@@ -69,40 +72,26 @@ void setup() {
 }
 
 void loop() {
-  /*while(!Serial.find("ready")){
-    Serial.println("Waiting for user to type 'ready'. Then wave your magnetometer around to collect data");
-    delay(1000);
-  }*/
-  
-  //for (int i=0; i<sampleNr; i++){
-   //startTime = millis();
    getMagnetCali();
-   //readRawMagnet();
-   //getRawMagnet();
-   
+      
    //calibrated values via serial interface
+   Serial.print("Mag\t");
    Serial.print(magX); Serial.print("\t");
    Serial.print(magY); Serial.print("\t");
    Serial.println(magZ);
-//  Serial.println(cnt);
-  cnt++;
-   //calibrated values via bluetooth
-   //RFduinoBLE.sendFloat(0.0);
-   //RFduinoBLE.sendFloat(1.0);
-   //RFduinoBLE.sendFloat(2.5);
-    
-   fData[0] = magX;
-   fData[1] = magY;
-   fData[2] = magZ;
 
-   for(int i=0; i<3; i++){
+   fData[0] = 0.0; 
+   fData[1] = magX;
+   fData[2] = magY;
+   fData[3] = magZ;
+
+   for(int i=0; i<4; i++){
     memcpy(&data[i*sizeof(float)], &fData[i], sizeof(float));
    }
-   
-   //sprintf(data, "%f", two);
-   //snprintf(data, sizeof(data), "%f", 3.3);   
-   RFduinoBLE.send(data, 12);
-   }
+  
+   RFduinoBLE.send(data, 16);
+   delay(100);
+}
 
 float getMean(unsigned long arr[]){
   unsigned long sum=0;
