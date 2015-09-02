@@ -3,3 +3,4 @@
 *.pyc
 */python/!*.py
 */python/!*.png
+*/python/!*.*
