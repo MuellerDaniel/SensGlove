@@ -6,44 +6,14 @@ Created on Wed Jul 15 09:53:19 2015
 """
 
 import numpy as np
-import calcJacobian as cal
 from scipy.optimize import *
+from sympy import *
+
+
 
 """
 estimation equations
-"""
-
-#def evalfuncMag(P,S):
-#    """returns the magnetic field
-#    
-#    Parameters
-#    ----------
-#    P : array
-#        the position
-#    S : array
-#        the position of the sensor    
-#    """
-#    magnets = P.shape[0]/3      # improvement needed...
-#    if magnets>1:
-#        tmp=P.reshape(magnets,1,3)
-#        P=tmp
-##    print "P ",P
-#    H = np.zeros(shape=(P.shape[0],1,3))
-#    R = np.zeros(shape=(P.shape[0],1,3))
-#    cnt=0
-#    for i in P:
-#        H[cnt] = 1*(i-S)        
-#        R[cnt] = 1*(S-i)
-#        cnt+=1
-#    
-#    factor = np.array([1, 1, 1])
-#    B = np.zeros(shape=(magnets,1,3))
-#    for k in range(magnets):
-#        B[k] = [((3*(np.cross(H[k],R[k])*R[k])/(np.linalg.norm(R[k])**5)) - 
-#                                        (H[k]/(np.linalg.norm(R[k])**3)))] * factor
-##    print "B ",B
-#    return B
-             
+"""   
 
 def evalfuncMag(P,S):
     """returns the magnetic field
@@ -62,32 +32,68 @@ def evalfuncMag(P,S):
 #    return [((3*(np.cross(H,R)*R)/(np.linalg.norm(R)**5)) - 
 #                                        (H/(np.linalg.norm(R)**3)))] * factor
     no = np.sqrt(R[0]**2+R[1]**2+R[2]**2)
-    return [((3*(np.cross(H,R)*R)/(no**5)) - 
-                                        (H/(no**3)))] * factor
+#    print "cross product: ",np.cross(H,R)
+    return [((3*(np.cross(H,R)*R)/(no**5)) - (H/(no**3)))] * factor
+                                        
+def evalfuncMagDot(P,S):
+    """returns the magnetic field
+    
+    Parameters
+    ----------
+    P : array
+        the position
+    S : array
+        the position of the sensor    
+    """
+    H = 1*(P-S)        # this worked for the example on the flat paper...    
+    R = 1*(S-P)
+#    H = -R+(P-S)
+    factor = np.array([-1, -1, -1])
+#    return [((3*(np.cross(H,R)*R)/(np.linalg.norm(R)**5)) - 
+#                                        (H/(np.linalg.norm(R)**3)))] * factor
+    no = np.sqrt(R[0]**2+R[1]**2+R[2]**2)
+    return [((3*(np.dot(H,R)*R)/(no**5)) - (H/(no**3)))] * factor                                        
   
-
-def deriv(P,S):
-    # calculated by 
-    a = cal.evaluate()
+def evalfuncMagH(P,H,S):
+    """returns the magnetic field
     
-    dfxdx = a[0][0]
-    dfxdy = 
-    dfxdz =
-
-    dfydx = 
-    dfydy = 
-    dfydz = 
+    Parameters
+    ----------
+    P : array
+        the position
+    S : array
+        the position of the sensor    
+    """
+#    H = 1*(P-S)        # this worked for the example on the flat paper...    
+    R = 1*(S-P)
+#    H = -R+(P-S)
+    factor = np.array([1, 1, 1])
+#    return [((3*(np.cross(H,R)*R)/(np.linalg.norm(R)**5)) - 
+#                                        (H/(np.linalg.norm(R)**3)))] * factor
+    no = np.sqrt(R[0]**2+R[1]**2+R[2]**2)
+    return [((3*(np.cross(H,R)*R)/(no**5)) - 
+                                        (H/(no**3)))] * factor  
+                                        
+def evalfuncMagH_dot(P,H,S):
+    """returns the magnetic field
     
-    dfzdx = 
-    dfzdy = 
-    dfzdz = 
-
-    return np.array([[dfxdx,dfxdy,dfxdz],
-                     [dfydx,dfydy,dfydz],
-                     [dfzdx,dfzdy,dfzdz]])    
-    
-
-                     
+    Parameters
+    ----------
+    P : array
+        the position
+    S : array
+        the position of the sensor    
+    """
+#    H = 1*(P-S)        # this worked for the example on the flat paper...    
+    R = 1*(S-P)
+#    H = -R+(P-S)
+    factor = np.array([1, 1, 1])
+#    return [((3*(np.cross(H,R)*R)/(np.linalg.norm(R)**5)) - 
+#                                        (H/(np.linalg.norm(R)**3)))] * factor
+    no = np.sqrt(R[0]**2+R[1]**2+R[2]**2)
+    return [((3*(np.dot(H,R)*R)/(no**5)) - 
+                                        (H/(no**3)))] * factor                                          
+                    
 def funcMagY(P,S,B):
     val = np.zeros(shape=(B.shape))
 
@@ -96,19 +102,27 @@ def funcMagY(P,S,B):
         b = 0.
         for j in range(len(P)/3):
             b += evalfuncMag(P[j*3:j*3+3],S[i]) 
-#            print j
-
-#        b = evalfuncMagOne(P[:3],S[i]) + evalfuncMagOne(P[3:],S[i])     # for more than one magnet
-#        b = evalfuncMagOne(P[:3],S[i])     # for one magnet
-#        print "with: ", b 
         val[i*3:(i*3)+3] = b
-#    print "value: ", val
-#    print "B: ", B
-    res = np.linalg.norm(B - val)   
-#    res = np.linalg.norm(B - b)
+    res = np.linalg.norm(B - val) 
     return res
+    
+def evalfuncMagMulti(P,S):
+    F = np.zeros((len(S)/3,len(P)))
+    for i in range(len(S)/3):
+        for j in range(len(P)/3):
+            F[i][j*3:j*3+3] = evalfuncMag(P[j*3:j*3+3],S[i*3:i*3+3]) 
+    
+    return F
+    
+def funcMagYmulti(P,S,B):    
+    val = evalfuncMagMulti(P,S)
+    ident = np.identity(len(S)/3)    
+    res = np.linalg.norm(np.dot(ident-np.dot(val,np.linalg.pinv(val)),B))
+#    valPlus=np.dot(inv(np.dot(val.T,val)),val.T)
+    res = np.linalg.norm(B-(np.dot(val,np.dot(valPlus,B))))
+    return res    
   
-def estimatePos(P,S,B,cnt,bnds=None,jaco=None):
+def estimatePos(P,S,B,cnt,bnds=None,jacobian=None):
     """returns the estimated position
     
     Parameters
@@ -130,6 +144,7 @@ def estimatePos(P,S,B,cnt,bnds=None,jaco=None):
     
     """
 #    print "P: ", P.shape
+#    print "funcMagY: ", funcMagY(P,S,B)
 #    c=0.1
 #    cons = ({'type':'ineq',
 #             'fun':lambda x: c/10 - abs(P[0]-x[0])},
@@ -146,14 +161,17 @@ def estimatePos(P,S,B,cnt,bnds=None,jaco=None):
 #    cons = ({'type':'ineq',
 #             'fun':lambda x: c - abs(P-x)},)
         
-#    val = minimize(funcMagY,P,args=(S,B),method='slsqp',tol=1e-5,options={'disp':True})
-    val = minimize(funcMagY, P, args=(S,B), method='slsqp', 
-                   tol=1e-5, bounds=bnds, jac=jaco)
-#    val.x is a 2d-vector, so reshape it!
+#    val = minimize(funcMagYmulti,P,args=(S,B),method='slsqp',tol=1e-5)
+#    print val
+    val = minimize(funcMagYmulti, P, args=(S,B), method='slsqp', 
+                   tol=1e-5, bounds=bnds, jac=jacobian)
+#    val = _minimize_slsqp(funcMagY, P, args=(S,B), method='slsqp', 
+#                   tol=1e-5, bounds=bnds, jac=jacobian)               
+#    val.x is a 1d-vector, so reshape it!
     res = np.reshape(val.x,(len(P)/3,1,3))     # improve it!
 #    res = np.reshape(val.x,(1,1,3))
     if val.success:
-#        print "jacobian ", val.jac
+#        print res
         return res        # as result you will get the P vector! 
     else:
         print "No solution found! Iteration Nr ",cnt
@@ -162,7 +180,85 @@ def estimatePos(P,S,B,cnt,bnds=None,jaco=None):
 #        return np.zeros(shape=(2,1,3))
         return res
     
+  
+"""
+calculating the jacobi
+"""
+
+def calcJacobi():
+    x,y,z = symbols('x y z')
+    s0,s1,s2 = symbols('s0 s1 s2')
+    bx,by,bz = symbols('bx by bz')
     
+    #H0,H1,H2 = symbols('H0 H1 H2')
+    #R0,R1,R2 = symbols('R0 R1 R2')
+    
+    P = np.array([x,y,z])
+    #H = np.array([H1,H2,H3])
+    #R = np.array([R1,R2,R3])
+    s0 = np.array([s0,s1,s2])
+    H = P-s0
+    R = s0-P
+   
+    
+    fun = np.array([(3*(np.cross(H,R)*R)/(sqrt(R[0]**2+R[1]**2+R[2]**2)**5)) - 
+                    (H/(sqrt(R[0]**2+R[1]**2+R[2]**2))**3)])
+    
+    global symJac,norPrime
+    symJac = Matrix([[fun[0][0].diff(x), fun[0][0].diff(y), fun[0][0].diff(z)],
+                     [fun[0][1].diff(x), fun[0][1].diff(y), fun[0][1].diff(z)],
+                     [fun[0][2].diff(x), fun[0][2].diff(y), fun[0][2].diff(z)]])
+                     
+    nor =  sqrt((bx-np.sum(symJac[0:3]))**2+
+                (by-np.sum(symJac[3:6]))**2+
+                (bz-np.sum(symJac[6:9]))**2)
+            
+#    norPrime = np.zeros((3,1))
+    
+    norPrime = Matrix([[nor.diff(x)],
+                         [nor.diff(y)],
+                         [nor.diff(z)]])
+    
+    return norPrime
+    
+def jaco(P,S,B):
+#    print "P ", P.shape
+#    print "S ", S[0][0]
+#    print "B ", B
+#    print "symJac\n", symJac
+    s0,s1,s2,x,y,z=symbols('s0 s1 s2 x y z') 
+    bx,by,bz = symbols('bx by bz')
+    funSubst = np.zeros((12,1)) 
+    res = np.zeros((12,1))
+    for i in range(len(S)):    
+        tmp = np.zeros((3,1))
+        for j in range(len(P)/3):
+#                if funSubst.any()!=0:
+            tmp += np.array(norPrime.subs({s0:S[i][0],s1:S[i][1],s2:S[i][2],
+                                         x:P[j*3],y:P[j*3+1],z:P[j*3+2],
+                                         bx:B[i*3],by:B[i*3+1],bz:B[i*3+2]}))                                 
+#                else:
+#                    funSubst = np.array(symJac.subs({s0:S[i][0],s1:S[i][1],s2:S[i][2],
+#                                                      x:P[j*3],y:P[j*3+1],z:P[j*3+2]}))
+        funSubst[i*3] += tmp[0]
+        funSubst[i*3+1] += tmp[1]
+        funSubst[i*3+2] += tmp[2]
+        
+#        print funSubst   
+    
+# diverentiate the norm now...
+#    root=0
+#    for i in range(12):        
+#        root += (B[i]-funSubst[i])**2
+#    for i in range(12):
+#        res[i] = (funSubst[i]-B[i])/sqrt(root)
+        
+
+#    res = funSubst.tolist()                           
+#    funSubst = np.append(funSubst,[0.,0.,0.])
+    print "res ", res
+    return funSubst
+  
 """
 fitting the data to the model
 """    
