@@ -1,5 +1,6 @@
 % script for estimating 'perfect' position of 4 magnets and 4 sensors
 
+%% 
 % position values for wodden hand...
 angInd =[0.02957 0.09138 0.01087];
 angMid =[0.00920 0.09138 0.01087];
@@ -22,16 +23,17 @@ middle = zeros(3,length(t));
 ring = zeros(3,length(t));
 pinky = zeros(3,length(t));
 
+%% 
 % calculate all the finger positions
 cnt=1;
 for i = t
     index(:,cnt)=[angInd(1);
                     angInd(2)+rInd*cos(i);
                     angInd(3)+rInd*sin(i)];
-    middle(:,cnt)=[angInd(1);
+    middle(:,cnt)=[angMid(1);
                     angInd(2)+rMid*cos(i);
                     angInd(3)+rMid*sin(i)];
-    ring(:,cnt)=[angInd(1);
+    ring(:,cnt)=[angRing(1);
                     angInd(2)+rPin*cos(i);
                     angInd(3)+rPin*sin(i)];
     pinky(:,cnt)=[angPin(1);
@@ -40,7 +42,9 @@ for i = t
     cnt=cnt+1;   
 end
 
-% calculate all the (perfect) measured B-fields
+%% 
+% calculate all the (perfect) measured (cummulative) B-fields for the 4
+% sensors
 bInd=zeros(3,length(t));
 bMid=zeros(3,length(t));
 bRin=zeros(3,length(t));
@@ -68,18 +72,91 @@ for i = 1:length(t)
               evalfuncMag_sim(pinky(:,i),sPin');
 end
 
+%% 
 % plot the things...
+% figure
+% subplot(1,4,1)
+% plot(t,bInd(1,:),'-b',t,bInd(2,:),'-.b',t,bInd(3,:),':b')
+% title('B-Field Index')
+% subplot(1,4,2)
+% plot(t,bMid(1,:),'-b',t,bMid(2,:),'-.b',t,bMid(3,:),':b')
+% title('B-Field Middle')
+% subplot(1,4,3)
+% plot(t,bRin(1,:),'-b',t,bRin(2,:),'-.b',t,bRin(3,:),':b')
+% title('B-Field Ring')
+% subplot(1,4,4)
+% plot(t,bPin(1,:),'-b',t,bPin(2,:),'-.b',t,bPin(3,:),':b')
+% legend('x','y','z')
+% title('B-Field Pinky')
+
+%%
+% estimating positions with fminunc
+
+% preparing the matrices...
+s = [sInd';     % version 1
+    sMid';
+    sRin';
+    sPin'];
+b = [bInd;      % version 1
+    bMid;
+    bRin;
+    bPin];
+estPos=zeros(12,length(t));     % version 1
+estPos(:,1)=[index(:,1);        % version 1
+            middle(:,1);
+            ring(:,1);
+            pinky(:,1)];
+        
+fval=zeros(1,length(t));
+cnt=2;
+options=optimoptions(@fminunc, 'Display','none','Algorithm','quasi-newton');
+for i = b(:,2:end)
+f = @(P)solfuncMagONE(P,s,i);
+[estPos(:,cnt), fval(:,cnt)] = fminunc(f,estPos(:,cnt-1),options);
+text = ['Pos Nr ',num2str(cnt)];
+printmat(estPos(:,cnt),text, ... 
+        'Index_x Index_y Index_z Middle_x Middle_y Middle_z Ring_x Ring_y Ring_z Pinky_x Pinky_y Pinky_z','');
+cnt=cnt+1;
+end
+
+%% 
+% plotting the positions
 figure
-subplot(1,4,1)
-plot(t,bInd(1,:),'-b',t,bInd(2,:),'-.b',t,bInd(3,:),':b')
-title('Index')
-subplot(1,4,2)
-plot(t,bMid(1,:),'-b',t,bMid(2,:),'-.b',t,bMid(3,:),':b')
-title('Middle')
-subplot(1,4,3)
-plot(t,bRin(1,:),'-b',t,bRin(2,:),'-.b',t,bRin(3,:),':b')
-title('Ring')
-subplot(1,4,4)
-plot(t,bPin(1,:),'-b',t,bPin(2,:),'-.b',t,bPin(3,:),':b')
-legend('x','y','z')
-title('Pinky')
+grid on
+subplot(2,2,1)
+plot3(estPos(1,:),estPos(2,:),estPos(3,:),'r',...
+        index(1,:),index(2,:),index(3,:),'g')
+grid on
+title('index')
+xlabel('x [m]')
+ylabel('y [m]')
+zlabel('z [m]')
+
+subplot(2,2,2)
+plot3(estPos(4,:),estPos(5,:),estPos(6,:),'r',...
+        middle(1,:),middle(2,:),middle(3,:),'g')
+grid on
+title('middle')
+xlabel('x [m]')
+ylabel('y [m]')
+zlabel('z [m]')
+
+subplot(2,2,3)
+plot3(estPos(7,:),estPos(8,:),estPos(9,:),'r',...
+        ring(1,:),ring(2,:),ring(3,:),'g')
+grid on
+title('ring')
+xlabel('x [m]')
+ylabel('y [m]')
+zlabel('z [m]')
+
+subplot(2,2,4)
+plot3(estPos(10,:),estPos(11,:),estPos(12,:),'r',...
+        pinky(1,:),pinky(2,:),pinky(3,:),'g')
+grid on
+title('ring')
+xlabel('x [m]')
+ylabel('y [m]')
+zlabel('z [m]')
+
+
