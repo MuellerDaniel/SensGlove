@@ -71,7 +71,7 @@ for i = 1:length(t)
               evalfuncMag_sim(ring(:,i),sPin')+...
               evalfuncMag_sim(pinky(:,i),sPin');
 end
-
+disp('Finished calculating the artificial data')
 %% 
 % plot the things...
 % figure
@@ -93,7 +93,7 @@ end
 % estimating positions with fminunc
 
 % preparing the matrices...
-s = [sInd';     % version 1
+s = [sInd';     % version 1&2
     sMid';
     sRin';
     sPin'];
@@ -101,26 +101,62 @@ b = [bInd;      % version 1
     bMid;
     bRin;
     bPin];
+% b = zeros(length(t)*4,3);   % version 2
+% for i = 1:4:length(t)
+%     b(i:i+3,:) = [bInd(:,i)';     
+%                 bMid(:,i)';
+%                 bRin(:,i)';
+%                 bPin(:,i)'];
+% end
+
 estPos=zeros(12,length(t));     % version 1
 estPos(:,1)=[index(:,1);        % version 1
             middle(:,1);
             ring(:,1);
             pinky(:,1)];
-        
+% estPos = zeros(4*length(t),3);  % version 2
+% estPos(1:4,:)=[index(:,1)';
+%                 middle(:,1)';
+%                 ring(:,1)';
+%                 pinky(:,1)'];
+
 fval=zeros(1,length(t));
 cnt=2;
-options=optimoptions(@fminunc, 'Display','none','Algorithm','quasi-newton');
-for i = b(:,2:end)
-f = @(P)solfuncMagONE(P,s,i);
-[estPos(:,cnt), fval(:,cnt)] = fminunc(f,estPos(:,cnt-1),options);
-text = ['Pos Nr ',num2str(cnt)];
-printmat(estPos(:,cnt),text, ... 
-        'Index_x Index_y Index_z Middle_x Middle_y Middle_z Ring_x Ring_y Ring_z Pinky_x Pinky_y Pinky_z','');
-cnt=cnt+1;
+% for unconstrained method
+% options=optimoptions(@fminunc, 'Display','none','Algorithm','quasi-newton');  
+% for constrained method
+options=optimoptions(@fmincon,'Algorithm','sqp');  
+
+% adding bounds
+A = [];
+b = [];
+Aeq = [];
+beq = [];
+lb = [index(1)-0.04; index(2)-0.005; index(3)-0.005;...
+        middle(1)-0.04; middle(2)-0.005; middle(3)-0.005;...
+        ring(1)-0.04; ring(2)-0.005; ring(3)-0.005;...
+        pinky(1)-0.04; pinky(2)-0.005; pinky(3)-0.005];        
+ub = [index(1)+0.04; index(2)+rInd; index(3)+rInd;...
+        middle(1)+0.04; middle(2)+rMid; middle(3)+rMid;...
+        ring(1)+0.04; ring(2)+rRing; ring(3)+rRing;...
+        pinky(1)+0.04; pinky(2)+rPin; pinky(3)+rPin];      
+
+for i = b(:,2:end)  % version 1
+% for i = 1:4:length(b)   % version 2
+%     bEst = b(i:i+3,:);
+    f = @(P)solfuncMagONE(P,s,i);   % version 1
+%     f = @(P)solfuncMagONE(P,s,bEst);   % version 2
+%     [estPos(:,cnt), fval(:,cnt)] = fminunc(f,estPos(:,cnt-1),options);      % unconstrained method
+    [estPos(:,cnt), fval(:,cnt)] = fmincon(f,estPos(:,cnt-1),...
+                                        A,b,Aeq,beq,lb,ub,options);    % constrained method
+    text = ['Pos Nr ',num2str(cnt)];
+    printmat(estPos(:,cnt),text, ... 
+            'Index_x Index_y Index_z Middle_x Middle_y Middle_z Ring_x Ring_y Ring_z Pinky_x Pinky_y Pinky_z','');
+    cnt=cnt+1;
 end
 
 %% 
-% plotting the positions
+% plotting the positions (version 1)
 figure
 grid on
 subplot(2,2,1)
@@ -158,5 +194,4 @@ title('ring')
 xlabel('x [m]')
 ylabel('y [m]')
 zlabel('z [m]')
-
 
