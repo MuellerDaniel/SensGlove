@@ -95,31 +95,42 @@ def evalfuncMagH_dot(P,H,S):
                                         (H/(no**3)))] * factor                                          
                     
 def funcMagY(P,S,B):
+    # straight forward approach, 
+    # shape (12,)
     val = np.zeros(shape=(B.shape))
-
     for i in range(len(S)):
 #        print "P.shape ",val
         b = 0.
         for j in range(len(P)/3):
-            b += evalfuncMag(P[j*3:j*3+3],S[i]) 
-        val[i*3:(i*3)+3] = b
+            b += evalfuncMagDot(P[j*3:j*3+3],S[i]) 
+        val[i*3:i*3+3] = b
     res = np.linalg.norm(B - val) 
     return res
     
 def evalfuncMagMulti(P,S):
-    F = np.zeros((len(S)/3,len(P)))
-    for i in range(len(S)/3):
-        for j in range(len(P)/3):
-            F[i][j*3:j*3+3] = evalfuncMag(P[j*3:j*3+3],S[i*3:i*3+3]) 
+    # F matrix has the shape like in the paper
     
+    F = np.zeros((len(S)*3,len(P)/3))     #version 1: F.shape(12,3)  B.shape(12,1)
+    for i in range(len(S)):    
+        for j in range(int(len(P)/3)):
+            F[:,j][i*3:i*3+3] = evalfuncMagDot(P[j*3:j*3+3],S[i]).T.reshape((3,))
+    
+#    F = np.zeros((len(S),len(P)))     #version 2: F.shape(4,12)    B.shape(4,3)
+#    for i in range(len(S)):
+#        for j in range(int(len(P)/3)):
+#            F[i][j*3:j*3+3] = evalfuncMagDot(P[j*3:j*3+3],S[i])     
     return F
     
-def funcMagYmulti(P,S,B):    
+def funcMagYmulti(P,S,B):   
+    # advanced approach with pseudo-inverse...
     val = evalfuncMagMulti(P,S)
-    ident = np.identity(len(S)/3)    
-    res = np.linalg.norm(np.dot(ident-np.dot(val,np.linalg.pinv(val)),B))
+#    ident = np.identity(len(S))    # version 1
+    ident = np.identity(len(P))    # version 2
+#    print "matrix\n", val
+#    res = np.linalg.norm((ident-np.mat(val)*np.mat(np.linalg.pinv(val)))*np.mat(B))    # version 1
+    res = np.linalg.norm((ident-np.mat(val)*np.mat(np.linalg.pinv(val)))*np.mat(B).T)    # version 2
 #    valPlus=np.dot(inv(np.dot(val.T,val)),val.T)
-    res = np.linalg.norm(B-(np.dot(val,np.dot(valPlus,B))))
+#    res = np.linalg.norm(B-(np.dot(val,np.dot(valPlus,B))))
     return res    
   
 def estimatePos(P,S,B,cnt,bnds=None,jacobian=None):
@@ -143,8 +154,6 @@ def estimatePos(P,S,B,cnt,bnds=None,jacobian=None):
         the result of the minimize function, i.e. the estimated position
     
     """
-#    print "P: ", P.shape
-#    print "funcMagY: ", funcMagY(P,S,B)
 #    c=0.1
 #    cons = ({'type':'ineq',
 #             'fun':lambda x: c/10 - abs(P[0]-x[0])},
@@ -160,18 +169,20 @@ def estimatePos(P,S,B,cnt,bnds=None,jacobian=None):
 #             'fun':lambda x: c - abs(P[5]-x[5])},)
 #    cons = ({'type':'ineq',
 #             'fun':lambda x: c - abs(P-x)},)
-        
-#    val = minimize(funcMagYmulti,P,args=(S,B),method='slsqp',tol=1e-5)
-#    print val
-    val = minimize(funcMagYmulti, P, args=(S,B), method='slsqp', 
-                   tol=1e-5, bounds=bnds, jac=jacobian)
+#   advanced approach (pseudo-inverse thing)
+#    val = minimize(funcMagYmulti, P, args=(S,B), method='slsqp', 
+#                   tol=1e-5, bounds=bnds, jac=jacobian)
+#    straight forward approach norm(B(estPos)-B(measured))
+    val = minimize(funcMagY, P, args=(S,B), method='slsqp', 
+                   tol=1e-5, bounds=bnds, jac=jacobian)                   
+#    print "evaluation ",cnt
+#    print funcMagYmulti(val.x,S,B)                   
 #    val = _minimize_slsqp(funcMagY, P, args=(S,B), method='slsqp', 
 #                   tol=1e-5, bounds=bnds, jac=jacobian)               
 #    val.x is a 1d-vector, so reshape it!
     res = np.reshape(val.x,(len(P)/3,1,3))     # improve it!
 #    res = np.reshape(val.x,(1,1,3))
-    if val.success:
-#        print res
+    if val.success:        
         return res        # as result you will get the P vector! 
     else:
         print "No solution found! Iteration Nr ",cnt

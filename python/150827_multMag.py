@@ -134,49 +134,49 @@ cnt=0
 # calculate the magnetic fields for each sensor and each magnet
 for i in range(pos.shape[1]):
     calcBInd[0] = np.append(calcBInd[0],
-                      modE.evalfuncMag(pos[0][i],s1), axis=0)
+                      modE.evalfuncMagDot(pos[0][i],s1), axis=0)
     calcBInd[1] = np.append(calcBInd[1],
-                      modE.evalfuncMag(pos[1][i],s1), axis=0)
+                      modE.evalfuncMagDot(pos[1][i],s1), axis=0)
     calcBInd[2] = np.append(calcBInd[2],
-                      modE.evalfuncMag(pos[2][i],s1), axis=0)  
+                      modE.evalfuncMagDot(pos[2][i],s1), axis=0)  
     calcBInd[3] = np.append(calcBInd[3],
-                      modE.evalfuncMag(pos[3][i],s1), axis=0)
+                      modE.evalfuncMagDot(pos[3][i],s1), axis=0)
                       
     calcBMid[0] = np.append(calcBMid[0],
-                      modE.evalfuncMag(pos[0][i],s2), axis=0)
-    calcBMid[1] = np.append(calcBMid[1],
-                      modE.evalfuncMag(pos[1][i],s2), axis=0)
-    calcBMid[2] = np.append(calcBMid[2],
-                      modE.evalfuncMag(pos[2][i],s2), axis=0)                      
-    calcBMid[3] = np.append(calcBMid[3],
-                      modE.evalfuncMag(pos[3][i],s2), axis=0)
-                      
-    calcBMid_dot[0] = np.append(calcBMid_dot[0],
                       modE.evalfuncMagDot(pos[0][i],s2), axis=0)
-    calcBMid_dot[1] = np.append(calcBMid_dot[1],
+    calcBMid[1] = np.append(calcBMid[1],
                       modE.evalfuncMagDot(pos[1][i],s2), axis=0)
-    calcBMid_dot[2] = np.append(calcBMid_dot[2],
+    calcBMid[2] = np.append(calcBMid[2],
                       modE.evalfuncMagDot(pos[2][i],s2), axis=0)                      
-    calcBMid_dot[3] = np.append(calcBMid_dot[3],
-                      modE.evalfuncMagDot(pos[3][i],s2), axis=0)                      
+    calcBMid[3] = np.append(calcBMid[3],
+                      modE.evalfuncMagDot(pos[3][i],s2), axis=0)
+                      
+#    calcBMid_dot[0] = np.append(calcBMid_dot[0],
+#                      modE.evalfuncMagDot(pos[0][i],s2), axis=0)
+#    calcBMid_dot[1] = np.append(calcBMid_dot[1],
+#                      modE.evalfuncMagDot(pos[1][i],s2), axis=0)
+#    calcBMid_dot[2] = np.append(calcBMid_dot[2],
+#                      modE.evalfuncMagDot(pos[2][i],s2), axis=0)                      
+#    calcBMid_dot[3] = np.append(calcBMid_dot[3],
+#                      modE.evalfuncMagDot(pos[3][i],s2), axis=0)                      
 
     calcBRin[0] = np.append(calcBRin[0],
-                      modE.evalfuncMag(pos[0][i],s3), axis=0)
+                      modE.evalfuncMagDot(pos[0][i],s3), axis=0)
     calcBRin[1] = np.append(calcBRin[1],
-                      modE.evalfuncMag(pos[1][i],s3), axis=0)
+                      modE.evalfuncMagDot(pos[1][i],s3), axis=0)
     calcBRin[2] = np.append(calcBRin[2],
-                      modE.evalfuncMag(pos[2][i],s3), axis=0)                            
+                      modE.evalfuncMagDot(pos[2][i],s3), axis=0)                            
     calcBRin[3] = np.append(calcBRin[3],
-                      modE.evalfuncMag(pos[3][i],s3), axis=0) 
+                      modE.evalfuncMagDot(pos[3][i],s3), axis=0) 
 
     calcBPin[0] = np.append(calcBPin[0],
-                      modE.evalfuncMag(pos[0][i],s4), axis=0)
+                      modE.evalfuncMagDot(pos[0][i],s4), axis=0)
     calcBPin[1] = np.append(calcBPin[1],
-                      modE.evalfuncMag(pos[1][i],s4), axis=0)
+                      modE.evalfuncMagDot(pos[1][i],s4), axis=0)
     calcBPin[2] = np.append(calcBPin[2],
-                      modE.evalfuncMag(pos[2][i],s4), axis=0)
+                      modE.evalfuncMagDot(pos[2][i],s4), axis=0)
     calcBPin[3] = np.append(calcBPin[3],
-                      modE.evalfuncMag(pos[3][i],s4), axis=0)
+                      modE.evalfuncMagDot(pos[3][i],s4), axis=0)
 
 calcBInd = np.delete(calcBInd,0,1)    
 calcBMid = np.delete(calcBMid,0,1)
@@ -237,7 +237,7 @@ S=np.append(s1,s2,axis=0)
 S=np.append(S,s3,axis=0)
 S=np.append(S,s4,axis=0)
 B=np.zeros((4,3))
-#for i in range(len(summedMid[0])-1):   
+for i in range(len(summedMid[0])-1):   
 #    # for three magnets(index, middle, pinky) and two sensors (middle, pinky)    
 #    tmp = modE.estimatePos(np.concatenate((estPos[0][i],estPos[1][i],estPos[2][i])), 
 #                         [s0,s1],
@@ -288,25 +288,29 @@ B=np.zeros((4,3))
 #          (estPos[3][i][0]-stepX,estPos[3][i][0]+stepX),    # pinky finger
 #          (estPos[3][i][1]-step,estPos[3][i][1]+step),
 #          (estPos[3][i][2]-step,estPos[3][i][2]+step))    
-#    B[0] = summedInd[0][i+1]
-#    B[1] = summedMid[0][i+1]
-#    B[2] = summedRin[0][i+1]
-#    B[3] = summedPin[0][i+1]
-## for four magnets(index, middle, pinky) and four sensors (middle, pinky, index)    
+
+    B[0] = summedInd[0][i+1]
+    B[1] = summedMid[0][i+1]
+    B[2] = summedRin[0][i+1]
+    B[3] = summedPin[0][i+1]
+# for four magnets(index, middle, pinky) and four sensors (middle, pinky, index)    
 #    print "solution ", i
-#    tmp = modE.estimatePos(np.concatenate((estPos[0][i],estPos[1][i],estPos[2][i],estPos[3][i])), 
-#                         #[s1,s2,s3,s4],
-#                         S,
-#                         #np.concatenate((summedInd[0][i+1],summedMid[0][i+1],summedRin[0][i+1],summedPin[0][i+1])),
-#                         B,
-#                         i,bnds)
-#                         #modE.jaco)
-##                         lambda a,S,B: dot(np.ones(((12,12))),a))
-#                         
-#    estPos[0][i+1] = tmp[0]
-#    estPos[1][i+1] = tmp[1]
-#    estPos[2][i+1] = tmp[2]
-#    estPos[3][i+1] = tmp[3]
+    tmp = modE.estimatePos(np.concatenate((estPos[0][i],estPos[1][i],estPos[2][i],estPos[3][i])), 
+                         [s1,s2,s3,s4],
+                         np.concatenate((summedInd[0][i+1],summedMid[0][i+1],summedRin[0][i+1],summedPin[0][i+1])),
+#                         B,     # for advanced approach
+                         i,bnds)
+                         
+    estPos[0][i+1] = tmp[0]
+    estPos[1][i+1] = tmp[1]
+    estPos[2][i+1] = tmp[2]
+    estPos[3][i+1] = tmp[3]
+
+#   Debugging...
+#    print "Mat ", i
+#    print modE.evalfuncMagMulti(np.concatenate((pos[0][i],pos[1][i],pos[2][i],pos[3][i])),
+#                             [s1,s2,s3,s4])
+#                             np.concatenate((summedInd[0][i+1],summedMid[0][i+1],summedRin[0][i+1],summedPin[0][i+1])))
     
     
     
@@ -318,17 +322,17 @@ print "time duration[min]: ", (time.time()-startTime)/60
       
 """ plotting stuff """
 #plo.plotter3d((pos[0],pos[1],pos[2], pos[3]),("Ind real","mid Real", "ring Real", "pin Real"))
-plo.plotter2d((summedInd,summedMid,summedRin,summedPin),("index","Mid","Rin","Pin"))
+#plo.plotter2d((summedInd,summedMid,summedRin,summedPin),("index","Mid","Rin","Pin"))
 #plo.plotter2d((calcBMid,fingDat,calcBMid_dot),("mid","rawMiddle","dot"), False)
-#plo.multiPlotter(estPos[0],"Index",pos[0])
-#plo.multiPlotter(estPos[1],"Middle",pos[1])
-#plo.multiPlotter(estPos[2],"Ring",pos[2])
-#plo.multiPlotter(estPos[3],"Pinky",pos[3])
+plo.multiPlotter(estPos[0],"Index",pos[0])
+plo.multiPlotter(estPos[1],"Middle",pos[1])
+plo.multiPlotter(estPos[2],"Ring",pos[2])
+plo.multiPlotter(estPos[3],"Pinky",pos[3])
 #plo.plotter3d((pos[1],estPos[1]),("Pinky real","estOne"))
-#print "delta x estPos[0]-Middle", max(estPos[0][:,0])-min(estPos[0][:,0])
-#print "delta x estPos[1]-Pinky", max(estPos[1][:,0])-min(estPos[1][:,0])
-#print "delta x estPos[2]-Index", max(estPos[2][:,0])-min(estPos[2][:,0])
-#print "delta x estPos[3]-Ring", max(estPos[3][:,0])-min(estPos[3][:,0])
+print "delta x estPos[0]-Middle", max(estPos[0][:,0])-min(estPos[0][:,0])
+print "delta x estPos[1]-Pinky", max(estPos[1][:,0])-min(estPos[1][:,0])
+print "delta x estPos[2]-Index", max(estPos[2][:,0])-min(estPos[2][:,0])
+print "delta x estPos[3]-Ring", max(estPos[3][:,0])-min(estPos[3][:,0])
 #print "delta x estPos2[1]", max(estPos2[1][:,0])-min(estPos2[1][:,0])
 #print "delta x estPos2[0]", max(estPos2[0][:,0])-min(estPos2[0][:,0])
 #print "delta y from pos[0] and estPos[0]", max(pos[0][:,1]-estPos[0][:,1])
