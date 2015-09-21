@@ -1,8 +1,23 @@
 function m = solfuncMagONE(P,S,B)
-disp('solfuncMagONE called');
+% disp('solfuncMagONE called');
+%%  
+% advanced approach...
 F = zeros(length(S),length(P)/3);   % version 1
 % F = zeros(length(S)/3,length(P));   % version 2
 
+%%
+% straight forward approach
+% F = zeros(length(S),1);
+% for i = 1:(length(S)/3)
+%     for j = 1:(length(P)/3)
+%         F(i:i+2,:) = F(i:i+2,:) + evalfuncMag_sim(P(j:j+2),S(i:i+2));
+%     end
+% end
+% 
+% m = norm(B - F);
+
+%%
+% advanced approach...
 for i = 1:(length(S)/3)
    for j = 1:(length(P)/3 )
        F(i:i+2,j) = evalfuncMag_sim(P(j:j+2),S(i:i+2));     % version 1
@@ -12,4 +27,3 @@ end
 
 m = norm((eye(length(S))-F*pinv(F))*B);   % version 1
 % m = norm((eye(length(S)/3)-F*pinv(F))*B);  % version 2
-% m = F;
