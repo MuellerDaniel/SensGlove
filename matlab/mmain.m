@@ -97,19 +97,19 @@ s = [sInd';     % version 1&2
     sMid';
     sRin';
     sPin'];
-% b = [bInd;      % version 1
-%     bMid;
-%     bRin;
-%     bPin];
-b = zeros(length(t)*4,3);   % version 2
-cnt = 1;
-for i = 1:4:length(b)
-    b(i:i+3,:) = [bInd(:,cnt)';     
-                bMid(:,cnt)';
-                bRin(:,cnt)';
-                bPin(:,cnt)'];
-    cnt = cnt+1;
-end
+b = [bInd;      % version 1
+    bMid;
+    bRin;
+    bPin];
+% b = zeros(length(t)*4,3);   % version 2
+% cnt = 1;
+% for i = 1:4:length(b)
+%     b(i:i+3,:) = [bInd(:,cnt)';     
+%                 bMid(:,cnt)';
+%                 bRin(:,cnt)';
+%                 bPin(:,cnt)'];
+%     cnt = cnt+1;
+% end
 
 estPos=zeros(12,length(t));     % version 1
 estPos(:,1)=[index(:,1);        % version 1
@@ -122,10 +122,11 @@ estPos(:,1)=[index(:,1);        % version 1
 %                 ring(:,1)';
 %                 pinky(:,1)'];
 
-fval=zeros(1,length(t));
+fval=zeros(1,length(t)+1);
 cnt=2;
 % for unconstrained method
-options=optimoptions(@fminunc,'Display','none', 'Algorithm','quasi-newton');  
+% options=optimoptions(@fminunc,'Display','none', 'Algorithm','quasi-newton');  
+% options=optimoptions(@lsqnonlin, 'Algorithm','levenberg-marquardt');  
 % for constrained method
 % options=optimoptions('fmincon','Display','iter');  
 
@@ -143,12 +144,14 @@ ub = [index(1)+0.004; index(2)+rInd+0.005; index(3)+rInd+0.005;...
         ring(1)+0.004; ring(2)+rRing+0.005; ring(3)+rRing+0.005;...
         pinky(1)+0.004; pinky(2)+rPin+0.005; pinky(3)+rPin+0.005];      
 
-% for i = b(:,2:end)  % version 1
-for i = 1:4:length(b)   % version 2
-    bEst = b(i:i+3,:);
-%     f = @(P)solfuncMagONE(P,s,i);   % version 1
-    f = @(P)solfuncMagONE(P,s,bEst);   % version 2
-    [estPos(:,cnt), fval(:,cnt)] = fminunc(f,estPos(:,cnt-1),options);      % unconstrained method
+for i = b(:,2:end)  % version 1
+% for i = 1:4:length(b)   % version 2
+%     bEst = b(i:i+3,:);
+    f = @(P)solfuncMagONE(P,s,i);   % version 1
+%     f = @(P)solfuncMagONE(P,s,bEst);   % version 2
+%     [estPos(:,cnt), fval(:,cnt)] = fminunc(f,estPos(:,cnt-1),options);      % fminunc method
+%     [estPos(:,cnt), fval(:,cnt)] = fminsearch(f,estPos(:,cnt-1));      % fminsearch method
+    [estPos(:,cnt), fval(:,cnt)] = lsqnonlin(f,estPos(:,cnt-1));      % fminsearch method
 %     [estPos(:,cnt), fval(:,cnt)] = fmincon(f,estPos(:,cnt-1),...          % constrained method
 %                                         Aineq,bineq,Aeq,beq,lb,ub,[],options );    
 %     estPos(:,cnt) = lsqnonlin(f,estPos(:,cnt-1));
@@ -156,6 +159,7 @@ for i = 1:4:length(b)   % version 2
 %     text = ['Pos Nr ',num2str(cnt)];
 %     printmat(estPos(:,cnt),text, ... 
 %             'Index_x Index_y Index_z Middle_x Middle_y Middle_z Ring_x Ring_y Ring_z Pinky_x Pinky_y Pinky_z','');
+    disp(cnt);
     cnt=cnt+1;
 end
 
@@ -200,5 +204,5 @@ ylabel('y [m]')
 zlabel('z [m]')
 
 figure
-plot(t,fval)
+plot(t,fval(2:end))
 grid on
