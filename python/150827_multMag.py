@@ -88,6 +88,10 @@ for i in t:
                             angMid[1]+rMid*np.cos(i),        
                             angMid[2]+rMid*np.sin(i)]], 
                             axis=0)
+#    pos2 = np.append(pos2, [[angMid[0],       
+#                            angMid[1]+rMid*np.cos(i/2),        
+#                            angMid[2]+rMid*np.sin(i/2)]], 
+#                            axis=0)
       
       # position of the ring finger
     pos3 = np.append(pos3, [[angRin[0],       
@@ -100,6 +104,10 @@ for i in t:
                             angPin[1]+rPin*np.cos(i),        
                             angPin[2]+rPin*np.sin(i)]], 
                             axis=0)
+#    pos4 = np.append(pos4, [[angPin[0],
+#                            angPin[1],        
+#                            angPin[2]]], 
+#                            axis=0)
         
     cnt+=1
     
@@ -228,15 +236,17 @@ bnds=((angInd[0]-0.003,angInd[0]+0.003),    # index finger
       (angPin[1],angPin[1]+rPin),
       (angPin[2],angPin[2]+rPin))                   
 
-# using the new version         
-startTime = time.time()
-#global symJac
-#symJac = modE.calcJacobi()        
-#modE.calcJacobi()        
+
+global symJac
+symJac = modE.calcJacobi()        
+#modE.calcJacobi()      
+  
 S=np.append(s1,s2,axis=0)        
 S=np.append(S,s3,axis=0)
 S=np.append(S,s4,axis=0)
 B=np.zeros((4,3))
+startAlg = time.time()
+lapinfo = np.zeros((len(summedMid[0])-1,2))
 for i in range(len(summedMid[0])-1):   
 #    # for three magnets(index, middle, pinky) and two sensors (middle, pinky)    
 #    tmp = modE.estimatePos(np.concatenate((estPos[0][i],estPos[1][i],estPos[2][i])), 
@@ -270,42 +280,30 @@ for i in range(len(summedMid[0])-1):
 #    estPos2[0][i+1] = tmp2[0]
 #    estPos2[1][i+1] = tmp2[1]
 
-# flexible bnds
-#    stepX = 0.003   # 3mm
-#    step = 0.08     # 8cm
-#    bnds=((estPos[0][i][0]-stepX,estPos[0][i][0]+stepX),    # index finger
-#          (estPos[0][i][0]-step,estPos[0][i][1]+step),
-#          (estPos[0][i][0]-step,estPos[0][i][2]+step),
-#          
-#          (estPos[1][i][0]-stepX,estPos[1][i][0]+stepX),    # middle finger
-#          (estPos[1][i][1]-step,estPos[1][i][1]+step),
-#          (estPos[1][i][2]-step,estPos[1][i][2]+step),
-#    
-#          (estPos[2][i][0]-stepX,estPos[2][i][0]+stepX),    # ring finger
-#          (estPos[2][i][1]-step,estPos[2][i][1]+step),
-#          (estPos[2][i][2]-step,estPos[2][i][2]+step),
-#    
-#          (estPos[3][i][0]-stepX,estPos[3][i][0]+stepX),    # pinky finger
-#          (estPos[3][i][1]-step,estPos[3][i][1]+step),
-#          (estPos[3][i][2]-step,estPos[3][i][2]+step))    
-
     B[0] = summedInd[0][i+1]
     B[1] = summedMid[0][i+1]
     B[2] = summedRin[0][i+1]
     B[3] = summedPin[0][i+1]
 # for four magnets(index, middle, pinky) and four sensors (middle, pinky, index)    
 #    print "solution ", i
+    startTime = time.time()
     tmp = modE.estimatePos(np.concatenate((estPos[0][i],estPos[1][i],estPos[2][i],estPos[3][i])), 
                          [s1,s2,s3,s4],
                          np.concatenate((summedInd[0][i+1],summedMid[0][i+1],summedRin[0][i+1],summedPin[0][i+1])),
-#                         B,     # for advanced approach
+#                         B,     # for advanced approach version 2                         
                          i,bnds)
                          
-    estPos[0][i+1] = tmp[0]
-    estPos[1][i+1] = tmp[1]
-    estPos[2][i+1] = tmp[2]
-    estPos[3][i+1] = tmp[3]
-
+    res = np.reshape(tmp.x,(4,1,3)) 
+    lapinfo[i] = ((time.time()-startTime),tmp.nit)
+#    print "step ",i," iterations: ",lapinfo[i][1]," time: ",lapinfo[i][0]
+                            
+    estPos[0][i+1] = res[0]
+    estPos[1][i+1] = res[1]
+    estPos[2][i+1] = res[2]
+    estPos[3][i+1] = res[3]
+    
+    
+#    print "time for ", i, " in sec: ", lapTime
 #   Debugging...
 #    print "Mat ", i
 #    print modE.evalfuncMagMulti(np.concatenate((pos[0][i],pos[1][i],pos[2][i],pos[3][i])),
@@ -314,7 +312,7 @@ for i in range(len(summedMid[0])-1):
     
     
     
-print "time duration[min]: ", (time.time()-startTime)/60
+print "time duration[min]: ", (time.time()-startAlg)/60
 #estPos[0]=np.round(estPos[0],6)        
 #estPos[1]=np.round(estPos[1],6)             
 #estPos[2]=np.round(estPos[2],6)
@@ -323,16 +321,15 @@ print "time duration[min]: ", (time.time()-startTime)/60
 """ plotting stuff """
 #plo.plotter3d((pos[0],pos[1],pos[2], pos[3]),("Ind real","mid Real", "ring Real", "pin Real"))
 #plo.plotter2d((summedInd,summedMid,summedRin,summedPin),("index","Mid","Rin","Pin"))
-#plo.plotter2d((calcBMid,fingDat,calcBMid_dot),("mid","rawMiddle","dot"), False)
-plo.multiPlotter(estPos[0],"Index",pos[0])
-plo.multiPlotter(estPos[1],"Middle",pos[1])
-plo.multiPlotter(estPos[2],"Ring",pos[2])
-plo.multiPlotter(estPos[3],"Pinky",pos[3])
+#plo.multiPlotter(estPos[0],"Index",pos[0])
+#plo.multiPlotter(estPos[1],"Middle",pos[1])
+#plo.multiPlotter(estPos[2],"Ring",pos[2])
+#plo.multiPlotter(estPos[3],"Pinky",pos[3])
 #plo.plotter3d((pos[1],estPos[1]),("Pinky real","estOne"))
-print "delta x estPos[0]-Middle", max(estPos[0][:,0])-min(estPos[0][:,0])
-print "delta x estPos[1]-Pinky", max(estPos[1][:,0])-min(estPos[1][:,0])
-print "delta x estPos[2]-Index", max(estPos[2][:,0])-min(estPos[2][:,0])
-print "delta x estPos[3]-Ring", max(estPos[3][:,0])-min(estPos[3][:,0])
+print "delta x estPos[0]-Index", max(estPos[0][:,0])-min(estPos[0][:,0])
+print "delta x estPos[1]-Middle", max(estPos[1][:,0])-min(estPos[1][:,0])
+print "delta x estPos[2]-Ring", max(estPos[2][:,0])-min(estPos[2][:,0])
+print "delta x estPos[3]-Pinky", max(estPos[3][:,0])-min(estPos[3][:,0])
 #print "delta x estPos2[1]", max(estPos2[1][:,0])-min(estPos2[1][:,0])
 #print "delta x estPos2[0]", max(estPos2[0][:,0])-min(estPos2[0][:,0])
 #print "delta y from pos[0] and estPos[0]", max(pos[0][:,1]-estPos[0][:,1])

@@ -271,16 +271,18 @@ def pipeAcquisition(arg, fileName=None, measNr=None, offset=0):
                 if "gatttool" in arg:                
                     data = structDataBLE(output)
 #                    data = invertX(data)
-                    #print "raw output: ", output
+#                    print "raw output: ", output
+#                    print "data output: ", data
                 if "/dev/tty" in arg:
                     data = structDataSer(output)
 #                    data = invertX(data)
     #                print data
-                if i>offset:                    
-                    print "Data written: ", data
-                else: print "below offset ", i
+                if (i>offset) and not bool((i-offset)%100) :                    
+                    print i-offset, "measurements taken"
+                    
+#                else: print "below offset ", i
 #                print "data: ",data
-                mat = np.append(mat, [data], axis=0)                
+                mat = np.append(mat, [data], axis=0)
     #                print "writing...", data
 #                if i%10 == 0: print "measurement nr ", i
                 

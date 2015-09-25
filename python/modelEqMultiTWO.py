@@ -110,7 +110,7 @@ def funcMagY(P,S,B):
 def evalfuncMagMulti(P,S):
     # F matrix has the shape like in the paper
     
-    F = np.zeros((len(S)*3,len(P)/3))     #version 1: F.shape(12,3)  B.shape(12,1)
+    F = np.zeros((len(S)*3,len(P)/3))     #version 1: F.shape(12,4)  B.shape(12,1)
     for i in range(len(S)):    
         for j in range(int(len(P)/3)):
             F[:,j][i*3:i*3+3] = evalfuncMagDot(P[j*3:j*3+3],S[i]).T.reshape((3,))
@@ -127,8 +127,8 @@ def funcMagYmulti(P,S,B):
 #    ident = np.identity(len(S))    # version 1
     ident = np.identity(len(P))    # version 2
 #    print "matrix\n", val
-#    res = np.linalg.norm((ident-np.mat(val)*np.mat(np.linalg.pinv(val)))*np.mat(B))    # version 1
-    res = np.linalg.norm((ident-np.mat(val)*np.mat(np.linalg.pinv(val)))*np.mat(B).T)    # version 2
+    res = np.linalg.norm((ident-np.mat(val)*np.mat(np.linalg.pinv(val)))*np.mat(B).T)    # version 1
+#    res = np.linalg.norm((ident-np.mat(val)*np.mat(np.linalg.pinv(val)))*np.mat(B).T)    # version 2
 #    valPlus=np.dot(inv(np.dot(val.T,val)),val.T)
 #    res = np.linalg.norm(B-(np.dot(val,np.dot(valPlus,B))))
     return res    
@@ -153,7 +153,7 @@ def estimatePos(P,S,B,cnt,bnds=None,jacobian=None):
     res.x : array
         the result of the minimize function, i.e. the estimated position
     
-    """
+    """    
 #    c=0.1
 #    cons = ({'type':'ineq',
 #             'fun':lambda x: c/10 - abs(P[0]-x[0])},
@@ -169,27 +169,29 @@ def estimatePos(P,S,B,cnt,bnds=None,jacobian=None):
 #             'fun':lambda x: c - abs(P[5]-x[5])},)
 #    cons = ({'type':'ineq',
 #             'fun':lambda x: c - abs(P-x)},)
-#   advanced approach (pseudo-inverse thing)
+    opt = ({'maxiter':30})
+    '''   advanced approach (pseudo-inverse thing)  '''
 #    val = minimize(funcMagYmulti, P, args=(S,B), method='slsqp', 
 #                   tol=1e-5, bounds=bnds, jac=jacobian)
-#    straight forward approach norm(B(estPos)-B(measured))
+    '''    straight forward approach norm(B(estPos)-B(measured))    '''
     val = minimize(funcMagY, P, args=(S,B), method='slsqp', 
-                   tol=1e-5, bounds=bnds, jac=jacobian)                   
+                   tol=1e-4, bounds=bnds, jac=jacobian, options=opt)                   
 #    print "evaluation ",cnt
 #    print funcMagYmulti(val.x,S,B)                   
 #    val = _minimize_slsqp(funcMagY, P, args=(S,B), method='slsqp', 
 #                   tol=1e-5, bounds=bnds, jac=jacobian)               
 #    val.x is a 1d-vector, so reshape it!
-    res = np.reshape(val.x,(len(P)/3,1,3))     # improve it!
+#    res = np.reshape(val.x,(len(P)/3,1,3))     # improve it!
 #    res = np.reshape(val.x,(1,1,3))
-    if val.success:        
-        return res        # as result you will get the P vector! 
+    if val.success:     
+#        print "jacobian\n", val.jac
+        return val        # as result you will get the P vector! 
     else:
         print "No solution found! Iteration Nr ",cnt
         print "Error message ",val.message
 #        print res.message        
 #        return np.zeros(shape=(2,1,3))
-        return res
+        return val
     
   
 """
