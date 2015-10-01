@@ -35,7 +35,7 @@ def funcMagY(P,S,B):
 #    print "funcMag res: ",res
     return res
   
-def estimatePos(P,S,B,bnds):
+def estimatePos(P,S,B,bnds=None):
     """returns the estimated position
     
     Parameters
@@ -57,12 +57,12 @@ def estimatePos(P,S,B,bnds):
     
     """
 #    print "P: ", type(P)
-    cons = ({'type':'ineq',
-             'fun':lambda x: 0.0009 - P[0]+x[0]},
-            {'type':'ineq',
-             'fun':lambda x: 0.0009 - P[1]+x[1]},
-            {'type':'ineq',
-             'fun':lambda x: 0.0009 - P[2]+x[2]},)
+#    cons = ({'type':'ineq',
+#             'fun':lambda x: 0.0009 - P[0]+x[0]},
+#            {'type':'ineq',
+#             'fun':lambda x: 0.0009 - P[1]+x[1]},
+#            {'type':'ineq',
+#             'fun':lambda x: 0.0009 - P[2]+x[2]},)
     
     # has to be adjusted for every position/finger
 #    bnds = ((-0.04,0.04),   # for board example
@@ -74,8 +74,9 @@ def estimatePos(P,S,B,bnds):
              
 #    res = minimize(funcMagY,P,args=(S,B),method='bfgs',tol=1e-5)
    
-    res = minimize(funcMagY, P, args=(S,B), method='slsqp', 
-                   constraints=cons, tol=1e-5, bounds=bnds)
+#    res = minimize(funcMagY, P, args=(S,B), method='slsqp', 
+#                   constraints=cons, tol=1e-5, bounds=bnds)
+    res = minimize(funcMagY, P, args=(S,B), method='slsqp', tol=1e-5)
 #    print "The whole result thing"
 #    print res
     if res.success:

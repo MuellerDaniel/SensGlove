@@ -15,7 +15,6 @@ import time
 from sympy import *
 
 
-
 def jaco(P,S):
     s0,s1,s2,x,y,z=symbols('s0 s1 s2 x y z') 
     funSubst = np.array(symJac.subs({s0:S[0],s1:S[1],s2:S[2],
@@ -292,7 +291,7 @@ for i in range(len(summedMid[0])-1):
                          np.concatenate((summedInd[0][i+1],summedMid[0][i+1],summedRin[0][i+1],summedPin[0][i+1])),
 #                         B,     # for advanced approach version 2                         
                          i,bnds)
-                         
+                             
     res = np.reshape(tmp.x,(4,1,3)) 
     lapinfo[i] = ((time.time()-startTime),tmp.nit)
 #    print "step ",i," iterations: ",lapinfo[i][1]," time: ",lapinfo[i][0]
@@ -321,10 +320,10 @@ print "time duration[min]: ", (time.time()-startAlg)/60
 """ plotting stuff """
 #plo.plotter3d((pos[0],pos[1],pos[2], pos[3]),("Ind real","mid Real", "ring Real", "pin Real"))
 #plo.plotter2d((summedInd,summedMid,summedRin,summedPin),("index","Mid","Rin","Pin"))
-#plo.multiPlotter(estPos[0],"Index",pos[0])
-#plo.multiPlotter(estPos[1],"Middle",pos[1])
-#plo.multiPlotter(estPos[2],"Ring",pos[2])
-#plo.multiPlotter(estPos[3],"Pinky",pos[3])
+plo.multiPlotter(estPos[0],"Index",pos[0])
+plo.multiPlotter(estPos[1],"Middle",pos[1])
+plo.multiPlotter(estPos[2],"Ring",pos[2])
+plo.multiPlotter(estPos[3],"Pinky",pos[3])
 #plo.plotter3d((pos[1],estPos[1]),("Pinky real","estOne"))
 print "delta x estPos[0]-Index", max(estPos[0][:,0])-min(estPos[0][:,0])
 print "delta x estPos[1]-Middle", max(estPos[1][:,0])-min(estPos[1][:,0])
