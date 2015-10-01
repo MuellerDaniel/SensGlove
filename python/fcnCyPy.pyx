@@ -53,6 +53,26 @@ cdef float * sub(float *a, float *b, int len):
         res[i] = a[i]-b[i]
     return res
 
+cdef float * sub_first(a, float *b, int len):
+# function to subtract two arrays elementwise
+    cdef float *res
+    res = <float*>malloc(len*sizeof(float))
+
+    cdef int i = 0
+    for i in range(len):
+        res[i] = a[i]-b[i]
+    return res
+
+cdef float * sub_sec(float *a, b, int len):
+# function to subtract two arrays elementwise
+    cdef float *res
+    res = <float*>malloc(len*sizeof(float))
+
+    cdef int i = 0
+    for i in range(len):
+        res[i] = a[i]-b[i]
+    return res
+
 cdef sub_py(float *a, b, int len):
 # function to subtract two arrays elementwise
     res = [0] * len
@@ -72,7 +92,8 @@ cdef add_py(a, float *b, int len):
     return res
 
 
-cdef float * evalfuncMagDot_cy(float *P, float *S, int lenP, int lenS):
+#cdef float * evalfuncMagDot_cy(float *P, float *S, int lenP, int lenS):
+cdef float * evalfuncMagDot_cy(P, float *S, int lenP, int lenS):
 # TODO convert to work with plain C-variables
     cdef float *result
     result = <float*>malloc(3*sizeof(float))
@@ -81,8 +102,11 @@ cdef float * evalfuncMagDot_cy(float *P, float *S, int lenP, int lenS):
     cdef float *R
     R = <float*>malloc(3*sizeof(float))
 
-    H = sub(P,S,lenP)
-    R = sub(S,P,lenP)
+    #H = sub(P,S,lenP)
+    #R = sub(S,P,lenP)
+
+    H = sub_first(P,S,lenP)
+    R = sub_sec(S,P,lenP)
     cdef int i = 0
     for i in range(3):
       result[0] = ((3*(dot_product(H,R,lenP)*R[0])/pow(cal_norm_cy(R,3),5)) -
@@ -155,10 +179,11 @@ def funcMagY_cy(P,S,B):
             sAct[k] = sArr[k+i*3]
         j = 0
         for j in range(lenP/3):
-            k = 0
-            for k in range(3):    # assign the actual p-Array
-                pAct[k] = pArr[k+j*3]
-            b = add_py(b,evalfuncMagDot_cy(pAct,sAct,3,3),3)
+            #k = 0
+            #for k in range(3):    # assign the actual p-Array
+            #    pAct[k] = pArr[k+j*3]
+            #b = add_py(b,evalfuncMagDot_cy(pAct,sAct,3,3),3)
+            b = add_py(b,evalfuncMagDot_cy(P[j*3:j*3+3],sAct,3,3),3)
         val[i*3:i*3+3] = b
     #print "val: ", val
     res = cal_norm_py(sub_py(bArr,val,lenB))

@@ -294,7 +294,7 @@ for i in range(len(summedMid[0])-1):
 #   #                      B,     # for advanced approach version 2
     #                     i,bnds)
 
-    tmp = fcn.estimatePos(np.concatenate((estPos[0][i],estPos[1][i],estPos[2][i],estPos[3][i])),
+    tmp = modE.estimatePos(np.concatenate((estPos[0][i],estPos[1][i],estPos[2][i],estPos[3][i])),
                         np.reshape([s1,s2,s3,s4],((12,))),     # for calling the cython function
                         np.concatenate((summedInd[0][i+1],summedMid[0][i+1],summedRin[0][i+1],summedPin[0][i+1])),
                         i,bnds)
