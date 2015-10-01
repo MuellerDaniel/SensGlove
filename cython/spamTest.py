@@ -1,7 +1,6 @@
 # this file represents my "main" python file, which is already existing
 # ...but it is also possible to write everything in the .pyx file and compile it...
 
-
 import fcnCyPy as fcn
 import numpy as np
 
