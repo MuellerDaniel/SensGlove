@@ -5,108 +5,114 @@ from scipy.optimize import *
 # you have to include the 'math.h' library for sqrt() and pow()!!!
 from libc.math cimport pow
 from libc.math cimport sqrt
-from libc.stdlib cimport malloc
+from libc.stdlib cimport malloc,free
 
 
 '''
       cython version
 '''
 
-cdef float cal_norm_cy(float *val, len):
+cdef long double cal_norm_cy(long double *val, len):
 # for calculating the norm of an array
-# return a C float
-    cdef float sum = 0
-    cdef float result = 0
+# return a C long double
+    cdef long double sum = 0
+    cdef long double result = 0
     cdef int i = 0
     for i in range(len):
         sum += pow(val[i],2)
     result = sqrt(sum)
+    #free(val)
     return result
 
 def cal_norm_py(val):
 # for calculating the norm of an array
 # returning a python object
     cdef int i = 0
-    cdef float sum = 0
-    #cdef float result = 0
+    cdef long double sum = 0
+    #cdef long double result = 0
     for i in range(len(val)):
         sum += pow(val[i],2)
     result = sqrt(sum)
     return result
 
 
-cdef float dot_product(float *a, float *b, int len):
+cdef long double dot_product(long double *a, long double *b, int len):
 # function to calculate the dot product of two arrays
-    cdef float sum = 0
+    cdef long double sum = 0
     cdef int i = 0
     for i in range(len):
         sum += a[i]*b[i]
+    #free(a)
+    #free(b)
     return sum
 
-cdef float * sub(float *a, float *b, int len):
+cdef long double * sub(long double *a, long double *b, int len):
 # function to subtract two arrays elementwise
-    cdef float *res
-    res = <float*>malloc(len*sizeof(float))
+    cdef long double *res
+    res = <long double*>malloc(len*sizeof(long double))
 
     cdef int i = 0
     for i in range(len):
         res[i] = a[i]-b[i]
+    #free(a)
+    #free(b)
     return res
 
-cdef float * sub_first(a, float *b, int len):
-# function to subtract two arrays elementwise
-    cdef float *res
-    res = <float*>malloc(len*sizeof(float))
+# cdef long double * sub_first(a, long double *b, int len):
+# # function to subtract two arrays elementwise
+#     cdef long double *res
+#     res = <long double*>malloc(len*sizeof(long double))
+#
+#     cdef int i = 0
+#     for i in range(len):
+#         res[i] = a[i]-b[i]
+#     #free(b)
+#     return res
+#
+# cdef long double * sub_sec(long double *a, b, int len):
+# # function to subtract two arrays elementwise
+#     cdef long double *res
+#     res = <long double*>malloc(len*sizeof(long double))
+#
+#     cdef int i = 0
+#     for i in range(len):
+#         res[i] = a[i]-b[i]
+#     #free(a)
+#     return res
 
-    cdef int i = 0
-    for i in range(len):
-        res[i] = a[i]-b[i]
-    return res
-
-cdef float * sub_sec(float *a, b, int len):
-# function to subtract two arrays elementwise
-    cdef float *res
-    res = <float*>malloc(len*sizeof(float))
-
-    cdef int i = 0
-    for i in range(len):
-        res[i] = a[i]-b[i]
-    return res
-
-cdef sub_py(float *a, b, int len):
+cdef sub_py(long double *a, b, int len):
 # function to subtract two arrays elementwise
     res = [0] * len
-    #res = <float*>malloc(len*sizeof(float))
+    #res = <long double*>malloc(len*sizeof(long double))
     cdef int i = 0
     for i in range(len):
         res[i] = a[i]-b[i]
+    #free(a)
     return res
 
-cdef add_py(a, float *b, int len):
+cdef add_py(a, long double *b, int len):
 # function to subtract two arrays elementwise
     res = [0] * len
-    #res = <float*>malloc(len*sizeof(float))
+    #res = <long double*>malloc(len*sizeof(long double))
     cdef int i = 0
     for i in range(len):
         res[i] = a[i]+b[i]
+    #free(b)
     return res
 
 
-#cdef float * evalfuncMagDot_cy(float *P, float *S, int lenP, int lenS):
-cdef float * evalfuncMagDot_cy(P, float *S, int lenP, int lenS):
-# TODO convert to work with plain C-variables
-    cdef float *result
-    result = <float*>malloc(3*sizeof(float))
-    cdef float *H
-    H = <float*>malloc(3*sizeof(float))
-    cdef float *R
-    R = <float*>malloc(3*sizeof(float))
+cdef long double * evalfuncMagDot_cy(long double *P, long double *S, int lenP, int lenS):
+#cdef long double * evalfuncMagDot_cy(P, long double *S, int lenP, int lenS):
+    cdef long double *result
+    result = <long double*>malloc(3*sizeof(long double))
+    cdef long double *H
+    H = <long double*>malloc(3*sizeof(long double))
+    cdef long double *R
+    R = <long double*>malloc(3*sizeof(long double))
 
-    #H = sub(P,S,lenP)
-    #R = sub(S,P,lenP)
+    H = sub(P,S,lenP)
+    R = sub(S,P,lenP)
 
-    H = sub_first(P,S,lenP)
-    R = sub_sec(S,P,lenP)
     cdef int i = 0
     for i in range(3):
       result[0] = ((3*(dot_product(H,R,lenP)*R[0])/pow(cal_norm_cy(R,3),5)) -
@@ -115,12 +121,13 @@ cdef float * evalfuncMagDot_cy(P, float *S, int lenP, int lenS):
                     (H[1]/pow(cal_norm_cy(R,3),3))) * -1
       result[2] = ((3*(dot_product(H,R,lenP)*R[2])/pow(cal_norm_cy(R,3),5)) -
                     (H[2]/pow(cal_norm_cy(R,3),3))) * -1
-
+    free(H)
+    free(R)
     return result
 '''
     H = sub(P,S,len(P))        # this worked for the example on the flat paper...
     R = sub(S,P,len(P))
-    cdef float result[3]
+    cdef long double result[3]
     # calculate the result-values one by one...
     cdef int i = 0
     for i in range(3):
@@ -138,9 +145,6 @@ cdef float * evalfuncMagDot_cy(P, float *S, int lenP, int lenS):
 
 def funcMagY_cy(P,S,B):
     start = time.time()
-    #print "P\n", P
-    #print "S\n", S
-    #print "B\n", B
     cdef int lenP, lenS, lenB
     cdef int i, j, k
     # generate an int for the length, because it's safer to pass this variable
@@ -149,24 +153,24 @@ def funcMagY_cy(P,S,B):
     lenS = len(S)
     lenB = len(B)
     # declaring the arrays...
-    cdef float *pArr
-    pArr = <float*> malloc(lenP*sizeof(float))
+    cdef long double *pArr
+    pArr = <long double*> malloc(lenP*sizeof(long double))
     i = 0
     for i in range(lenP):
         pArr[i] = P[i]
-    cdef float *sArr = <float*>malloc(lenS*sizeof(float))
+    cdef long double *sArr = <long double*>malloc(lenS*sizeof(long double))
     i = 0
     for i in range(lenS):
         sArr[i] = S[i]
-    cdef float *bArr = <float*>malloc(lenB*sizeof(float))
+    cdef long double *bArr = <long double*>malloc(lenB*sizeof(long double))
     i = 0
     for i in range(lenB):
         bArr[i] = B[i]
 
-    cdef float *sAct    # the actual S-Array
-    sAct = <float*> malloc(3*sizeof(float))
-    cdef float *pAct    # the actual P-Array
-    pAct = <float*> malloc(3*sizeof(float))
+    cdef long double *sAct    # the actual S-Array
+    sAct = <long double*> malloc(3*sizeof(long double))
+    cdef long double *pAct    # the actual P-Array
+    pAct = <long double*> malloc(3*sizeof(long double))
 
     #bArr = evalfuncMagDot_cy(pArr, sArr, lenP, lenS)
     #the calculations...
@@ -179,16 +183,18 @@ def funcMagY_cy(P,S,B):
             sAct[k] = sArr[k+i*3]
         j = 0
         for j in range(lenP/3):
-            #k = 0
-            #for k in range(3):    # assign the actual p-Array
-            #    pAct[k] = pArr[k+j*3]
-            #b = add_py(b,evalfuncMagDot_cy(pAct,sAct,3,3),3)
-            b = add_py(b,evalfuncMagDot_cy(P[j*3:j*3+3],sAct,3,3),3)
+            k = 0
+            for k in range(3):    # assign the actual p-Array
+                pAct[k] = pArr[k+j*3]
+            b = add_py(b,evalfuncMagDot_cy(pAct,sAct,3,3),3)
+            #b = add_py(b,evalfuncMagDot_cy(P[j*3:j*3+3],sAct,3,3),3)
         val[i*3:i*3+3] = b
-    #print "val: ", val
     res = cal_norm_py(sub_py(bArr,val,lenB))
-    #print "res: ", res
-    print "time needed: ", time.time()-start
+    free(pAct)
+    free(sAct)
+    free(pArr)
+    free(sArr)
+    free(bArr)
     return res
 
 
@@ -213,23 +219,7 @@ def estimatePos(P,S,B,cnt,bnds=None,jacobian=None):
         the result of the minimize function, i.e. the estimated position
 
     """
-#    c=0.1
-#    cons = ({'type':'ineq',
-#             'fun':lambda x: c/10 - abs(P[0]-x[0])},
-#            {'type':'ineq',
-#             'fun':lambda x: c - abs(P[1]-x[1])},
-#            {'type':'ineq',
-#             'fun':lambda x: c - abs(P[2]-x[2])},
-#            {'type':'ineq',
-#             'fun':lambda x: c/10 - abs(P[3]-x[3])},
-#            {'type':'ineq',
-#             'fun':lambda x: c - abs(P[4]-x[4])},
-#            {'type':'ineq',
-#             'fun':lambda x: c - abs(P[5]-x[5])},)
-#    cons = ({'type':'ineq',
-#             'fun':lambda x: c - abs(P-x)},)
-    opt = ({'maxiter':30,
-            'disp':True})
+    opt = ({'maxiter':50})
     '''   advanced approach (pseudo-inverse thing)  '''
 #    val = minimize(funcMagYmulti, P, args=(S,B), method='slsqp',
 #                   tol=1e-5, bounds=bnds, jac=jacobian)
@@ -238,22 +228,13 @@ def estimatePos(P,S,B,cnt,bnds=None,jacobian=None):
     #               tol=1e-4, bounds=bnds, jac=jacobian, options=opt)
 
     val = minimize(funcMagY_cy, P, args=(S,B), method='slsqp',
-                    bounds=bnds, jac=jacobian, options=opt)
-#    print "evaluation ",cnt
-#    print funcMagYmulti(val.x,S,B)
-#    val = _minimize_slsqp(funcMagY, P, args=(S,B), method='slsqp',
-#                   tol=1e-5, bounds=bnds, jac=jacobian)
-#    val.x is a 1d-vector, so reshape it!
-#    res = np.reshape(val.x,(len(P)/3,1,3))     # improve it!
-#    res = np.reshape(val.x,(1,1,3))
+                    bounds=bnds, jac=jacobian,options=opt)
     if val.success:
-#        print "jacobian\n", val.jac
-        #print "python, val.x\n", val.x
         return val        # as result you will get the P vector!
     else:
         print "No solution found! Iteration Nr ",cnt
-        print "Error message ",val.message
-#        print res.message
+        #print "Error message ",val.message
+        print val.message
 #        return np.zeros(shape=(2,1,3))
         return val
 
