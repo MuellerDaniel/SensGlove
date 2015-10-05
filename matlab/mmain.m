@@ -151,9 +151,11 @@ for i = b(:,2:end)  % version 1
 %     f = @(P)solfuncMagONE(P,s,bEst);   % version 2
 %     [estPos(:,cnt), fval(:,cnt)] = fminunc(f,estPos(:,cnt-1),options);      % fminunc method
 %     [estPos(:,cnt), fval(:,cnt)] = fminsearch(f,estPos(:,cnt-1));      % fminsearch method
-    [estPos(:,cnt), fval(:,cnt)] = lsqnonlin(f,estPos(:,cnt-1));      % fminsearch method
+%     [estPos(:,cnt), fval(:,cnt)] = lsqnonlin(f,estPos(:,cnt-1));      % fminsearch method
 %     [estPos(:,cnt), fval(:,cnt)] = fmincon(f,estPos(:,cnt-1),...          % constrained method
 %                                         Aineq,bineq,Aeq,beq,lb,ub,[],options );    
+    [estPos(:,cnt), fval(:,cnt)] = patternsearch(f,estPos(:,cnt-1),...          % patternsearch method
+                                       Aineq,bineq,Aeq,beq,lb,ub);    
 %     estPos(:,cnt) = lsqnonlin(f,estPos(:,cnt-1));
 
 %     text = ['Pos Nr ',num2str(cnt)];
