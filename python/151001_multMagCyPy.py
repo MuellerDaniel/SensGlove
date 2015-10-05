@@ -237,8 +237,8 @@ bnds=((angInd[0]-0.003,angInd[0]+0.003),    # index finger
       (angPin[2],angPin[2]+rPin))
 
 
-global symJac
-symJac = modE.calcJacobi()
+#global symJac
+#symJac = modE.calcJacobi()
 #modE.calcJacobi()
 
 S=np.append(s1,s2,axis=0)
@@ -247,6 +247,8 @@ S=np.append(S,s4,axis=0)
 B=np.zeros((4,3))
 startAlg = time.time()
 lapinfo = np.zeros((len(summedMid[0])-1,2))
+# fi = open("Errors.txt",'w')
+print "begin of estimation..."
 for i in range(len(summedMid[0])-1):
 #    # for three magnets(index, middle, pinky) and two sensors (middle, pinky)
 #    tmp = modE.estimatePos(np.concatenate((estPos[0][i],estPos[1][i],estPos[2][i])),
@@ -293,13 +295,22 @@ for i in range(len(summedMid[0])-1):
     #                     np.concatenate((summedInd[0][i+1],summedMid[0][i+1],summedRin[0][i+1],summedPin[0][i+1])),
 #   #                      B,     # for advanced approach version 2
     #                     i,bnds)
-
-    tmp = modE.estimatePos(np.concatenate((estPos[0][i],estPos[1][i],estPos[2][i],estPos[3][i])),
+    ''' cython version '''
+    tmp = fcn.estimatePos(np.concatenate((estPos[0][i],estPos[1][i],estPos[2][i],estPos[3][i])),
                         np.reshape([s1,s2,s3,s4],((12,))),     # for calling the cython function
                         np.concatenate((summedInd[0][i+1],summedMid[0][i+1],summedRin[0][i+1],summedPin[0][i+1])),
                         i,bnds)
 
     res = np.reshape(tmp.x,(4,1,3))
+    #tst = np.reshape(tmp.x,(12,))
+
+
+
+    # for k in range(len(bnds)):
+    #     if (tst[k] < bnds[k][0]) or (tst[k] > bnds[k][1]):
+    #         fi.write("ERROR in iteration " + str(i) + " value " +
+    #                     str(k) + "\t" + str(tst[k]) + "\n")
+
     lapinfo[i] = ((time.time()-startTime),tmp.nit)
 #    print "step ",i," iterations: ",lapinfo[i][1]," time: ",lapinfo[i][0]
 
@@ -317,12 +328,16 @@ for i in range(len(summedMid[0])-1):
 #                             np.concatenate((summedInd[0][i+1],summedMid[0][i+1],summedRin[0][i+1],summedPin[0][i+1])))
 
 
-
-print "time duration[min]: ", (time.time()-startAlg)/60
+#fi.close()
+print "time duration: ", (time.time()-startAlg)
 #estPos[0]=np.round(estPos[0],6)
 #estPos[1]=np.round(estPos[1],6)
 #estPos[2]=np.round(estPos[2],6)
 #estPos[3]=np.round(estPos[3],6)
+print "delta x estPos[0]-Index", max(estPos[0][:,0])-min(estPos[0][:,0])
+print "delta x estPos[1]-Middle", max(estPos[1][:,0])-min(estPos[1][:,0])
+print "delta x estPos[2]-Ring", max(estPos[2][:,0])-min(estPos[2][:,0])
+print "delta x estPos[3]-Pinky", max(estPos[3][:,0])-min(estPos[3][:,0])
 
 """ plotting stuff """
 #plo.plotter3d((pos[0],pos[1],pos[2], pos[3]),("Ind real","mid Real", "ring Real", "pin Real"))
@@ -333,10 +348,6 @@ plo.multiPlotter(estPos[2],"Ring",pos[2])
 plo.multiPlotter(estPos[3],"Pinky",pos[3])
 plt.show()
 #plo.plotter3d((pos[1],estPos[1]),("Pinky real","estOne"))
-print "delta x estPos[0]-Index", max(estPos[0][:,0])-min(estPos[0][:,0])
-print "delta x estPos[1]-Middle", max(estPos[1][:,0])-min(estPos[1][:,0])
-print "delta x estPos[2]-Ring", max(estPos[2][:,0])-min(estPos[2][:,0])
-print "delta x estPos[3]-Pinky", max(estPos[3][:,0])-min(estPos[3][:,0])
 #print "delta x estPos2[1]", max(estPos2[1][:,0])-min(estPos2[1][:,0])
 #print "delta x estPos2[0]", max(estPos2[0][:,0])-min(estPos2[0][:,0])
 #print "delta y from pos[0] and estPos[0]", max(pos[0][:,1]-estPos[0][:,1])
