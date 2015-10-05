@@ -2,6 +2,7 @@ from casadi import *
 import numpy as np
 import modelEqMultiTWO as modE
 import matplotlib.pyplot as plt
+import plotting as plo
 
 def estimate(P0,Sa,Ba):
     P = SX.sym('P',3)
@@ -13,7 +14,7 @@ def estimate(P0,Sa,Ba):
     R = s0-P
     factor = np.array([-1,-1,-1])
     
-    B = norm(b0 - np.array((3*(np.dot(H.T,R)*R)/(norm(R)**5)) - (H/(norm(R)**3))) * factor)
+    B = np.linalg.norm(b0 - np.array((3*(np.dot(H.T,R)*R)/(np.linalg.norm(R)**5)) - (H/(np.linalg.norm(R)**3))) * factor)
     #g = x[2] + (1-x[0])**2 - x[1]
     
     # Create NLP function
@@ -62,6 +63,6 @@ estPos[0] = pos1[0]
 for i in range(pos1.shape[0]-1):
 #    print "ESTPOS.SHAPE: ", estPos[i].shape
     estPos[i+1] = estimate(estPos[i],s1,calcB[i+1]).T
-    
-    
+
+plo.multiPlotter(estPos,"Index",pos1)
     

@@ -294,8 +294,11 @@ for i in range(len(summedMid[0])-1):
 
     res = np.reshape(tmp.x,(4,1,3))
     lapinfo[i] = ((time.time()-startTime),tmp.nit)
-#    print "step ",i," iterations: ",lapinfo[i][1]," time: ",lapinfo[i][0]
-
+    tst = np.reshape(tmp.x,(12,))
+    for k in range(len(bnds)):
+        if (tst[k] < bnds[k][0]) or (tst[k] > bnds[k][1]):
+            print "ERROR in iteration ", i, "value ", k
+            
     estPos[0][i+1] = res[0]
     estPos[1][i+1] = res[1]
     estPos[2][i+1] = res[2]

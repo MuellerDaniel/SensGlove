@@ -130,14 +130,13 @@ def multiPlotter(data, title, comp=None):
         bla=0.06329113924050633
 #        print "nr ", len(data[:,0])*0.001
         d = f.add_subplot(2,3,4, title='errorPlot x')
-        d.scatter(np.arange(0,10,bla),comp[:,0]-data[:,0])
+        d.scatter(np.arange(0,len(data[:,0]),1),comp[:,0]-data[:,0])
 
 
         e = f.add_subplot(2,3,5, title='errorPlot y',sharey=d)
-        e.scatter(np.arange(0,10,bla),comp[:,1]-data[:,1])
+        e.scatter(np.arange(0,len(data[:,0]),1),comp[:,1]-data[:,1])
 #        e.set_yticklabels([])
 
         g = f.add_subplot(2,3,6, title='errorPlot z',sharey=d)
-        g.scatter(np.arange(0,10,bla),comp[:,2]-data[:,2])
+        g.scatter(np.arange(0,len(data[:,0]),1),comp[:,2]-data[:,2])
 #        g.set_yticklabels([])
-            

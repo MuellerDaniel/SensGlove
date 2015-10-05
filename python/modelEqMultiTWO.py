@@ -115,7 +115,7 @@ def funcMagY(P,S,B):
     res = np.linalg.norm(B - val)
     #print "time needed: ", time.time()-start
     #print "result: ", res
-
+    #print "P: ", P
     return res
 
 def evalfuncMagMulti(P,S):
@@ -178,14 +178,17 @@ def estimatePos(P,S,B,cnt,bnds=None,jacobian=None):
 #             'fun':lambda x: c - abs(P[5]-x[5])},)
 #    cons = ({'type':'ineq',
 #             'fun':lambda x: c - abs(P-x)},)
-    opt = ({'maxiter':30,
-            'disp':True})
+    opt = ({'maxiter':30})
     '''   advanced approach (pseudo-inverse thing)  '''
 #    val = minimize(funcMagYmulti, P, args=(S,B), method='slsqp',
 #                   tol=1e-5, bounds=bnds, jac=jacobian)
     '''    straight forward approach norm(B(estPos)-B(measured))    '''
+    print "evaluation Nr.: ", cnt, "\n"
     val = minimize(funcMagY, P, args=(S,B), method='slsqp',
                    tol=1e-4, bounds=bnds, jac=jacobian, options=opt)
+    #val = fmin_slsqp(funcMagY, P, args=(S,B),
+    #               bounds=bnds)
+    return val             
 #    print "evaluation ",cnt
 #    print funcMagYmulti(val.x,S,B)
 #    val = _minimize_slsqp(funcMagY, P, args=(S,B), method='slsqp',
