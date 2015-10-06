@@ -116,14 +116,18 @@ def multiPlotter(data, title, comp=None):
         a.plot(comp[:,0],comp[:,1],comp[:,2], color='r')
 
     b = f.add_subplot(2,3,2, title='x vs y')
-    b.plot(data[:,0],data[:,1], color='b')
+    #b.plot(data[:,0],data[:,1], color='b')
+    b.plot(data[:,1],data[:,0], color='b')
     if comp != None:
-        b.plot(comp[:,0],comp[:,1], color='r')
+        #b.plot(comp[:,0],comp[:,1], color='r')
+        b.plot(comp[:,1],comp[:,0], color='r')
 
     c = f.add_subplot(2,3,3, title='z vs y')
-    c.plot(data[:,2],data[:,1], color='b')
+    #c.plot(data[:,2],data[:,1], color='b')
+    c.plot(data[:,2],data[:,0], color='b')
     if comp != None:
-        c.plot(comp[:,2],comp[:,1], color='r')
+        #c.plot(comp[:,2],comp[:,1], color='r')
+        c.plot(comp[:,2],comp[:,0], color='r')
 
     if comp != None:
         bla=float(10./len(data[:,0]))
