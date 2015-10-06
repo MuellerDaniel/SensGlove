@@ -112,25 +112,26 @@ def textAcquistion(fileName, timeStamp = False):
         print "File not found!"    
   
     line = f.readline() 
-    dataString = string.split(line, "\t")
-    form=0
-    if len(dataString) == 4:
-        form=4
-        dataMat = [[0.,0.,0.,0.]]
-        dataMat[0] = [float(dataString[0]), 
-                     float(dataString[1]), 
-                     float(dataString[2]), 
-                     float(dataString[3])]
-                     
-    elif len(dataString) == 3:
-        form=3
-        dataMat = [[0.,0.,0.]]
-        dataMat[0] = [float(dataString[0]), 
-                       float(dataString[1]), 
-                       float(dataString[2])]
-    else: 
-        print "wrong data format!!!!"
-    
+#    dataString = string.split(line, "\t")
+#    form=0
+#    if len(dataString) == 4:
+#        form=4
+#        dataMat = [[0.,0.,0.,0.]]
+#        dataMat[0] = [float(dataString[0]), 
+#                     float(dataString[1]), 
+#                     float(dataString[2]), 
+#                     float(dataString[3])]
+#                     
+#    elif len(dataString) == 3:
+#        form=3
+#        dataMat = [[0.,0.,0.]]
+#        dataMat[0] = [float(dataString[0]), 
+#                       float(dataString[1]), 
+#                       float(dataString[2])]
+#    else: 
+#        print "wrong data format!!!!"
+    dataMat = [[0.,0.,0.,0.]]
+    form = 4
     while(line != ""):    
         if (line.startswith("#")):
             print line
@@ -150,6 +151,7 @@ def textAcquistion(fileName, timeStamp = False):
                               float(dataString[3])]],axis=0)
 
         line = f.readline()    
+    dataMat = dataMat[1:]
     dataMat = sortData(dataMat)
     return dataMat
     
@@ -218,7 +220,7 @@ def sortData(data):
         data = np.delete(data, np.s_[-1*(len(data)%nrSens):], axis=0)
     # matrix for results
     s=np.zeros(shape=[nrSens, (len(data)/nrSens), 3])
-    cnt = np.zeros(shape=[nrSens,1], dtype=np.int)
+    cnt = np.zeros(shape=(nrSens,1), dtype=np.int)
     for j in data:
         s[int(j[0])][int(cnt[int(j[0])])] = j[1:]              
         cnt[int(j[0])] += 1        

@@ -58,28 +58,6 @@ cdef long double * sub(long double *a, long double *b, int len):
     #free(b)
     return res
 
-# cdef long double * sub_first(a, long double *b, int len):
-# # function to subtract two arrays elementwise
-#     cdef long double *res
-#     res = <long double*>malloc(len*sizeof(long double))
-#
-#     cdef int i = 0
-#     for i in range(len):
-#         res[i] = a[i]-b[i]
-#     #free(b)
-#     return res
-#
-# cdef long double * sub_sec(long double *a, b, int len):
-# # function to subtract two arrays elementwise
-#     cdef long double *res
-#     res = <long double*>malloc(len*sizeof(long double))
-#
-#     cdef int i = 0
-#     for i in range(len):
-#         res[i] = a[i]-b[i]
-#     #free(a)
-#     return res
-
 cdef sub_py(long double *a, b, int len):
 # function to subtract two arrays elementwise
     res = [0] * len
