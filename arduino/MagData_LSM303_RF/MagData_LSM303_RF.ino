@@ -45,23 +45,28 @@ void loop()
    getMagnetCali();
       
    //calibrated values via serial interface
-   Serial.print("Mag\t");
+   /*Serial.print("Mag\t");
    Serial.print(magX); Serial.print("\t");
    Serial.print(magY); Serial.print("\t");
-   Serial.println(magZ);
+   Serial.println(magZ);*/
 
   // accelerometer data
    compass.readAcc();
    
-   /*Serial.print("Acc\t");
+   Serial.print("Acc\t");
    Serial.print(compass.a.x*conversionFactorAcc); Serial.print("\t");
    Serial.print(compass.a.y*conversionFactorAcc); Serial.print("\t");
-   Serial.println(compass.a.z*conversionFactorAcc);*/
+   Serial.println(compass.a.z*conversionFactorAcc);
 
-   fData[0] = 0.0; 
+   /*fData[0] = 0.0; 
    fData[1] = magX;
    fData[2] = magY;
-   fData[3] = magZ;
+   fData[3] = magZ;*/
+
+   fData[0] = 0.0; 
+   fData[1] = compass.a.x*conversionFactorAcc;
+   fData[2] = compass.a.y*conversionFactorAcc;
+   fData[3] = compass.a.z*conversionFactorAcc;
 
    for(int i=0; i<4; i++){
     memcpy(&data[i*sizeof(float)], &fData[i], sizeof(float));
