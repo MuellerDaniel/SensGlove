@@ -3,20 +3,20 @@ import matplotlib.pyplot as plt
 import modelEqMultiCython as modE
 
 """ the artificial data... """
-angInd = [0.02957, 0.09138, 0.01087]         # to wooden-angle(index)
-angMid = [0.00920, 0.09138, 0.01087]          # to wooden-angle(middle)
-angRin = [-0.01117, 0.09138, 0.01087]         # to wooden-angle(ring)
-angPin = [-0.03154, 0.09138, 0.01087]         # to wooden-angle(pinky)
+angInd = [0.09138, 0.02957, -0.01087]         # to wooden-angle(index)
+angMid = [0.09138, 0.00920, -0.01087]          # to wooden-angle(middle)
+angRin = [0.09138, -0.01117, -0.01087]         # to wooden-angle(ring)
+angPin = [0.09138, -0.03154, -0.01087]         # to wooden-angle(pinky)
 
 # position of sensor
-s1 = [0.02957, 0.06755, 0.]     # sensor beneath index
+s1 = [0.06755, 0.02957, 0.]     # sensor beneath index
 #s1 = [0.02886, 0.04755, 0.]
 #s2 = [0.00920 , 0.06755, 0.]    # sensor beneath middle
-s2 = [0.00920 , 0.04755, 0.]
-s3 = [-0.01117, 0.06755, 0.]     # sensor beneath ring
+s2 = [0.04755, 0.00920, 0.]
+s3 = [0.06755, -0.01117, 0.]     # sensor beneath ring
 #s3 = [-0.01046, 0.04755, 0.]
 #s4 = [-0.03154, 0.06755, 0.]     # sensor beneath pinky
-s4 = [-0.03012, 0.04755, 0.]
+s4 = [0.04755, -0.03012, 0.]
 
 rInd = 0.08                     # length of index finger (from angle)
 rMid = 0.08829                  # length of middle finger (from angle)
@@ -31,27 +31,27 @@ pos4 = [[0.,0.,0.]]
 cnt=1
 for i in t:
     # position of the index finger
-    pos1 = np.append(pos1, [[angInd[0],
-                            angInd[1]+rInd*np.cos(i),
-                            angInd[2]+rInd*np.sin(i)]],
+    pos1 = np.append(pos1, [[angInd[0]+rInd*np.cos(i),
+                            angInd[1],
+                            angInd[2]-rInd*np.sin(i)]],
                             axis=0)
 
     # positions of the middle finger
-    pos2 = np.append(pos2, [[angMid[0],
-                            angMid[1]+rMid*np.cos(i),
-                            angMid[2]+rMid*np.sin(i)]],
+    pos2 = np.append(pos2, [[angMid[0]+rMid*np.cos(i),
+                            angMid[1],
+                            angMid[2]-rMid*np.sin(i)]],
                             axis=0)
 
       # position of the ring finger
-    pos3 = np.append(pos3, [[angRin[0],
-                            angRin[1]+rRin*np.cos(i),
-                            angRin[2]+rRin*np.sin(i)]],
+    pos3 = np.append(pos3, [[angRin[0]+rRin*np.cos(i),
+                            angRin[1],
+                            angRin[2]-rRin*np.sin(i)]],
                             axis=0)
 
     # positions of the pinky finger
-    pos4 = np.append(pos4, [[angPin[0],
-                            angPin[1]+rPin*np.cos(i),
-                            angPin[2]+rPin*np.sin(i)]],
+    pos4 = np.append(pos4, [[angPin[0]+rPin*np.cos(i),
+                            angPin[1],
+                            angPin[2]-rPin*np.sin(i)]],
                             axis=0)
 
     cnt+=1

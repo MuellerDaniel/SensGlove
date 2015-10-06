@@ -28,20 +28,20 @@ the sensor is below the middle finger and the magnet is on the middle finger
 #fingDat=datAcM.textAcquistion("150825_middleLSM")
 
 #""" the artificial data... """
-angInd = [0.02957, 0.09138, 0.01087]         # to wooden-angle(index)
-angMid = [0.00920, 0.09138, 0.01087]          # to wooden-angle(middle)
-angRin = [-0.01117, 0.09138, 0.01087]         # to wooden-angle(ring)
-angPin = [-0.03154, 0.09138, 0.01087]         # to wooden-angle(pinky)
+angInd = [0.09138, 0.02957, -0.01087]         # to wooden-angle(index)
+angMid = [0.09138, 0.00920, -0.01087]          # to wooden-angle(middle)
+angRin = [0.09138, -0.01117, -0.01087]         # to wooden-angle(ring)
+angPin = [0.09138, -0.03154, -0.01087]         # to wooden-angle(pinky)
 
 # position of sensor
-s1 = [0.02957, 0.06755, 0.]     # sensor beneath index
+s1 = [0.06755, 0.02957, 0.]     # sensor beneath index
 #s1 = [0.02886, 0.04755, 0.]
 #s2 = [0.00920 , 0.06755, 0.]    # sensor beneath middle
-s2 = [0.00920 , 0.04755, 0.]
-s3 = [-0.01117, 0.06755, 0.]     # sensor beneath ring
+s2 = [0.04755, 0.00920, 0.]
+s3 = [0.06755, -0.01117, 0.]     # sensor beneath ring
 #s3 = [-0.01046, 0.04755, 0.]
 #s4 = [-0.03154, 0.06755, 0.]     # sensor beneath pinky
-s4 = [-0.03012, 0.04755, 0.]
+s4 = [0.04755, -0.03012, 0.]
 
 rInd = 0.08                     # length of index finger (from angle)
 rMid = 0.08829                  # length of middle finger (from angle)
@@ -55,27 +55,27 @@ b = datAcM.textAcquistion("perfectB")
 """ estimating the position from the measurments """
 estPos = np.zeros(shape=(4,len(b[0]),3))
 # initial positions
-estPos[0][0] = [ 0.02957,  0.17138,  0.01087]
-estPos[1][0] = [ 0.0092 ,  0.17967,  0.01087]
-estPos[2][0] = [-0.01117,  0.17117,  0.01087]
-estPos[3][0] = [-0.03154,  0.16353,  0.01087]
+estPos[0][0] = [angInd[0]+rInd, angInd[1], angInd[2]]
+estPos[1][0] = [angMid[0]+rMid, angMid[1], angMid[2]]
+estPos[2][0] = [angRin[0]+rRin, angRin[1], angRin[2]]
+estPos[3][0] = [angPin[0]+rPin, angPin[1], angPin[2]]
 
 # fixed bnds
-bnds=((angInd[0]-0.003,angInd[0]+0.003),    # index finger
-      (angInd[1],angInd[1]+rInd),
-      (angInd[2],angInd[2]+rInd),
+bnds=((angInd[0],angInd[0]+rInd),    # index finger
+      (angInd[1]-0.003,angInd[1]+0.003),
+      (angInd[2]-rInd,angInd[2]),
 
-      (angMid[0]-0.003,angMid[0]+0.003),    # middle finger
-      (angMid[1],angMid[1]+rMid),
-      (angMid[2],angMid[2]+rMid),
+      (angMid[0],angMid[0]+rMid),    # middle finger
+      (angMid[1]-0.003,angMid[1]+0.003),
+      (angMid[2]-rMid,angMid[2]),
 
-      (angRin[0]-0.003,angRin[0]+0.003),    # ring finger
-      (angRin[1],angRin[1]+rRin),
-      (angRin[2],angRin[2]+rRin),
+      (angRin[0],angRin[0]+rRin),    # ring finger
+      (angRin[1]-0.003,angRin[1]+0.003),
+      (angRin[2]-rRin,angRin[2]),
 
-      (angPin[0]-0.003,angPin[0]+0.003),    # pinky finger
-      (angPin[1],angPin[1]+rPin),
-      (angPin[2],angPin[2]+rPin))
+      (angPin[0],angPin[0]+rPin),    # pinky finger
+      (angPin[1]-0.003,angPin[1]+0.003),
+      (angPin[2]-rPin,angPin[2]))
 
 startAlg = time.time()
 lapinfo = np.zeros((len(estPos[0])-1,2))
@@ -104,10 +104,10 @@ for i in range(len(b[0])-1):
 
 print "time duration: ", (time.time()-startAlg)
 
-print "delta x estPos[0]-Index", max(estPos[0][:,0])-min(estPos[0][:,0])
-print "delta x estPos[1]-Middle", max(estPos[1][:,0])-min(estPos[1][:,0])
-print "delta x estPos[2]-Ring", max(estPos[2][:,0])-min(estPos[2][:,0])
-print "delta x estPos[3]-Pinky", max(estPos[3][:,0])-min(estPos[3][:,0])
+print "delta y estPos[0]-Index", max(estPos[0][:,1])-min(estPos[0][:,1])
+print "delta y estPos[1]-Middle", max(estPos[1][:,1])-min(estPos[1][:,1])
+print "delta y estPos[2]-Ring", max(estPos[2][:,1])-min(estPos[2][:,1])
+print "delta y estPos[3]-Pinky", max(estPos[3][:,1])-min(estPos[3][:,1])
 
 """ plotting stuff """
 #plo.plotter3d((pos[0],pos[1],pos[2], pos[3]),("Ind real","mid Real", "ring Real", "pin Real"))
