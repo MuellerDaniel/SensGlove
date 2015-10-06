@@ -175,7 +175,7 @@ def estimatePos(P,S,B,cnt,bnds=None,jacobian=None):
 #             'fun':lambda x: c - abs(P[5]-x[5])},)
 #    cons = ({'type':'ineq',
 #             'fun':lambda x: c - abs(P-x)},)
-    opt = ({'maxiter':30})
+    opt = ({'maxiter':100})
     '''   advanced approach (pseudo-inverse thing)  '''
 #    val = minimize(funcMagYmulti, P, args=(S,B), method='slsqp',
 #                   tol=1e-5, bounds=bnds, jac=jacobian)
@@ -183,7 +183,7 @@ def estimatePos(P,S,B,cnt,bnds=None,jacobian=None):
     #val = minimize(funcMagY, P, args=(S,B), method='slsqp',
     #               tol=1e-4, bounds=bnds, jac=jacobian, options=opt)
     val = minimize(fcn.funcMagY_cy, P, args=(S,B), method='slsqp',
-                    bounds=bnds, jac=jacobian, options=opt)
+                    bounds=bnds, jac=jacobian)
 #    print "evaluation ",cnt
 #    print funcMagYmulti(val.x,S,B)
 #    val = _minimize_slsqp(funcMagY, P, args=(S,B), method='slsqp',
