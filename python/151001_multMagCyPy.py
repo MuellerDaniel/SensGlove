@@ -27,11 +27,11 @@ the sensor is below the middle finger and the magnet is on the middle finger
 #                               "150901_testAll", measNr=500, offset=100)
 #fingDat=datAcM.textAcquistion("150825_middleLSM")
 
-#""" the artificial data... """
-angInd = [0.09138, 0.02957, -0.01087]         # to wooden-angle(index)
-angMid = [0.09138, 0.00920, -0.01087]          # to wooden-angle(middle)
-angRin = [0.09138, -0.01117, -0.01087]         # to wooden-angle(ring)
-angPin = [0.09138, -0.03154, -0.01087]         # to wooden-angle(pinky)
+# position of wooden-joints
+jointInd = [0.09138, 0.02957, -0.01087]         # to wooden-joint(index)
+jointMid = [0.09138, 0.00920, -0.01087]          # to wooden-joint(middle)
+jointRin = [0.09138, -0.01117, -0.01087]         # to wooden-joint(ring)
+jointPin = [0.09138, -0.03154, -0.01087]         # to wooden-joint(pinky)
 
 # position of sensor
 s1 = [0.06755, 0.02957, 0.]     # sensor beneath index
@@ -43,67 +43,109 @@ s3 = [0.06755, -0.01117, 0.]     # sensor beneath ring
 #s4 = [-0.03154, 0.06755, 0.]     # sensor beneath pinky
 s4 = [0.04755, -0.03012, 0.]
 
-rInd = 0.08                     # length of index finger (from angle)
-rMid = 0.08829                  # length of middle finger (from angle)
-rRin = 0.07979                  # length of ring finger (from angle)
-rPin = 0.07215                  # length of pinky finger (from angle)
+# length of fingers
+rInd = 0.08                     # length of index finger (from jointle)
+rMid = 0.08829                  # length of middle finger (from jointle)
+rRin = 0.07979                  # length of ring finger (from jointle)
+rPin = 0.07215                  # length of pinky finger (from jointle)
+
+# lengths of phalanges
+phalInd = [0.03038, 0.02728, 0.02234]
+phalMid = [0.03640, 0.03075, 0.02114]
+phalRin = [0.03344, 0.02782, 0.01853]
+phalPin = [0.02896, 0.02541, 0.01778]
 
 b = datAcM.textAcquistion("perfectB")
 
 """ fitting the data to the model """
 
 """ estimating the position from the measurments """
-estPos = np.zeros(shape=(4,len(b[0]),3))
+estPos = np.zeros((4,len(b[0]),3))
 # initial positions
-estPos[0][0] = [angInd[0]+rInd, angInd[1], angInd[2]]
-estPos[1][0] = [angMid[0]+rMid, angMid[1], angMid[2]]
-estPos[2][0] = [angRin[0]+rRin, angRin[1], angRin[2]]
-estPos[3][0] = [angPin[0]+rPin, angPin[1], angPin[2]]
+estPos[0][0] = [jointInd[0]+rInd, jointInd[1], jointInd[2]]
+estPos[1][0] = [jointMid[0]+rMid, jointMid[1], jointMid[2]]
+estPos[2][0] = [jointRin[0]+rRin, jointRin[1], jointRin[2]]
+estPos[3][0] = [jointPin[0]+rPin, jointPin[1], jointPin[2]]
+# fixed bnds for position
+bndsPos = ((jointInd[0],jointInd[0]+rInd),    # index finger
+    #      (jointInd[1]-0.003,jointInd[1]+0.003),
+          (jointInd[1]-0.0001,jointInd[1]+0.0001),
+          (jointInd[2]-rInd,jointInd[2]),
+    
+          (jointMid[0],jointMid[0]+rMid),    # middle finger
+    #      (jointMid[1]-0.003,jointMid[1]+0.003),
+          (jointMid[1]-0.0001,jointMid[1]+0.0001),
+          (jointMid[2]-rMid,jointMid[2]),
+    
+          (jointRin[0],jointRin[0]+rRin),    # ring finger
+    #      (jointRin[1]-0.003,jointRin[1]+0.003),
+          (jointRin[1]-0.0001,jointRin[1]+0.0001),
+          (jointRin[2]-rRin,jointRin[2]),
+    
+          (jointPin[0],jointPin[0]+rPin),    # pinky finger
+#          (jointPin[1]-0.003,jointPin[1]+0.003),
+          (jointPin[1]-0.0001,jointPin[1]+0.0001),
+          (jointPin[2]-rPin,jointPin[2]))
+          
+estAng = np.zeros((4,len(b[0]),3))          
+estAng[0][0] = [0,0,0]
+estAng[1][0] = [0,0,0]
+estAng[2][0] = [0,0,0]
+estAng[3][0] = [0,0,0]
+# fixed bnds for angles
+bndsAng = ((0,np.pi/2),         # index finger
+        (0,(110/180*np.pi)),
+        (0,np.pi/2),
+        (0,np.pi/2),            # middle finger
+        (0,(110/180*np.pi)),
+        (0,np.pi/2),
+        (0,np.pi/2),            # ring finger
+        (0,(110/180*np.pi)),
+        (0,np.pi/2),
+        (0,np.pi/2),            # pinky finger
+        (0,(110/180*np.pi)),
+        (0,np.pi/2))
 
-# fixed bnds
-bnds=((angInd[0],angInd[0]+rInd),    # index finger
-#      (angInd[1]-0.003,angInd[1]+0.003),
-      (angInd[1]-0.0001,angInd[1]+0.0001),
-      (angInd[2]-rInd,angInd[2]),
-
-      (angMid[0],angMid[0]+rMid),    # middle finger
-#      (angMid[1]-0.003,angMid[1]+0.003),
-      (angMid[1]-0.0001,angMid[1]+0.0001),
-      (angMid[2]-rMid,angMid[2]),
-
-      (angRin[0],angRin[0]+rRin),    # ring finger
-#      (angRin[1]-0.003,angRin[1]+0.003),
-      (angRin[1]-0.0001,angRin[1]+0.0001),
-      (angRin[2]-rRin,angRin[2]),
-
-      (angPin[0],angPin[0]+rPin),    # pinky finger
-#      (angPin[1]-0.003,angPin[1]+0.003),
-      (angPin[1]-0.0001,angPin[1]+0.0001),
-      (angPin[2]-rPin,angPin[2]))
 
 startAlg = time.time()
-lapinfo = np.zeros((len(estPos[0])-1,2))
+lapPos = np.zeros((len(estPos[0])-1,2))
+lapAng = np.zeros((len(estPos[0])-1,2))
 print "begin of estimation..."
 for i in range(len(b[0])-1):
-# for four magnets(index, middle, pinky) and four sensors (middle, pinky, index)
-    startTime = time.time()
-    ''' normal version '''
+    ''' position estimation 
+        for four magnets(index, middle, pinky) and four sensors (middle, pinky, index)'''
+    startPos = time.time()
+#    calling the one way...
     tmp = modE.estimatePos(np.concatenate((estPos[0][i],estPos[1][i],estPos[2][i],estPos[3][i])),
                          np.reshape([s1,s2,s3,s4],((12,))),     # for calling the cython function
                          np.concatenate((b[0][i+1],b[1][i+1],b[2][i+1],b[3][i+1])),   
                          i,bnds)
-    ''' cython version '''
+#    ...or the other
 #    tmp = fcn.estimatePos(np.concatenate((estPos[0][i],estPos[1][i],estPos[2][i],estPos[3][i])),
 #                        np.reshape([s1,s2,s3,s4],((12,))),     # for calling the cython function
 #                        np.concatenate((b[0][i+1],b[1][i+1],b[2][i+1],b[3][i+1])),
 #                        i,bnds)
-
-    res = np.reshape(tmp.x,(4,1,3))   
-    lapinfo[i] = ((time.time()-startTime),tmp.nit)
-    estPos[0][i+1] = res[0]
-    estPos[1][i+1] = res[1]
-    estPos[2][i+1] = res[2]
-    estPos[3][i+1] = res[3]
+    resPos = np.reshape(tmp.x,(4,1,3))   
+    lapPos[i] = ((time.time()-startPos),tmp.nit)
+    estPos[0][i+1] = resPos[0]
+    estPos[1][i+1] = resPos[1]
+    estPos[2][i+1] = resPos[2]
+    estPos[3][i+1] = resPos[3]
+    
+    ''' angle estimation '''
+    startAngle = time.time()
+    eAng = modE.estimateAngle_m(tmp.x,
+                                np.concatenate((estAng[0][i],estAng[1][i],estAng[2][i],estAng[3][i])),
+                                np.reshape([jointInd,jointMid,jointRin,jointPin],((12,))),
+                                np.reshape([phalInd,phalMid,phalRin,phalPin],((12,))),
+                                bndsAng)
+                                
+    resAng = np.reshape(eAng.x,(4,1,3))                                
+    lapAng[i] = ((time.time()-startAngle), eAng.nit)
+    estAng[0][i+1] = resAng[0]
+    estAng[1][i+1] = resAng[1]
+    estAng[2][i+1] = resAng[2]
+    estAng[3][i+1] = resAng[3]   
 
 
 print "time duration: ", (time.time()-startAlg)
@@ -114,10 +156,10 @@ print "delta y estPos[2]-Ring", max(estPos[2][:,1])-min(estPos[2][:,1])
 print "delta y estPos[3]-Pinky", max(estPos[3][:,1])-min(estPos[3][:,1])
 
 # remove the y-axis motion...
-estPos[0][:,1] = angInd[1]
-estPos[1][:,1] = angMid[1]
-estPos[2][:,1] = angRin[1]
-estPos[3][:,1] = angPin[1]
+estPos[0][:,1] = jointInd[1]
+estPos[1][:,1] = jointMid[1]
+estPos[2][:,1] = jointRin[1]
+estPos[3][:,1] = jointPin[1]
 
 """ plotting stuff """
 #plo.plotter3d((pos[0],pos[1],pos[2], pos[3]),("Ind real","mid Real", "ring Real", "pin Real"))
@@ -127,8 +169,12 @@ plo.multiPlotter(estPos[1],"Middle")
 plo.multiPlotter(estPos[2],"Ring")
 plo.multiPlotter(estPos[3],"Pinky")
 
-plt.figure("callTime")
-plt.hist(lapinfo[:,0],100)
-plt.figure("callHist")
-plt.hist(lapinfo[:,1],100)
-plt.show()
+plt.figure("callTime Position")
+plt.hist(lapPos[:,0],100)
+plt.figure("callHist Position")
+plt.hist(lapPos[:,1],100)
+plt.figure("callTime Angle")
+plt.hist(lapPos[:,0],100)
+plt.figure("callHist Angle")
+plt.hist(lapPos[:,1],100)
+#plt.show()

@@ -271,7 +271,53 @@ def estimateAngle_s(pos,guess,off,phal,bnds):
                    bounds=bnds,tol=1e-12)
     return res    
    
+   
     
+def calcPosition_m(angle,phal,offSet):
+    res = np.zeros((12,))
+    for i in range(4):
+        res[i*3:i*3+3] = np.array([xPos(angle[i*3:i*3+3],phal[i*3:i*3+3],offSet[i*3]),
+                            yPos(angle[i*3:i*3+3],phal[i*3:i*3+3],offSet[i*3+1]),
+                            zPos(angle[i*3:i*3+3],phal[i*3:i*3+3],offSet[i*3+2])])
+    return res
+          
+def posFun_m(angle,pos,phal,off):
+#    print "angle", angle
+#    print "pos", pos
+#    print "off", off
+    estimated = calcPosition_m(angle,phal,off)
+    diff = pos - estimated
+#    print "diff: ", diff
+    res = np.linalg.norm(diff)
+    return res                  
+                     
+def estimateAngle_m(pos,guess,off,phal,bnds):
+    """estimate the angle(rad) for a position (using Python function)
+
+    Parameters
+    ----------
+    pos : array
+        the position
+    guess : array
+        initial guess for the angle (in rad)
+    off : array
+        the offset of the finger joint 
+    phal : array
+        length of the three phalanges (proximal, middle, distal)
+    bnds : tuple
+            the (static) lower and upper bounds for the angle
+            ((lbx,ubx),(lby,uby),(lbz,ubz))
+
+    Returns
+    -------
+    res.x : array
+        the result of the minimize function, i.e. the estimated position
+
+    """
+#    print "bla"
+    res = minimize(posFun_m,guess,args=(pos,phal,off),method='slsqp',
+                   bounds=bnds,tol=1e-12)
+    return res       
 
 
 """
