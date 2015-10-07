@@ -61,14 +61,14 @@ calc=datAcM.sortData(calc)
 
 
 """
-estimating the positions
+estimating the positions and angles
 """
 estPos = np.zeros((len(calc[0]),3))
 estPos[0] = np.array([joint[0]+r, joint[1], joint[2]])
 # bounds for finger
-bndsPos=((joint[0],joint[0]+r),
-      (joint[1]-0.0001,joint[1]+0.0001),        
-      (joint[2]-r,joint[2]))
+bndsPos = ((joint[0],joint[0]+r),
+          (joint[1]-0.0001,joint[1]+0.0001),        
+          (joint[2]-r,joint[2]))
       
 estAngle = np.zeros((len(calc[0]),3))
 estAngle[0] = np.array([0.,0.,0.])
