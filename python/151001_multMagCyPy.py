@@ -62,19 +62,23 @@ estPos[3][0] = [angPin[0]+rPin, angPin[1], angPin[2]]
 
 # fixed bnds
 bnds=((angInd[0],angInd[0]+rInd),    # index finger
-      (angInd[1]-0.003,angInd[1]+0.003),
+#      (angInd[1]-0.003,angInd[1]+0.003),
+      (angInd[1]-0.0001,angInd[1]+0.0001),
       (angInd[2]-rInd,angInd[2]),
 
       (angMid[0],angMid[0]+rMid),    # middle finger
-      (angMid[1]-0.003,angMid[1]+0.003),
+#      (angMid[1]-0.003,angMid[1]+0.003),
+      (angMid[1]-0.0001,angMid[1]+0.0001),
       (angMid[2]-rMid,angMid[2]),
 
       (angRin[0],angRin[0]+rRin),    # ring finger
-      (angRin[1]-0.003,angRin[1]+0.003),
+#      (angRin[1]-0.003,angRin[1]+0.003),
+      (angRin[1]-0.0001,angRin[1]+0.0001),
       (angRin[2]-rRin,angRin[2]),
 
       (angPin[0],angPin[0]+rPin),    # pinky finger
-      (angPin[1]-0.003,angPin[1]+0.003),
+#      (angPin[1]-0.003,angPin[1]+0.003),
+      (angPin[1]-0.0001,angPin[1]+0.0001),
       (angPin[2]-rPin,angPin[2]))
 
 startAlg = time.time()
@@ -108,6 +112,12 @@ print "delta y estPos[0]-Index", max(estPos[0][:,1])-min(estPos[0][:,1])
 print "delta y estPos[1]-Middle", max(estPos[1][:,1])-min(estPos[1][:,1])
 print "delta y estPos[2]-Ring", max(estPos[2][:,1])-min(estPos[2][:,1])
 print "delta y estPos[3]-Pinky", max(estPos[3][:,1])-min(estPos[3][:,1])
+
+# remove the y-axis motion...
+estPos[0][:,1] = angInd[1]
+estPos[1][:,1] = angMid[1]
+estPos[2][:,1] = angRin[1]
+estPos[3][:,1] = angPin[1]
 
 """ plotting stuff """
 #plo.plotter3d((pos[0],pos[1],pos[2], pos[3]),("Ind real","mid Real", "ring Real", "pin Real"))
