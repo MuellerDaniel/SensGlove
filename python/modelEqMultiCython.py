@@ -14,7 +14,7 @@ import fcnCyPy as fcn
 
 
 """
-estimation equations
+estimating the positions
 """
 
 def evalfuncMag(P,S):
@@ -99,20 +99,13 @@ def evalfuncMagH_dot(P,H,S):
 def funcMagY(P,S,B):
     # straight forward approach,
     # shape (12,)
-#    print "P ", type(P)
-#    print "S ", type(S)
-#    print "B ", type(B)
-    start = time.time()
     val = np.zeros(shape=(B.shape))
     for i in range(len(S)):
-#        print "P.shape ",val
         b = 0.
         for j in range(len(P)/3):
             b += evalfuncMagDot(P[j*3:j*3+3],S[i])
         val[i*3:i*3+3] = b
-    #print "val: ", val
     res = np.linalg.norm(B - val)
-    #print "time needed: ", time.time()-start
     return res
 
 def evalfuncMagMulti(P,S):
@@ -140,7 +133,7 @@ def funcMagYmulti(P,S,B):
     return res
 
 def estimatePos(P,S,B,cnt,bnds=None,jacobian=None):
-    """returns the estimated position
+    """returns the estimated position (using Cython function)
 
     Parameters
     ----------
@@ -160,47 +153,125 @@ def estimatePos(P,S,B,cnt,bnds=None,jacobian=None):
         the result of the minimize function, i.e. the estimated position
 
     """
-#    c=0.1
-#    cons = ({'type':'ineq',
-#             'fun':lambda x: c/10 - abs(P[0]-x[0])},
-#            {'type':'ineq',
-#             'fun':lambda x: c - abs(P[1]-x[1])},
-#            {'type':'ineq',
-#             'fun':lambda x: c - abs(P[2]-x[2])},
-#            {'type':'ineq',
-#             'fun':lambda x: c/10 - abs(P[3]-x[3])},
-#            {'type':'ineq',
-#             'fun':lambda x: c - abs(P[4]-x[4])},
-#            {'type':'ineq',
-#             'fun':lambda x: c - abs(P[5]-x[5])},)
-#    cons = ({'type':'ineq',
-#             'fun':lambda x: c - abs(P-x)},)
+
     opt = ({'maxiter':100})
     '''   advanced approach (pseudo-inverse thing)  '''
 #    val = minimize(funcMagYmulti, P, args=(S,B), method='slsqp',
 #                   tol=1e-5, bounds=bnds, jac=jacobian)
     '''    straight forward approach norm(B(estPos)-B(measured))    '''
-    #val = minimize(funcMagY, P, args=(S,B), method='slsqp',
-    #               tol=1e-4, bounds=bnds, jac=jacobian, options=opt)
+#    val = minimize(funcMagY, P, args=(S,B), method='slsqp',
+#                   tol=1e-4, bounds=bnds, jac=jacobian, options=opt)
     val = minimize(fcn.funcMagY_cy, P, args=(S,B), method='slsqp',
                     bounds=bnds, jac=jacobian)
-#    print "evaluation ",cnt
-#    print funcMagYmulti(val.x,S,B)
-#    val = _minimize_slsqp(funcMagY, P, args=(S,B), method='slsqp',
-#                   tol=1e-5, bounds=bnds, jac=jacobian)
-#    val.x is a 1d-vector, so reshape it!
-#    res = np.reshape(val.x,(len(P)/3,1,3))     # improve it!
-#    res = np.reshape(val.x,(1,1,3))
+
     if val.success:
-#        print "jacobian\n", val.jac
-        #print "python, val.x\n", val.x
         return val        # as result you will get the P vector!
     else:
         print "No solution found! Iteration Nr ",cnt
         print "Error message ",val.message
-#        print res.message
-#        return np.zeros(shape=(2,1,3))
         return val
+
+
+def estimatePosPy(P,S,B,cnt,bnds=None,jacobian=None):
+    """returns the estimated position (using Python function)
+
+    Parameters
+    ----------
+    P : array
+        the initial guess of the position
+    S : array
+        the position of the sensor
+    B : array
+        the magnetic field
+    bnds : tuple
+            the lower and upper bounds for the position coordinates
+            ((lbx,ubx),(lby,uby),(lbz,ubz))
+
+    Returns
+    -------
+    res.x : array
+        the result of the minimize function, i.e. the estimated position
+
+    """
+    opt = ({'maxiter':100})
+    '''   advanced approach (pseudo-inverse thing)  '''
+#    val = minimize(funcMagYmulti, P, args=(S,B), method='slsqp',
+#                   tol=1e-5, bounds=bnds, jac=jacobian)
+    '''    straight forward approach norm(B(estPos)-B(measured))    '''
+    val = minimize(funcMagY, P, args=(S,B), method='slsqp',
+                   tol=1e-4, bounds=bnds, jac=jacobian, options=opt)
+    if val.success:
+
+        return val        # as result you will get the P vector!
+    else:
+        print "No solution found! Iteration Nr ",cnt
+        print "Error message ",val.message
+        return val
+
+"""
+estimating the angles
+"""
+
+def xPos(angle,phal,off):
+    return (phal[0]*np.cos(angle[0])+
+            phal[1]*np.cos((angle[0])+(angle[1]))+
+            phal[2]*np.cos((angle[0])+(angle[1])+(angle[2]))+off)
+            
+# for simplicity neglect it...            
+def yPos(angle,phal,off):
+    return off            
+
+def zPos(angle,phal,off):
+    return (phal[0]*np.sin((angle[0]))+
+            phal[1]*np.sin((angle[0])+(angle[1]))+
+            phal[2]*np.sin((angle[0])+(angle[1])+(angle[2]))+off)*-1
+
+          
+def calcPosition_s(angle,phal,offSet):
+    res = np.array([xPos(angle,phal,offSet[0]),
+                    yPos(angle,phal,offSet[1]),
+                    zPos(angle,phal,offSet[2])])
+    return res
+          
+def posFun_s(angle,pos,phal,off):
+#    print "angle", angle
+#    print "pos", pos
+#    print "off", off
+    estimated = calcPosition_s(angle,phal,off)
+    diff = pos - estimated
+#    print "diff: ", diff
+    res = np.linalg.norm(diff)
+    return res                  
+                     
+def estimateAngle_s(pos,guess,off,phal,bnds):
+    """estimate the angle(rad) for a position (using Python function)
+
+    Parameters
+    ----------
+    pos : array
+        the position
+    guess : array
+        initial guess for the angle (in rad)
+    off : array
+        the offset of the finger joint 
+    phal : array
+        length of the three phalanges (proximal, middle, distal)
+    bnds : tuple
+            the (static) lower and upper bounds for the angle
+            ((lbx,ubx),(lby,uby),(lbz,ubz))
+
+    Returns
+    -------
+    res.x : array
+        the result of the minimize function, i.e. the estimated position
+
+    """
+#    print "bla"
+    res = minimize(posFun_s,guess,args=(pos,phal,off),method='slsqp',
+                   bounds=bnds,tol=1e-12)
+    return res    
+   
+    
 
 
 """
@@ -374,26 +445,3 @@ def moving_average(data, n) :
 
     ret[n:] = ret[n:] - ret[:-n]
     return ret[n - 1:] / n
-
-def movingAvg(data, n):
-    """simple moving average filter, returns the filtered data
-
-    Parameters
-    ----------
-    data : array
-        the dataset to be filtered
-    n : int
-        nr of points used for the avg filter
-
-    Returns
-    -------
-    dataFiltered : array
-        the filtered dataset
-    """
-    dataFiltered = np.copy(data)
-    cnt = n
-    while cnt < data.shape[0]:
-        dataFiltered[cnt] = dataFiltered[cnt-1] + (data[cnt]/n) - (data[cnt-n]/n)
-        cnt+=1
-
-    return dataFiltered
