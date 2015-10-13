@@ -154,7 +154,7 @@ def estimatePos(P,S,B,cnt,bnds=None,jacobian=None):
 
     """
 
-    opt = ({'maxiter':100})
+#    opt = ({'maxiter':100})
     '''   advanced approach (pseudo-inverse thing)  '''
 #    val = minimize(funcMagYmulti, P, args=(S,B), method='slsqp',
 #                   tol=1e-5, bounds=bnds, jac=jacobian)
@@ -286,7 +286,7 @@ def posFun_m(angle,pos,phal,off):
 #    print "pos", pos
 #    print "off", off
     estimated = calcPosition_m(angle,phal,off)
-    diff = pos - estimated
+    diff = estimated - pos
 #    print "diff: ", diff
     res = np.linalg.norm(diff)
     return res                  
@@ -315,8 +315,11 @@ def estimateAngle_m(pos,guess,off,phal,bnds):
 
     """
 #    print "bla"
-    res = minimize(posFun_m,guess,args=(pos,phal,off),method='slsqp',
+#    res = minimize(posFun_m,guess,args=(pos,phal,off),method='slsqp',
+#                   bounds=bnds,tol=1e-12)
+    res = minimize(fcn.posFun_m_cy,guess,args=(pos,phal,off),method='slsqp',
                    bounds=bnds,tol=1e-12)
+                   
     return res       
 
 

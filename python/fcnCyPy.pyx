@@ -3,13 +3,14 @@ import numpy as np
 import time
 from scipy.optimize import *
 # you have to include the 'math.h' library for sqrt() and pow()!!!
-from libc.math cimport pow
-from libc.math cimport sqrt
+from libc.math cimport pow, sqrt, cos, sin
 from libc.stdlib cimport malloc,free
 
 
 '''
-      cython version
+###############################################################################
+    cython version
+###############################################################################
 '''
 
 cdef long double cal_norm_cy(long double *val, len):
@@ -122,7 +123,6 @@ cdef long double * evalfuncMagDot_cy(long double *P, long double *S, int lenP, i
 
 
 def funcMagY_cy(P,S,B):
-    start = time.time()
     cdef int lenP, lenS, lenB
     cdef int i, j, k
     # generate an int for the length, because it's safer to pass this variable
@@ -215,6 +215,85 @@ def estimatePos(P,S,B,cnt,bnds=None,jacobian=None):
         print val.message
 #        return np.zeros(shape=(2,1,3))
         return val
+
+
+#'''
+#  angle estimation
+#'''
+
+cdef long double xPos(long double *angleArr, long double *phalArr, long double off):
+    cdef long double res
+    res = phalArr[0] + cos(angleArr[0]) +phalArr[1] + cos(angleArr[0] + angleArr[1]) +phalArr[2] + cos(angleArr[0] + angleArr[1] + angleArr[2]) + off
+
+    return res
+
+cdef long double yPos(long double *angleArr, long double *phalArr, long double off):
+    return off
+
+cdef long double zPos(long double *angleArr, long double *phalArr, long double off):
+    cdef long double res
+    res = phalArr[0] + sin(angleArr[0]) +phalArr[1] + sin(angleArr[0] + angleArr[1]) +phalArr[2] + sin(angleArr[0] + angleArr[1] + angleArr[2]) +off
+
+    return res
+
+
+cdef calcPosition_m_cy(long double *angleArr, long double *phalArr,
+                                    long double *offArr, long lenOff):
+# TODO write the function in cython...
+    cdef int i,j
+    cdef long double *angleAct
+    angleAct = <long double*> malloc(3*sizeof(long double))
+    cdef long double *phalAct
+    phalAct = <long double*> malloc(3*sizeof(long double))
+    cdef long double *offAct
+    offAct = <long double*> malloc(3*sizeof(long double))
+
+    res = [0]*lenOff
+    i = 0
+    for i in range(4):
+        j = 0
+        for j in range(3):
+            angleAct[j] = angleArr[j+i*3]
+            phalAct[j] = phalArr[j+i*3]
+        res[i*3:i*3+3] = np.array([xPos(angleAct,phalAct,offArr[i*3]),
+                            yPos(angleAct,phalAct,offArr[i*3+1]),
+                            zPos(angleAct,phalAct,offArr[i*3+2])])
+    return res
+
+def posFun_m_cy(angle,pos,phal,off):
+    cdef int lenAngle, lenPhal, lenOff
+    cdef int i
+    lenAngle = len(angle)
+    lenPhal = len(phal)
+    lenOff = len(off)
+#   convert to c-arrays
+    cdef long double *angleArr
+    angleArr = <long double*> malloc(lenAngle*sizeof(long double))
+    i = 0
+    for i in range(lenAngle):
+        angleArr[i] = angle[i]
+
+    cdef long double *phalArr
+    phalArr = <long double*> malloc(lenPhal*sizeof(long double))
+    i = 0
+    for i in range(lenPhal):
+        phalArr[i] = phal[i]
+
+    cdef long double *offArr
+    offArr = <long double*> malloc(lenOff*sizeof(long double))
+    i = 0
+    for i in range(lenOff):
+        offArr[i] = off[i]
+
+    estimated = calcPosition_m_cy(angleArr,phalArr,offArr,lenOff)
+    diff = estimated - pos
+    res = np.linalg.norm(diff)    # it should work this way... though function returns a long...
+
+    free(angleArr)
+    free(phalArr)
+    free(offArr)
+    return res
+
 
 
 '''

@@ -23,16 +23,12 @@ PVector cpts[];
 Rot nullrot=new Rot(1,0,0,0,false),
         rot=new Rot(1,0,0,0,false);
 
-
-
-
 Serial rx;
 
 LinkedHashMap<Integer,Rot> map = new LinkedHashMap<Integer,Rot>();
 
 static final float RADIUS=5, HALFR=30;
 static int i=0;
-//int cnt = 1;
 boolean serialUp = false;
 static int id = 5 ;	//variable for indicating the IMU (IDs range from 0 to 15)
 PFont f;

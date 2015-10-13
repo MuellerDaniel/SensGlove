@@ -119,7 +119,7 @@ for i in range(len(b[0])-1):
     tmp = modE.estimatePos(np.concatenate((estPos[0][i],estPos[1][i],estPos[2][i],estPos[3][i])),
                          np.reshape([s1,s2,s3,s4],((12,))),     # for calling the cython function
                          np.concatenate((b[0][i+1],b[1][i+1],b[2][i+1],b[3][i+1])),   
-                         i,bnds)
+                         i,bndsPos)
 #    ...or the other
 #    tmp = fcn.estimatePos(np.concatenate((estPos[0][i],estPos[1][i],estPos[2][i],estPos[3][i])),
 #                        np.reshape([s1,s2,s3,s4],((12,))),     # for calling the cython function
@@ -174,7 +174,7 @@ plt.hist(lapPos[:,0],100)
 plt.figure("callHist Position")
 plt.hist(lapPos[:,1],100)
 plt.figure("callTime Angle")
-plt.hist(lapPos[:,0],100)
+plt.hist(lapAng[:,0],100)
 plt.figure("callHist Angle")
-plt.hist(lapPos[:,1],100)
+plt.hist(lapAng[:,1],100)
 #plt.show()
