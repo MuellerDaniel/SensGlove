@@ -173,6 +173,7 @@ def funcMagY_cy(P,S,B):
     free(pArr)
     free(sArr)
     free(bArr)
+    #print "cython called!"
     return res
 
 
@@ -221,80 +222,43 @@ def estimatePos(P,S,B,cnt,bnds=None,jacobian=None):
 #  angle estimation
 #'''
 
-cdef long double xPos(long double *angleArr, long double *phalArr, long double off):
-    cdef long double res
-    res = phalArr[0] + cos(angleArr[0]) +phalArr[1] + cos(angleArr[0] + angleArr[1]) +phalArr[2] + cos(angleArr[0] + angleArr[1] + angleArr[2]) + off
+def xPos_py(angle,phal,off):
+    return (phal[0]*np.cos(angle[0])+
+            phal[1]*np.cos((angle[0])+(angle[1]))+
+            phal[2]*np.cos((angle[0])+(angle[1])+(angle[2]))+off)
 
-    return res
-
-cdef long double yPos(long double *angleArr, long double *phalArr, long double off):
+def yPos_py(angle,phal,off):
     return off
 
-cdef long double zPos(long double *angleArr, long double *phalArr, long double off):
-    cdef long double res
-    res = phalArr[0] + sin(angleArr[0]) +phalArr[1] + sin(angleArr[0] + angleArr[1]) +phalArr[2] + sin(angleArr[0] + angleArr[1] + angleArr[2]) +off
+def zPos_py(angle,phal,off):
+    return (phal[0]*np.sin((angle[0]))+
+            phal[1]*np.sin((angle[0])+(angle[1]))+
+            phal[2]*np.sin((angle[0])+(angle[1])+(angle[2]))+off)*-1
 
+def calcPosition_py(angle,phal,offSet):
+    cdef int i = 0
+    cdef int iEnd = 4
+    res = np.zeros((12,))
+    for i in range(iEnd):
+        res[i*3:i*3+3] = np.array([xPos_py(angle[i*3:i*3+3],phal[i*3:i*3+3],offSet[i*3]),
+                            yPos_py(angle[i*3:i*3+3],phal[i*3:i*3+3],offSet[i*3+1]),
+                            zPos_py(angle[i*3:i*3+3],phal[i*3:i*3+3],offSet[i*3+2])])
     return res
 
-
-cdef calcPosition_m_cy(long double *angleArr, long double *phalArr,
-                                    long double *offArr, long lenOff):
-# TODO write the function in cython...
-    cdef int i,j
-    cdef long double *angleAct
-    angleAct = <long double*> malloc(3*sizeof(long double))
-    cdef long double *phalAct
-    phalAct = <long double*> malloc(3*sizeof(long double))
-    cdef long double *offAct
-    offAct = <long double*> malloc(3*sizeof(long double))
-
-    res = [0]*lenOff
-    i = 0
-    for i in range(4):
-        j = 0
-        for j in range(3):
-            angleAct[j] = angleArr[j+i*3]
-            phalAct[j] = phalArr[j+i*3]
-        res[i*3:i*3+3] = np.array([xPos(angleAct,phalAct,offArr[i*3]),
-                            yPos(angleAct,phalAct,offArr[i*3+1]),
-                            zPos(angleAct,phalAct,offArr[i*3+2])])
-    return res
-
-def posFun_m_cy(angle,pos,phal,off):
-    cdef int lenAngle, lenPhal, lenOff
-    cdef int i
-    lenAngle = len(angle)
-    lenPhal = len(phal)
-    lenOff = len(off)
-#   convert to c-arrays
-    cdef long double *angleArr
-    angleArr = <long double*> malloc(lenAngle*sizeof(long double))
-    i = 0
-    for i in range(lenAngle):
-        angleArr[i] = angle[i]
-
-    cdef long double *phalArr
-    phalArr = <long double*> malloc(lenPhal*sizeof(long double))
-    i = 0
-    for i in range(lenPhal):
-        phalArr[i] = phal[i]
-
-    cdef long double *offArr
-    offArr = <long double*> malloc(lenOff*sizeof(long double))
-    i = 0
-    for i in range(lenOff):
-        offArr[i] = off[i]
-
-    estimated = calcPosition_m_cy(angleArr,phalArr,offArr,lenOff)
+def posFun_cy(angle,pos,phal,off):
+    estimated = calcPosition_py(angle,phal,off)
     diff = estimated - pos
     res = np.linalg.norm(diff)    # it should work this way... though function returns a long...
 
-    free(angleArr)
-    free(phalArr)
-    free(offArr)
     return res
 
 
+def estimateAngle_mCy(pos,guess,off,phal,bnds):
+  res = minimize(posFun_cy,guess,args=(pos,phal,off),method='slsqp',
+                 bounds=bnds,tol=1e-12)
+#    fcn.test(pos)
+#    res = 0
+  return res
 
 '''
 ###############################################################################
