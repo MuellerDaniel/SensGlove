@@ -268,7 +268,7 @@ def estimateAngle_s(pos,guess,off,phal,bnds):
     """
 #    print "bla"
     res = minimize(posFun_s,guess,args=(pos,phal,off),method='slsqp',
-                   bounds=bnds,tol=1e-12)
+                   bounds=bnds)
     return res    
    
    
@@ -289,6 +289,7 @@ def posFun_m(angle,pos,phal,off):
     diff = estimated - pos
 #    print "diff: ", diff
     res = np.linalg.norm(diff)
+    print "function ",res
     return res                  
                      
 def estimateAngle_m(pos,guess,off,phal,bnds):
@@ -314,12 +315,14 @@ def estimateAngle_m(pos,guess,off,phal,bnds):
         the result of the minimize function, i.e. the estimated position
 
     """
-#    print "bla"
+    # normal version
 #    res = minimize(posFun_m,guess,args=(pos,phal,off),method='slsqp',
-#                   bounds=bnds,tol=1e-12)
-    res = minimize(fcn.posFun_m_cy,guess,args=(pos,phal,off),method='slsqp',
-                   bounds=bnds,tol=1e-12)
-                   
+#                   bounds=bnds,tol=1e-12)    
+    # calling the cython function
+    res = minimize(fcn.posFun_cy,guess,args=(pos,phal,off),method='slsqp',
+                   bounds=bnds)
+#    res = fcn.estimateAngle_mCy(pos,guess,off,phal,bnds)
+
     return res       
 
 
