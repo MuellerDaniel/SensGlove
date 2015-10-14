@@ -15,7 +15,7 @@ while True:
     print "in while..."
     pipeout = os.open(mPath, os.O_WRONLY)
     time.sleep(0.1)
-    try:
+    try:                   #thumb      #index       #middle      #ring        #pinky
         os.write(pipeout, "0.0 0.0 0.0 90.0 0.0 0.0 0.0 90.0 0.0 0.0 0.0 90.0 0.0 90.0 0.0\n")
         counter = counter+1
         print "process1 running..."
