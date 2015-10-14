@@ -27,9 +27,21 @@ BufferedReader reader;
 //String line;
 float angles[];
 
-
-
-
+// finger lengths/coordinates
+int factor = 1000;
+float offX = 0.09138*factor;    // level of MCPs
+float offZ = -0.01087*factor;   // level of MCPs
+float offX_thumb = 0.07138*factor;  //thumb 
+float thumbOffY = 0.0490*factor; 
+float[] phalThumb = {0.02038*factor, 0.01728*factor, 0.01234*factor};
+float indexOffY = 0.02957*factor;    //index
+float[] phalInd = {0.03038*factor, 0.02728*factor, 0.02234*factor};
+float middleOffY = 0.00920*factor;   //middle
+float[] phalMid = {0.03640*factor, 0.03075*factor, 0.02114*factor};
+float ringOffY = -0.01117*factor;    //ring
+float[] phalRin = {0.03344*factor, 0.02782*factor, 0.01853*factor};
+float pinkyOffY = -0.03154*factor;  //pinky
+float[] phalPin = {0.02896*factor, 0.02541*factor, 0.01778*factor};
 
 LinkedHashMap<Integer,Rot> map = new LinkedHashMap<Integer,Rot>();
 
@@ -82,9 +94,8 @@ void draw()
   ambientLight(160, 160, 160);
   popMatrix();
   
-  String line;
-  
-  /*try{
+  String line;  
+  try{
     line = reader.readLine();
   }catch (IOException e) {
     e.printStackTrace();
@@ -95,11 +106,12 @@ void draw()
     System.out.println("END!!!");
     noLoop();  
   } else {
-    System.out.println(line);
+    //System.out.println(line);
     //and now apply the angles to your points...
     extractAngles(line);
-    //updateCtrlPts();
-  }*/
+    updateCtrlPts();
+    //cpts[0].x += 1;
+  }
 
   //"make" the tubes
   updateTubes(cpts);
@@ -118,17 +130,125 @@ void draw()
 void extractAngles(String line){
   String[] list;  
   list = split(line,' ');
-  System.out.println(list.length);
+  //System.out.println(list.length);
   angles = new float[list.length];
   for(int i = 0; i<list.length; i++){
      angles[i] = Float.parseFloat(list[i]);
-     System.out.println(angles[i]);
+     //System.out.println(angles[i]);
   }
 }
 
+float sumAngles(int angleCnt, int amount){
+  float res = 0.0; 
+  System.out.println("angleCnt: " + angleCnt + " amount: " + amount);
+  for (int i = 0; i<=amount; i++){
+      res += angles[angleCnt-i];
+   } 
+   return res;
+}
+
 void updateCtrlPts(){
-  // apply the angles 
+  // apply the angles   
+  float[] phal = new float[3];
+  int cnt = 0;
+  int pt = -2;
+  for (int i=0; i<angles.length; i++) {
+     if((i%3) == 0){    //change the finger
+       switch (i){
+         case 0: phal = phalThumb;
+                 cnt = 0;
+                 //System.out.println("Thumb:");
+                 break;
+         case 3: phal = phalInd;
+                 cnt = 0;
+                 //System.out.println("Index:");
+                 break;
+         case 6: phal = phalMid;
+                 cnt = 0;
+                 //System.out.println("Middle:");
+                 break;
+         case 9: phal = phalRin;
+                 cnt = 0;
+                 //System.out.println("Ring:");
+                 break;
+         case 12: phal = phalPin;
+                 cnt = 0;
+                 //System.out.println("Pinky:");
+                 break; 
+         default: System.out.println("default..."); 
+                  break;         
+       }  
+     } 
+    if(cnt == 0){
+     pt += 2;     
+    } else {
+      pt += 1;       
+    }
+    cpts[pt+1].x = cpts[pt].x+phal[cnt]*cos(radians(sumAngles(i,cnt)));
+    cpts[pt+1].z = cpts[pt].z-phal[cnt]*sin(radians(sumAngles(i,cnt)));
+    cnt += 1;
+    /*// thumb
+    
+    cpts[2].x = cpts[1].x+phal[1]*cos(radians(angles[0]+angles[1]));
+    cpts[2].z = cpts[1].z-phal[1]*sin(radians(angles[0]+angles[1]));
+    cpts[3].x = cpts[2].x+phal[2]*cos(radians(angles[0]+angles[1]+angles[2]));
+    cpts[3].z = cpts[2].z-phal[2]*sin(radians(angles[0]+angles[1]+angles[2]));
+    
+    //index
+    cpts[5].x = cpts[4].x+phalInd[0]*cos(radians(angles[3]));
+    cpts[5].z = cpts[4].z-phalInd[0]*sin(radians(angles[3]));
+    cpts[6].x = cpts[5].x+phalInd[1]*cos(radians(angles[3]+angles[4]));
+    cpts[6].z = cpts[5].z-phalInd[1]*sin(radians(angles[3]+angles[4]));
+    cpts[7].x = cpts[6].x+phalInd[2]*cos(radians(angles[3]+angles[4]+angles[5]));
+    cpts[7].z = cpts[6].z-phalInd[2]*sin(radians(angles[3]+angles[4]+angles[5]));*/
   
+  }
+  
+  
+  /*
+  float[] phal = new float[3];
+  int cnt = 0;
+  int act = -1;
+  for (int i=0; i<angles.length; i++) {
+     if((i%3) == 0){    //change the finger
+       switch (i){
+         case 0: phal = phalThumb;
+                 cnt = 0;
+                 //System.out.println("Thumb:");
+                 break;
+         case 3: phal = phalInd;
+                 cnt = 0;
+                 //System.out.println("Index:");
+                 break;
+         case 6: phal = phalMid;
+                 cnt = 0;
+                 //System.out.println("Middle:");
+                 break;
+         case 9: phal = phalRin;
+                 cnt = 0;
+                 //System.out.println("Ring:");
+                 break;
+         case 12: phal = phalPin;
+                 cnt = 0;
+                 //System.out.println("Pinky:");
+                 break; 
+         default: System.out.println("default..."); 
+                  break;         
+       }  
+     }  
+     //System.out.println(angles[i]);
+     //TODO: see the points relative!
+     if(cnt == 0){
+       act += 2;
+       cpts[act].x = cos(radians(angles[i]))*phal[cnt];
+       cpts[act].z = sin(radians(angles[i]))*phal[cnt];  
+     } else {
+        act += 1;
+        cpts[act].x = cos(radians(angles[i]))*phal[cnt];
+        cpts[act].z = sin(radians(angles[i]))*phal[cnt];
+     }  
+     cnt += 1;  
+  }*/
   
 }
 
@@ -138,123 +258,6 @@ float getAngle(PVector startP, PVector angleP, PVector endP){
   PVector dir2 = PVector.sub(endP,angleP);
   return acos((abs(dir1.dot(dir2)))/(dir1.mag() * dir2.mag()));
 }
-
-/*void updateCtrlPts(LinkedHashMap<Integer,Rot> rotation){
-//int n = 0;
-  int thumbOffX = -40;
-  int indexOffX = -30;
-  int middleOffX = -10;
-  int ringOffX = 10;
-  int littleOffX = 30;
-
-  PVector finger[][] ={
-      { new PVector(thumbOffX,20,0),  //thumb
-      new PVector(0,-20,0),
-      new PVector(0,-20,0),
-      new PVector(0,-20,0)},
-      {new PVector(indexOffX,0,0),  //index
-      new PVector(0,-HALFR,0),
-      new PVector(0,-HALFR,0),
-      new PVector(0,-HALFR,0)},
-      {new PVector(middleOffX,0,0),  //middle
-      new PVector(0,-HALFR,0),
-      new PVector(0,-HALFR,0),
-      new PVector(0,-HALFR,0)},
-      {new PVector(ringOffX,0,0),    //ring
-      new PVector(0,-HALFR,0),
-      new PVector(0,-HALFR,0),
-      new PVector(0,-HALFR,0)},
-      {new PVector(littleOffX,0,0),  //little
-      new PVector(0,-HALFR,0),
-      new PVector(0,-HALFR,0),
-      new PVector(0,-HALFR,0)}};
-
-  List<PVector> tmp = new ArrayList<PVector>();
-  //you have the CtrlPts in cpts!
-  //for each finger 4 points  (o----)o----o----o----o
-  //              (palm)  MCP  DIP  PIP  nail
-  Set entrySet = rotation.entrySet();
-  Iterator it = entrySet.iterator();
-  //iterate over the rotation map
-  while(it.hasNext()){
-    Map.Entry entry = (Map.Entry)it.next();
-    Rot rot = (Rot)entry.getValue();
-    Integer key = (Integer)entry.getKey();
-    int cptskey = 0;
-
-    if(key == 15){          //apply rot to whole figure
-      rot.applyTo(new PVector(0,0,0)); //rot camera
-    }
-
-    if((key+3)%3 == 0 ){      //apply rot to DIP/PIP/nail
-      //System.out.println("apply rot to DIP/PIP/nail");
-      if(key == 3)   cptskey = key+1;
-      if(key == 6)   cptskey = key+2;
-      if(key == 9)   cptskey = key+3;
-      if(key == 12)  cptskey = key+4;
-      //openGL rotation Matrix
-
-      cpts[cptskey] = finger[key/3][0];
-      finger[key/3][1] = rot.applyTo(finger[key/3][1]);
-      finger[key/3][0] = PVector.add(finger[key/3][0], finger[key/3][1]);
-      cpts[cptskey+1] = finger[key/3][0];
-      finger[key/3][2] = rot.applyTo(finger[key/3][2]);
-      finger[key/3][0] = PVector.add(finger[key/3][0], finger[key/3][2]);
-      cpts[cptskey+2] = finger[key/3][0];
-      finger[key/3][3] = rot.applyTo(finger[key/3][3]);
-      finger[key/3][0] = PVector.add(finger[key/3][0], finger[key/3][3]);
-      cpts[cptskey+3] = finger[key/3][0];
-
-      //TODO palm representation???
-      //getAngle(cpts[], cpts[], cpts[cptskey], cpts[cptskey+1]);
-      //      ---(palm)---
-
-    }else if((key+2)%3 == 0){  //apply rot to PIP/nail
-      //System.out.println("apply rot to PIP/nail");
-      if(key != 1) key -= 1;
-      if(key == 3)   cptskey = key+1;
-      if(key == 6)   cptskey = key+2;
-      if(key == 9)   cptskey = key+3;
-      if(key == 12)  cptskey = key+4;
-
-      cpts[cptskey] = finger[key/3][0];
-      //finger[key/3][1] = rot.applyTo(finger[key/3][1]);
-      finger[key/3][0] = PVector.add(finger[key/3][0], finger[key/3][1]);
-      cpts[cptskey+1] = finger[key/3][0];
-      finger[key/3][2] = rot.applyTo(finger[key/3][2]);
-      finger[key/3][0] = PVector.add(finger[key/3][0], finger[key/3][2]);
-      cpts[cptskey+2] = finger[key/3][0];
-      finger[key/3][3] = rot.applyTo(finger[key/3][3]);
-      finger[key/3][0] = PVector.add(finger[key/3][0], finger[key/3][3]);
-      cpts[cptskey+3] = finger[key/3][0];
-
-      float angle = getAngle(cpts[cptskey], cpts[cptskey+1], cpts[cptskey+2]);
-      System.out.println("angle: " + angle);
-
-    }else if((key+1)%3 == 0){  //apply rot to nail
-      //System.out.println("apply rot to nail");
-      if(key != 2) key -= 2;
-      if(key == 3)   cptskey = key+1;
-      if(key == 6)   cptskey = key+2;
-      if(key == 9)   cptskey = key+3;
-      if(key == 12)  cptskey = key+4;
-
-      cpts[cptskey] = finger[key/3][0];
-      //finger[key/3][1] = rot.applyTo(finger[key/3][1]);
-      finger[key/3][0] = PVector.add(finger[key/3][0], finger[key/3][1]);
-      cpts[cptskey+1] = finger[key/3][0];
-      //finger[key/3][2] = rot.applyTo(finger[key/3][2]);
-      finger[key/3][0] = PVector.add(finger[key/3][0], finger[key/3][2]);
-      cpts[cptskey+2] = finger[key/3][0];
-      finger[key/3][3] = rot.applyTo(finger[key/3][3]);
-      finger[key/3][0] = PVector.add(finger[key/3][0], finger[key/3][3]);
-      cpts[cptskey+3] = finger[key/3][0];
-
-      float angle = getAngle(cpts[cptskey+1], cpts[cptskey+2], cpts[cptskey+3]);
-      System.out.println("angle: " + angle);
-    }
-  }
-}*/
 
 //draw the x-, y-, z-lines
 void drawCoordinates(int len)
@@ -326,85 +329,34 @@ PVector[] makeCtrlPts()
 {
  // Rot rots[] = map.values().toArray(new Rot[0]);
   List<PVector> p = new ArrayList<PVector>();
-  //index finger
-  //int indexOffX = -30;
-  /*PVector cur = new PVector(indexOffX, 0,0),		//the current point to modify (also starting point)
-            r1 = new PVector(indexOffX,-HALFR,0),	//second point of the beztube
-			      r2 = new PVector(indexOffX,-HALFR,0),	//third point of the beztube
-			      r3 = new PVector(indexOffX,-HALFR,0);	//fourth point of the beztube*/
-
- 
-
-  //index finger
-  /*int indexOffX = -30;
-  p.add(new PVector(indexOffX,0,0));
-  p.add(new PVector(indexOffX,-HALFR,0));
-  p.add(new PVector(indexOffX,-HALFR*2,0));
-  p.add(new PVector(indexOffX,-HALFR*3,0));
-
-  //add the other ctrlPts!
-  //middle finger
-  int middleOffX = -10;
-  p.add(new PVector(middleOffX,0,0));
-  p.add(new PVector(middleOffX,-HALFR,0));
-  p.add(new PVector(middleOffX,-HALFR*2,0));
-  p.add(new PVector(middleOffX,-HALFR*3,0));
-
-  //ring finger
-  int ringOffX = 10;
-  p.add(new PVector(ringOffX,0,0));
-  p.add(new PVector(ringOffX,-HALFR,0));
-  p.add(new PVector(ringOffX,-HALFR*2,0));
-  p.add(new PVector(ringOffX,-HALFR*3,0));
-
-  //little finger
-  int littleOffX = 30;
-  p.add(new PVector(littleOffX,0,0));
-  p.add(new PVector(littleOffX,-HALFR,0));
-  p.add(new PVector(littleOffX,-HALFR*2,0));
-  p.add(new PVector(littleOffX,-HALFR*3,0));*/
-  
-  int factor = 1000;
-  float offX = 0.09138*factor;
-  float offZ = -0.01087*factor;
-  
-  //thumb
-  float offX_thumb = 0.07138*factor;
-  float tOffsetY = 0.0500*factor; //thumb offset
-  p.add(new PVector(offX_thumb,tOffsetY,offZ));      //MCP
-  p.add(new PVector(offX_thumb+10,tOffsetY+10,offZ));  //PIP
-  p.add(new PVector(offX_thumb+20,tOffsetY+20,offZ));  //DIP
-  p.add(new PVector(offX_thumb+30,tOffsetY+30,offZ));  //nail
+    
+  //thumb  
+  p.add(new PVector(offX-30,thumbOffY,offZ));      //MCP
+  p.add(new PVector(offX-30+phalThumb[0],thumbOffY,offZ));  //PIP
+  p.add(new PVector(offX-30+phalThumb[0]+phalThumb[1],thumbOffY,offZ));  //DIP
+  p.add(new PVector(offX-30+phalThumb[0]+phalThumb[1]+phalThumb[2],thumbOffY,offZ));  //nail
   
   
- //index finger
-  float indexOffY = 0.02957*factor;
-  float[] phalInd = {0.03038*factor, 0.02728*factor, 0.02234*factor};  
+ //index finger  
   p.add(new PVector(offX,indexOffY,offZ));  //MCP
   p.add(new PVector(offX+phalInd[0],indexOffY,offZ));  //PIP
   p.add(new PVector(offX+phalInd[0]+phalInd[1],indexOffY,offZ));  //DIP
   p.add(new PVector(offX+phalInd[0]+phalInd[1]+phalInd[2],indexOffY,offZ));  //nail
 
   //add the other ctrlPts!
-  //middle finger
-  float middleOffY = 0.00920*factor;
-  float[] phalMid = {0.03640*factor, 0.03075*factor, 0.02114*factor};
+  //middle finger  
   p.add(new PVector(offX,middleOffY,offZ));
   p.add(new PVector(offX+phalMid[0],middleOffY,offZ));
   p.add(new PVector(offX+phalMid[0]+phalMid[1],middleOffY,offZ));
   p.add(new PVector(offX+phalMid[0]+phalMid[1]+phalMid[2],middleOffY,offZ));
 
-  //ring finger
-  float ringOffY = -0.01117*factor;
-  float[] phalRin = {0.03344*factor, 0.02782*factor, 0.01853*factor};
+  //ring finger  
   p.add(new PVector(offX,ringOffY,offZ));
   p.add(new PVector(offX+phalRin[0],ringOffY,offZ));
   p.add(new PVector(offX+phalRin[0]+phalRin[1],ringOffY,offZ));
   p.add(new PVector(offX+phalRin[0]+phalRin[1]+phalRin[2],ringOffY,offZ));
 
-  //little finger
-  float pinkyOffY = -0.03154*factor;
-  float[] phalPin = {0.02896*factor, 0.02541*factor, 0.01778*factor};
+  //little finger  
   p.add(new PVector(offX,pinkyOffY,offZ));
   p.add(new PVector(offX+phalPin[0],pinkyOffY,offZ));
   p.add(new PVector(offX+phalPin[0]+phalPin[1],pinkyOffY,offZ));
