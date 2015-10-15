@@ -157,7 +157,7 @@ for i in range(len(b[0])-1):
     estAng[1][i+1] = resAng[1]
     estAng[2][i+1] = resAng[2]
     estAng[3][i+1] = resAng[3]  
-#    print "python ",str(eAng.x)[1:-1] 
+    # convert angles to proper format
     pipeStr = ''
     for i in eAng.x:
         pipeStr = pipeStr + " {0:.4f}".format(i)
