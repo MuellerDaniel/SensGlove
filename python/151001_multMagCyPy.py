@@ -112,13 +112,13 @@ lapPos = np.zeros((len(estPos[0])-1,2))
 lapAng = np.zeros((len(estPos[0])-1,2))
 
 # piping action...
-#mPath = 'estimatedAngles'
-#if not os.path.exists(mPath):
-#    os.mkfifo(mPath)
-#print "pid: ", os.getpid()    
-#print "starting visualization..."
-#subprocess.Popen('./../visualization/finger_angles/application.linux64/finger_angles'.split())
-#pipeout = os.open(mPath, os.O_WRONLY)   
+mPath = 'estimatedAngles'
+if not os.path.exists(mPath):
+    os.mkfifo(mPath)
+print "pid: ", os.getpid()    
+print "starting visualization..."
+subprocess.Popen('./../visualization/finger_angles/application.linux64/finger_angles'.split())
+pipeout = os.open(mPath, os.O_WRONLY)   
 
 print "begin of estimation..."
 for i in range(len(b[0])-1):
@@ -157,16 +157,20 @@ for i in range(len(b[0])-1):
     estAng[1][i+1] = resAng[1]
     estAng[2][i+1] = resAng[2]
     estAng[3][i+1] = resAng[3]  
-    print "python ",str(eAng.x) 
+#    print "python ",str(eAng.x)[1:-1] 
+    pipeStr = ''
+    for i in eAng.x:
+        pipeStr = pipeStr + " {0:.4f}".format(i)
     # put the angles on the pipe...
-#    try:                   #thumb      #index       #middle      #ring        #pinky
-#        os.write(pipeout, "0.0 0.0 0.0 90.0 0.0 0.0 0.0 90.0 0.0 0.0 0.0 90.0 0.0 90.0 0.0\n")
-#    except OSError,e:
-#        print "error! listener disconnected"
-#        os.unlink(mPath)
-#        break
-#    
-#    time.sleep(1)   #wait a second, to have a better visualization
+    try:                   #thumb      #index       #middle      #ring        #pinky
+        #os.write(pipeout, "0.0 0.0 0.0 90.0 0.0 0.0 0.0 90.0 0.0 0.0 0.0 90.0 0.0 90.0 0.0")
+        os.write(pipeout,"0.0 0.0 0.0" + pipeStr + '\n')
+    except OSError,e:
+        print "error! listener disconnected"
+        os.unlink(mPath)
+        break
+    
+    #time.sleep(1)   #wait a second, to have a better visualization
 
 
 print "time duration: ", (time.time()-startAlg)
