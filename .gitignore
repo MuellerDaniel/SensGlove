@@ -1,5 +1,6 @@
 application.linux32/
 application.linux64/
+application.linux-armv6hf/
 python/*
 !python/*.*
 python/*.pyc
