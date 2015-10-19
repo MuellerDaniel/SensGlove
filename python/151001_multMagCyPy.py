@@ -14,6 +14,7 @@ import matplotlib.pyplot as plt
 import time, os, subprocess
 from sympy import *
 import fcnCyPy as fcn
+import signal
 
 
 
@@ -71,23 +72,23 @@ bndsPos = ((jointInd[0],jointInd[0]+rInd),    # index finger
     #      (jointInd[1]-0.003,jointInd[1]+0.003),
           (jointInd[1]-0.0001,jointInd[1]+0.0001),
           (jointInd[2]-rInd,jointInd[2]),
-    
+
           (jointMid[0],jointMid[0]+rMid),    # middle finger
     #      (jointMid[1]-0.003,jointMid[1]+0.003),
           (jointMid[1]-0.0001,jointMid[1]+0.0001),
           (jointMid[2]-rMid,jointMid[2]),
-    
+
           (jointRin[0],jointRin[0]+rRin),    # ring finger
     #      (jointRin[1]-0.003,jointRin[1]+0.003),
           (jointRin[1]-0.0001,jointRin[1]+0.0001),
           (jointRin[2]-rRin,jointRin[2]),
-    
+
           (jointPin[0],jointPin[0]+rPin),    # pinky finger
 #          (jointPin[1]-0.003,jointPin[1]+0.003),
           (jointPin[1]-0.0001,jointPin[1]+0.0001),
           (jointPin[2]-rPin,jointPin[2]))
-          
-estAng = np.zeros((4,len(b[0]),3))          
+
+estAng = np.zeros((4,len(b[0]),3))
 estAng[0][0] = [0,0,0]
 estAng[1][0] = [0,0,0]
 estAng[2][0] = [0,0,0]
@@ -115,33 +116,37 @@ lapAng = np.zeros((len(estPos[0])-1,2))
 mPath = 'estimatedAngles'
 if not os.path.exists(mPath):
     os.mkfifo(mPath)
-print "pid: ", os.getpid()    
+procId = os.getpid()    
+#print "proc id", os.getpid()
 print "starting visualization..."
-subprocess.Popen('./../visualization/finger_angles/application.linux64/finger_angles'.split())
-pipeout = os.open(mPath, os.O_WRONLY)   
+vis = subprocess.Popen(('./../visualization/finger_angles/application.linux64/finger_angles '+mPath).split(),shell=False)
+#subprocess.Popen(('./../../sketchbook-processing/testObserver/application.linux64/testObserver '+mPath).split())
+# TODO do it with a file!!!! like in pro1namedPipe.py!!!
+#pipeout = os.open(mPath, os.O_WRONLY)
+pipeout = file(mPath,"w")
 
 print "begin of estimation..."
 for i in range(len(b[0])-1):
-    ''' position estimation 
+    ''' position estimation
         for four magnets(index, middle, pinky) and four sensors (middle, pinky, index)'''
     startPos = time.time()
 #    calling the one way...
     tmp = modE.estimatePos(np.concatenate((estPos[0][i],estPos[1][i],estPos[2][i],estPos[3][i])),
                          np.reshape([s1,s2,s3,s4],((12,))),     # for calling the cython function
-                         np.concatenate((b[0][i+1],b[1][i+1],b[2][i+1],b[3][i+1])),   
+                         np.concatenate((b[0][i+1],b[1][i+1],b[2][i+1],b[3][i+1])),
                          i,bndsPos)
 #    ...or the other
 #    tmp = fcn.estimatePos(np.concatenate((estPos[0][i],estPos[1][i],estPos[2][i],estPos[3][i])),
 #                        np.reshape([s1,s2,s3,s4],((12,))),     # for calling the cython function
 #                        np.concatenate((b[0][i+1],b[1][i+1],b[2][i+1],b[3][i+1])),
 #                        i,bnds)
-    resPos = np.reshape(tmp.x,(4,1,3))   
+    resPos = np.reshape(tmp.x,(4,1,3))
     lapPos[i] = ((time.time()-startPos),tmp.nit)
     estPos[0][i+1] = resPos[0]
     estPos[1][i+1] = resPos[1]
     estPos[2][i+1] = resPos[2]
     estPos[3][i+1] = resPos[3]
-    
+
     ''' angle estimation '''
     startAngle = time.time()
     eAng = modE.estimateAngle_m(tmp.x,
@@ -149,29 +154,35 @@ for i in range(len(b[0])-1):
                                 np.reshape([jointInd,jointMid,jointRin,jointPin],((12,))),
                                 np.reshape([phalInd,phalMid,phalRin,phalPin],((12,))),
                                 bndsAng)
-                                
-    resAng = np.reshape(eAng.x,(4,1,3))                                
-#    resAng = np.reshape(eAng,(4,1,3))   
+
+    resAng = np.reshape(eAng.x,(4,1,3))
+#    resAng = np.reshape(eAng,(4,1,3))
     lapAng[i] = ((time.time()-startAngle), eAng.nit)
     estAng[0][i+1] = resAng[0]
     estAng[1][i+1] = resAng[1]
     estAng[2][i+1] = resAng[2]
-    estAng[3][i+1] = resAng[3]  
+    estAng[3][i+1] = resAng[3]
     # convert angles to proper format
     pipeStr = ''
     for i in eAng.x:
-        pipeStr = pipeStr + " {0:.4f}".format(i)
+        pipeStr = pipeStr + " {0:.4f}".format(abs(i))
     # put the angles on the pipe...
     try:                   #thumb      #index       #middle      #ring        #pinky
-        #os.write(pipeout, "0.0 0.0 0.0 90.0 0.0 0.0 0.0 90.0 0.0 0.0 0.0 90.0 0.0 90.0 0.0")
-        os.write(pipeout,"0.0 0.0 0.0" + pipeStr + '\n')
+        pipeout.write("0.0000 0.0000 0.0000" + pipeStr)
+        pipeout.flush()
     except OSError,e:
         print "error! listener disconnected"
         os.unlink(mPath)
         break
-    
+
     #time.sleep(1)   #wait a second, to have a better visualization
 
+print "child ID: ", vis.pid
+os.remove(mPath)
+#vis.kill()
+#os.unlink(mPath)
+print "procID: ", procId
+os.kill(vis.pid+3, signal.SIGKILL)  # why +3 ???
 
 print "time duration: ", (time.time()-startAlg)
 

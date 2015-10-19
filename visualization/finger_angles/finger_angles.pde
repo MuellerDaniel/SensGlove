@@ -18,18 +18,18 @@ import java.util.*;
 import java.io.*;
 //mport java.lang.Object;
 
-PMatrix3D baseMat;
+import java.nio.charset.Charset;
+import java.io.FileInputStream;
+import java.nio.ByteBuffer;
+import java.nio.file.*;
+
 PeasyCam pcam;
 BezTube tubes[];
 PVector cpts[];
-Rot nullrot=new Rot(1,0,0,0,false),
-        rot=new Rot(1,0,0,0,false);
         
-BufferedReader reader;
-//String pipePath = "../../../python/estimatedAngles";
-String pipePath = "estimatedAngles";
-//String pipePath = "myPath5";
+FileInputStream mFile;
 float angles[];
+String line; 
 
 // finger lengths/coordinates
 int factor = 1000;
@@ -50,10 +50,14 @@ float[] phalPin = {0.02896*factor, 0.02541*factor, 0.01778*factor};
 LinkedHashMap<Integer,Rot> map = new LinkedHashMap<Integer,Rot>();
 
 static final float RADIUS=5, HALFR=30;  // RADIUS for beztube, HALFR distance between joints
-static int i=0;
-boolean serialUp = false;
 static int id = 5 ;	//variable for indicating the IMU (IDs range from 0 to 15)
 PFont f;
+
+FileInputStream pipe;
+Path mpath;
+ByteBuffer buffer;
+int cnt = 0;
+static int timeout = 10000;
 
 void setup()
 {
@@ -64,7 +68,14 @@ void setup()
   textFont(f);
   fill(255);
   
-  reader = createReader(pipePath);
+   buffer = ByteBuffer.allocate(105);
+   mpath = Paths.get(args[0]);
+   try{
+   //fc = AsynchronousFileChannel.open(mpath, StandardOpenOption.READ);
+     pipe = new FileInputStream(new File(args[0]));
+   }catch(IOException e){
+     System.out.println("error, no such fifo");
+   }
 
   pcam = new PeasyCam(this,300);  
   pcam.lookAt(60,0,0);
@@ -88,35 +99,37 @@ void draw()
   ambientLight(160, 160, 160);
   popMatrix();
   
-  String line;  
-  try{
-    line = reader.readLine();
-  }catch (IOException e) {
-    e.printStackTrace();
-    line = null;
-  }
-  if (line == null) {
-    // Stop reading because of an error or file is empty
-    System.out.println("END!!!");
-    noLoop();  
-  } else {
-    //and now apply the angles to your points...
+  try{    
+    while(pipe.available() < 104){
+      if(cnt > timeout){
+        endLoop();
+      }
+      //drawing action...
+      updateTubes(cpts);      
+      for (BezTube tube : tubes ){
+        tube.draw();    //draw them!
+      }
+      // points
+      drawPoints(cpts);
+      // draw lines between the points/dots
+      drawLines(cpts);
+      drawCoordinates(300);
+      cnt += 1;
+    }
+    cnt = 0;
+    byte[] data = new byte[104];
+    pipe.read(data,0,104);    
+    line = new String(data,Charset.forName("UTF-8"));
+    //System.out.println("Line: "+line);
     extractAngles(line);
     updateCtrlPts();
+  }catch(IOException e){
+    System.err.println(e);
   }
-
-  //"make" the tubes
-  updateTubes(cpts);
-
-  for (BezTube tube : tubes ){
-	tube.draw();		//draw them!
 }
-  // points
-  drawPoints(cpts);
-  // draw lines between the points/dots
-  drawLines(cpts);
-  drawCoordinates(300);
 
+void endLoop(){
+  exit();
 }
 
 void extractAngles(String line){
@@ -125,7 +138,7 @@ void extractAngles(String line){
   angles = new float[list.length];
   for(int i = 0; i<list.length; i++){
      angles[i] = Float.parseFloat(list[i]);
-     System.out.println(angles[i]);
+     //System.out.println(angles[i]);
   }
 }
 
@@ -209,9 +222,7 @@ void drawPoints(PVector[] cpts){
 	//trying to color the first point different...
 	if((cnt%4 == 0)){
 		stroke(0,0,255);
-		//System.out.println("do it!");
 	}else stroke(255,255,0);
-	//stroke(255,255,0);
     sphere(2);
     popMatrix();
     cnt += 1;
@@ -240,7 +251,6 @@ void drawLines(PVector[] cpts){
 		if(cnt != cpts.length) beginShape();
 	}
   }
-  //drawPalm();
 }
 
 void drawPalm(){
@@ -292,10 +302,6 @@ PVector[] makeCtrlPts()
   return (PVector[]) p.toArray(new PVector[0]);
 }
 
-
-
-
-
 static int oldlen=0;
 
 // draw the bezier tubes again
@@ -326,4 +332,5 @@ void updateTubes(PVector[] ctrlpts)
 		}
     }
   }
+  //System.out.println("UpdatedTubes!");
 }
