@@ -205,8 +205,7 @@ def structDataSer(data):
 def invertX(data):
     return data*[1.,-1.,1.,1.]
 
-def sortData(data): 
-    
+def sortData(data):     
     # erasing the first [0.,0.,0.] in the dataarray
     cnt=0
     for i in data:
@@ -217,13 +216,25 @@ def sortData(data):
     # removing surplus taken measurements
     nrSens = int(max(data[:,0])+1)
     if len(data)%nrSens:
-        data = np.delete(data, np.s_[-1*(len(data)%nrSens):], axis=0)
+        print "too much  measurements taken...", len(data)%nrSens
+        datadel = np.delete(data, np.s_[-1*(len(data)%nrSens):], axis=0)
+        print datadel.shape
+#        np.reshape(datadel,(nrSens,len(datadel),3))
+        data = None
+        data = datadel
     # matrix for results
-    s=np.zeros(shape=[nrSens, (len(data)/nrSens), 3])
-    cnt = np.zeros(shape=(nrSens,1), dtype=np.int)
+    s=np.zeros((nrSens, (len(data)/nrSens), 3))
+    #cnt = np.zeros(shape=(nrSens,1), dtype=np.int)
+    cnt = np.zeros((nrSens,1))
     for j in data:
         s[int(j[0])][int(cnt[int(j[0])])] = j[1:]              
         cnt[int(j[0])] += 1        
+        
+
+#    else:
+#        print "right amount of measurements..."
+#        np.reshape(data,(nrSens,len(data),3))
+    
     return s
 
 def pipeAcquisition(arg, fileName=None, measNr=None, offset=0):
@@ -274,7 +285,7 @@ def pipeAcquisition(arg, fileName=None, measNr=None, offset=0):
                     data = structDataBLE(output)
 #                    data = invertX(data)
 #                    print "raw output: ", output
-#                    print "data output: ", data
+                    print "data output: ", data
                 if "/dev/tty" in arg:
                     data = structDataSer(output)
 #                    data = invertX(data)
@@ -296,8 +307,8 @@ def pipeAcquisition(arg, fileName=None, measNr=None, offset=0):
             
     except KeyboardInterrupt:       
         print "here!"            
-#        proc.stdout.close()
-#        proc.kill()
+        proc.stdout.close()
+        proc.kill()
 #        raise
         
 #    mat = np.reshape(mat, (mat.size/4, 4))
@@ -311,7 +322,7 @@ def pipeAcquisition(arg, fileName=None, measNr=None, offset=0):
                     str(i[1]) + "\t" + 
                     str(i[2]) + "\t" +
                     str(i[3]) + "\n")
-        fl.close()
-        
+        fl.close()     
     mat = sortData(mat)
+#    print "blabla"
     return mat

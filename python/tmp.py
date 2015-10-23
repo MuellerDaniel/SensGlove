@@ -1,38 +1,9 @@
-import os, time, sys, signal
-pipe_name = 'pipe_test0'
+import dataAcquisitionMulti as datAc
+import numpy as np
+import plotting as plo
 
-def child( ):
-    print "child!"
-    pipeout = os.open(pipe_name, os.O_WRONLY)
-    counter = 0
-    while True:
-        time.sleep(1)
-        os.write(pipeout, 'Number %03d\n' % counter)
-        counter = (counter+1) % 5
+a = datAc.pipeAcquisition("gatttool -t random -b E3:C0:07:76:53:70 --char-write-req --handle=0x000f --value=0300 --listen",
+                          measNr=4*100)
 
-def parent( ):
-    print "parent!"
-    pipein = open(pipe_name, 'r')
-    i=0
-    while i<10:
-        line = pipein.readline()[:-1]
-        print 'Parent %d got line "%s" at %s sec' % (os.getpid(), line, time.time( ))
-        i = i+1
-
-i = 0
-while i < 10:
-    if not os.path.exists(pipe_name):
-        os.mkfifo(pipe_name)  
-        
-    pid = os.fork()    
-    if pid != 0:
-        parent()
-    else:       
-        child()
-        
-    i = i+1
-    print "i: ",i
-
-os.kill(os.getpid(),signal.SIGKILL)
-print "finished"        
-    
+#plo.plotter2d((a[0:1],a[1:2],a[2:3],a[3:4]),("s0","s1","s2","s3",))   
+plo.visMagData(a)

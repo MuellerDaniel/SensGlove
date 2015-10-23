@@ -14,7 +14,7 @@ def plotter2d(inputlist, titlelist, shareAxis = True):
     Parameters
     ----------
     inputlist : list
-        list of the data matrices
+        list of the data matrices (shape = ())
     titlelist : list
         list for the corresponding titles
     shareAxis : bool
@@ -40,7 +40,7 @@ def plotIt2d(data, title, sizeData, shareAxis):
         for i in data:
             cnt = 0
             for j in i:
-                linCol = colorList[cnt]
+                linCol = colorList[cnt%4]
                 plt.plot(j[:,0], color=linCol, ls='-', label='x')
                 plt.plot(j[:,1], color=linCol, ls='--', label='y')
                 plt.plot(j[:,2], color=linCol, ls=':', label='z')
@@ -144,3 +144,28 @@ def multiPlotter(data, title, comp=None):
         g = f.add_subplot(2,3,6, title='errorPlot z',sharey=d)
         g.scatter(np.arange(0,len(data[:,0]),1),comp[:,2]-data[:,2])
 #        g.set_yticklabels([])
+
+
+def visMagData(data,title = None):       
+    if len(data.shape) == 3:    
+        colorList = ('b','g','r','y')
+        cnt = 0 
+        fig = plt.figure()
+        a = fig.add_subplot(2,3,2,projection='3d')
+        a.axis('equal')        
+        xy = fig.add_subplot(2,3,4)
+        xz = fig.add_subplot(2,3,5)
+        yz = fig.add_subplot(2,3,6)
+        
+        for i in data:
+            a.scatter(i[:,0],i[:,1],i[:,2],c=colorList[cnt%4])
+            
+            xy.scatter(i[:,0],i[:,1],c=colorList[cnt%4])
+            xz.scatter(i[:,0],i[:,2],c=colorList[cnt%4])
+            yz.scatter(i[:,1],i[:,2],c=colorList[cnt%4])
+            cnt += 1
+    else:
+        fig = plt.figure()
+        a = fig.add_subplot(111,projection='3d')
+        a.axis('equal')
+        a.scatter(data[:,0],data[:,1],data[:,2],marker='o')                    
