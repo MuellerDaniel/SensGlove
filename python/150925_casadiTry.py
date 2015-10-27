@@ -1,6 +1,6 @@
 from casadi import *
 import numpy as np
-import modelEqMultiTWO as modE
+import modelEqMultiCython as modE
 import matplotlib.pyplot as plt
 import plotting as plo
 

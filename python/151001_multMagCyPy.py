@@ -127,15 +127,15 @@ for i in range(len(b[0])-1):
         for four magnets(index, middle, pinky) and four sensors (middle, pinky, index)'''
     startPos = time.time()
 #    cython way...
-    tmp = modE.estimatePos(np.concatenate((estPos[0][i],estPos[1][i],estPos[2][i],estPos[3][i])),
-                         np.reshape([s1,s2,s3,s4],((12,))),     # for calling the cython function
-                         np.concatenate((b[0][i+1],b[1][i+1],b[2][i+1],b[3][i+1])),
-                         i,bndsPos)
-#   python way...                         
-#    tmp = modE.estimatePosPy(np.concatenate((estPos[0][i],estPos[1][i],estPos[2][i],estPos[3][i])),
-#                         [s1,s2,s3,s4],
+#    tmp = modE.estimatePos(np.concatenate((estPos[0][i],estPos[1][i],estPos[2][i],estPos[3][i])),
+#                         np.reshape([s1,s2,s3,s4],((12,))),     # for calling the cython function
 #                         np.concatenate((b[0][i+1],b[1][i+1],b[2][i+1],b[3][i+1])),
 #                         i,bndsPos)
+#   python way...                         
+    tmp = modE.estimatePosPy(np.concatenate((estPos[0][i],estPos[1][i],estPos[2][i],estPos[3][i])),
+                         [s1,s2,s3,s4],
+                         np.concatenate((b[0][i+1],b[1][i+1],b[2][i+1],b[3][i+1])),
+                         i,bndsPos)
 
     resPos = np.reshape(tmp.x,(4,1,3))
     lapPos[i] = ((time.time()-startPos),tmp.nit)
@@ -145,20 +145,20 @@ for i in range(len(b[0])-1):
     estPos[3][i+1] = resPos[3]
 
     ''' angle estimation '''
-    startAngle = time.time()
-    eAng = modE.estimateAngle_m(tmp.x,
-                                np.concatenate((estAng[0][i],estAng[1][i],estAng[2][i],estAng[3][i])),
-                                np.reshape([jointInd,jointMid,jointRin,jointPin],((12,))),
-                                np.reshape([phalInd,phalMid,phalRin,phalPin],((12,))),
-                                bndsAng)
-
-    resAng = np.reshape(eAng.x,(4,1,3))
-#    resAng = np.reshape(eAng,(4,1,3))
-    lapAng[i] = ((time.time()-startAngle), eAng.nit)
-    estAng[0][i+1] = resAng[0]
-    estAng[1][i+1] = resAng[1]
-    estAng[2][i+1] = resAng[2]
-    estAng[3][i+1] = resAng[3]
+#    startAngle = time.time()
+#    eAng = modE.estimateAngle_m(tmp.x,
+#                                np.concatenate((estAng[0][i],estAng[1][i],estAng[2][i],estAng[3][i])),
+#                                np.reshape([jointInd,jointMid,jointRin,jointPin],((12,))),
+#                                np.reshape([phalInd,phalMid,phalRin,phalPin],((12,))),
+#                                bndsAng)
+#
+#    resAng = np.reshape(eAng.x,(4,1,3))
+##    resAng = np.reshape(eAng,(4,1,3))
+#    lapAng[i] = ((time.time()-startAngle), eAng.nit)
+#    estAng[0][i+1] = resAng[0]
+#    estAng[1][i+1] = resAng[1]
+#    estAng[2][i+1] = resAng[2]
+#    estAng[3][i+1] = resAng[3]
     # convert angles to proper format
 #    pipeStr = ''
 #    for i in eAng.x:
