@@ -247,12 +247,12 @@ def splitData(data):
     two = np.array([0.,0.,0.])    
     three = np.array([0.,0.,0.])     
     four = np.array([0.,0.,0.])    
-    print "data: ",data.shape
+#    print "data: ",data.shape
     
     for i in data:
         if i[0] == 0:
             one = np.append(one,i[1:])
-            print "one!"
+#            print "one!"
         elif i[0] == 1:
             two = np.append(two,i[1:])
         elif i[0] == 2:
@@ -264,10 +264,10 @@ def splitData(data):
     two = np.reshape(two,((len(two)/3,3)))
     three = np.reshape(three,((len(three)/3,3)))
     four = np.reshape(four,((len(four)/3,3)))
-    print one.shape
-    print two.shape
-    print three.shape
-    print four.shape
+#    print one.shape
+#    print two.shape
+#    print three.shape
+#    print four.shape
     return (one[1:],two[1:],three[1:],four[1:])
 
 
