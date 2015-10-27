@@ -195,11 +195,11 @@ def estimatePosPy(P,S,B,cnt,bnds=None,jacobian=None):
     """
     opt = ({'maxiter':100})
     '''   advanced approach (pseudo-inverse thing)  '''
-#    val = minimize(funcMagYmulti, P, args=(S,B), method='slsqp',
-#                   tol=1e-5, bounds=bnds, jac=jacobian)
+    val = minimize(funcMagYmulti, P, args=(S,B), method='slsqp',
+                   tol=1e-5, bounds=bnds, jac=jacobian)
     '''    straight forward approach norm(B(estPos)-B(measured))    '''
-    val = minimize(funcMagY, P, args=(S,B), method='slsqp',
-                   tol=1e-4, bounds=bnds, jac=jacobian, options=opt)
+#    val = minimize(funcMagY, P, args=(S,B), method='slsqp',
+#                   tol=1e-4, bounds=bnds, jac=jacobian, options=opt)
     if val.success:
 
         return val        # as result you will get the P vector!
@@ -456,7 +456,7 @@ def scaleMeasurements(real, meas):
 
 
 def shiftMeasurements(real, meas, valOffset):
-    offset = real[0] - meas[0]
+#    offset = real[0] - meas[0]
     resMat = meas.copy()
 
     startMat = meas[valOffset[0]:valOffset[1]]

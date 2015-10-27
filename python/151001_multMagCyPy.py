@@ -113,33 +113,30 @@ lapPos = np.zeros((len(estPos[0])-1,2))
 lapAng = np.zeros((len(estPos[0])-1,2))
 
 # piping action...
-mPath = 'estimatedAngles'
-if not os.path.exists(mPath):
-    os.mkfifo(mPath)
-procId = os.getpid()    
-#print "proc id", os.getpid()
-print "starting visualization..."
-vis = subprocess.Popen(('./../visualization/finger_angles/application.linux64/finger_angles '+mPath).split(),shell=False)
-#subprocess.Popen(('./../../sketchbook-processing/testObserver/application.linux64/testObserver '+mPath).split())
-# TODO do it with a file!!!! like in pro1namedPipe.py!!!
-#pipeout = os.open(mPath, os.O_WRONLY)
-pipeout = file(mPath,"w")
+#mPath = 'estimatedAngles'
+#if not os.path.exists(mPath):
+#    os.mkfifo(mPath)
+#procId = os.getpid()   
+#print "starting visualization..."
+#vis = subprocess.Popen(('./../visualization/finger_angles/application.linux64/finger_angles '+mPath).split(),shell=False)
+#pipeout = file(mPath,"w")
 
 print "begin of estimation..."
 for i in range(len(b[0])-1):
     ''' position estimation
         for four magnets(index, middle, pinky) and four sensors (middle, pinky, index)'''
     startPos = time.time()
-#    calling the one way...
+#    cython way...
     tmp = modE.estimatePos(np.concatenate((estPos[0][i],estPos[1][i],estPos[2][i],estPos[3][i])),
                          np.reshape([s1,s2,s3,s4],((12,))),     # for calling the cython function
                          np.concatenate((b[0][i+1],b[1][i+1],b[2][i+1],b[3][i+1])),
                          i,bndsPos)
-#    ...or the other
-#    tmp = fcn.estimatePos(np.concatenate((estPos[0][i],estPos[1][i],estPos[2][i],estPos[3][i])),
-#                        np.reshape([s1,s2,s3,s4],((12,))),     # for calling the cython function
-#                        np.concatenate((b[0][i+1],b[1][i+1],b[2][i+1],b[3][i+1])),
-#                        i,bnds)
+#   python way...                         
+#    tmp = modE.estimatePosPy(np.concatenate((estPos[0][i],estPos[1][i],estPos[2][i],estPos[3][i])),
+#                         [s1,s2,s3,s4],
+#                         np.concatenate((b[0][i+1],b[1][i+1],b[2][i+1],b[3][i+1])),
+#                         i,bndsPos)
+
     resPos = np.reshape(tmp.x,(4,1,3))
     lapPos[i] = ((time.time()-startPos),tmp.nit)
     estPos[0][i+1] = resPos[0]
@@ -163,26 +160,26 @@ for i in range(len(b[0])-1):
     estAng[2][i+1] = resAng[2]
     estAng[3][i+1] = resAng[3]
     # convert angles to proper format
-    pipeStr = ''
-    for i in eAng.x:
-        pipeStr = pipeStr + " {0:.4f}".format(abs(i))
-    # put the angles on the pipe...
-    try:                   #thumb      #index       #middle      #ring        #pinky
-        pipeout.write("0.0000 0.0000 0.0000" + pipeStr)
-        pipeout.flush()
-    except OSError,e:
-        print "error! listener disconnected"
-        os.unlink(mPath)
-        break
+#    pipeStr = ''
+#    for i in eAng.x:
+#        pipeStr = pipeStr + " {0:.4f}".format(abs(i))
+#    # put the angles on the pipe...
+#    try:                   #thumb      #index       #middle      #ring        #pinky
+#        pipeout.write("0.0000 0.0000 0.0000" + pipeStr)
+#        pipeout.flush()
+#    except OSError,e:
+#        print "error! listener disconnected"
+#        os.unlink(mPath)
+#        break
 
     #time.sleep(1)   #wait a second, to have a better visualization
 
-print "child ID: ", vis.pid
-os.remove(mPath)
+#print "child ID: ", vis.pid
+#os.remove(mPath)
 #vis.kill()
 #os.unlink(mPath)
-print "procID: ", procId
-os.kill(vis.pid+3, signal.SIGKILL)  # why +3 ???
+#print "procID: ", procId
+#os.kill(vis.pid+3, signal.SIGKILL)  # why +3 ???
 
 print "time duration: ", (time.time()-startAlg)
 
@@ -192,30 +189,30 @@ print "delta y estPos[2]-Ring", max(estPos[2][:,1])-min(estPos[2][:,1])
 print "delta y estPos[3]-Pinky", max(estPos[3][:,1])-min(estPos[3][:,1])
 
 # remove the y-axis motion...
-estPos[0][:,1] = jointInd[1]
-estPos[1][:,1] = jointMid[1]
-estPos[2][:,1] = jointRin[1]
-estPos[3][:,1] = jointPin[1]
+#estPos[0][:,1] = jointInd[1]
+#estPos[1][:,1] = jointMid[1]
+#estPos[2][:,1] = jointRin[1]
+#estPos[3][:,1] = jointPin[1]
 
 """ plotting stuff """
 #plo.plotter3d((pos[0],pos[1],pos[2], pos[3]),("Ind real","mid Real", "ring Real", "pin Real"))
 #plo.plotter2d((summedInd,summedMid,summedRin,summedPin),("index","Mid","Rin","Pin"))
-#plo.multiPlotter(estPos[0],"Index")
-#plo.multiPlotter(estPos[1],"Middle")
-#plo.multiPlotter(estPos[2],"Ring")
-#plo.multiPlotter(estPos[3],"Pinky")
+plo.multiPlotter(estPos[0],"Index")
+plo.multiPlotter(estPos[1],"Middle")
+plo.multiPlotter(estPos[2],"Ring")
+plo.multiPlotter(estPos[3],"Pinky")
 
-plt.figure("callTime Position")
-plt.hist(lapPos[:,0],100)
-plt.figure("callHist Position")
-plt.hist(lapPos[:,1],100)
-plt.figure("callTime Angle")
-plt.hist(lapAng[:,0],100)
-plt.figure("callHist Angle")
-plt.hist(lapAng[:,1],100)
-plt.figure("angles")
-plt.plot(estAng[0][:,0])
-plt.plot(estAng[1][:,0])
-plt.plot(estAng[2][:,0])
-plt.plot(estAng[3][:,0])
-#plt.show()
+#plt.figure("callTime Position")
+#plt.hist(lapPos[:,0],100)
+#plt.figure("callHist Position")
+#plt.hist(lapPos[:,1],100)
+#plt.figure("callTime Angle")
+#plt.hist(lapAng[:,0],100)
+#plt.figure("callHist Angle")
+#plt.hist(lapAng[:,1],100)
+#plt.figure("angles")
+#plt.plot(estAng[0][:,0])
+#plt.plot(estAng[1][:,0])
+#plt.plot(estAng[2][:,0])
+#plt.plot(estAng[3][:,0])
+

@@ -146,6 +146,8 @@ b = np.array([0.,0.,0.,0.])
 i = 0
 try:
     while True:          
+        while proc.stdout.readline() == None:
+            print "waiting..."
         output = proc.stdout.readline()
         b = datAcM.structDataBLE(output)
         updateMagnet()

@@ -35,6 +35,7 @@ def plotter2d(inputlist, titlelist, shareAxis = True):
 
 def plotIt2d(data, title, sizeData, shareAxis):
     colorList = ('b','g','r','y')
+    #fingerList = ('index', 'middle', 'ring', 'pinky')
     cnt = 0
     if sizeData == 1:
         for i in data:
@@ -52,15 +53,19 @@ def plotIt2d(data, title, sizeData, shareAxis):
         lst = [sizeData]
         f, lst = plt.subplots(1,sizeData, sharey=shareAxis)
         for i in range(sizeData):
-            cnt = 0
-            for j in data[i]:
+            cnt = 0            
+            for j in data:
+                print j.shape
                 linCol = colorList[cnt]
                 lst[i].plot(j[:,0], color=linCol, ls='-', label='x')
                 lst[i].plot(j[:,1], color=linCol, ls='--', label='y')
                 lst[i].plot(j[:,2], color=linCol, ls=':', label='z')
-                lst[i].set_title(title[i])
+                lst[i].set_title(title[i])                
                 if cnt==0: plt.legend()
                 cnt+=1
+                
+#            else:
+    
 
 
 def plotter3d(inputlist, titlelist):

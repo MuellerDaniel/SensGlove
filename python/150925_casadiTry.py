@@ -33,7 +33,7 @@ def estimate(P0,Sa,Ba):
     return solver.getOutput('x')
     
     
-    
+''' describing the data '''
 t = np.arange(0, 1/2.*np.pi, 0.01) 
 pos1 = [[0.,0.,0.]] 
 angInd = [0.02957, 0.09138, 0.01087]
@@ -60,6 +60,7 @@ calcB = calcB[1:]
 estPos = np.zeros((pos1.shape[0],3))
 estPos[0] = pos1[0]
 
+''' the estimation loop '''
 for i in range(pos1.shape[0]-1):
 #    print "ESTPOS.SHAPE: ", estPos[i].shape
     estPos[i+1] = estimate(estPos[i],s1,calcB[i+1]).T
