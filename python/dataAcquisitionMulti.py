@@ -201,15 +201,26 @@ def structDataSer(data):
 
 def invertX(data):
     return data*[1.,-1.,1.,1.]
-
-def sortData(data):     
-    # erasing the first [0.,0.,0.] in the dataarray
+    
+def eraseZeros(data):
     cnt=0
     for i in data:
         if i[1:].any() == False:
             data = np.delete(data, cnt, 0)
             cnt-=1
         cnt+=1
+    return data
+
+def sortData(data):     
+    # erasing the first [0.,0.,0.] in the dataarray
+    print "sort beginning: ", data.shape
+    cnt=0
+    for i in data:
+        if i[1:].any() == False:
+            data = np.delete(data, cnt, 0)
+            cnt-=1
+        cnt+=1
+    print "sort after deleting...", data.shape    
     # removing surplus taken measurements
     nrSens = int(max(data[:,0])+1)
     if len(data)%nrSens:
@@ -229,7 +240,36 @@ def sortData(data):
 #    else:
 #        print "right amount of measurements..."
 #        np.reshape(data,(nrSens,len(data),3))    
-    return s
+    return data
+    
+def splitData(data):
+    one = np.array([0.,0.,0.])    
+    two = np.array([0.,0.,0.])    
+    three = np.array([0.,0.,0.])     
+    four = np.array([0.,0.,0.])    
+    print "data: ",data.shape
+    
+    for i in data:
+        if i[0] == 0:
+            one = np.append(one,i[1:])
+            print "one!"
+        elif i[0] == 1:
+            two = np.append(two,i[1:])
+        elif i[0] == 2:
+            three = np.append(three,i[1:])
+        elif i[0] == 3:
+            four = np.append(four,i[1:])
+            
+    one = np.reshape(one,((len(one)/3,3)))            
+    two = np.reshape(two,((len(two)/3,3)))
+    three = np.reshape(three,((len(three)/3,3)))
+    four = np.reshape(four,((len(four)/3,3)))
+    print one.shape
+    print two.shape
+    print three.shape
+    print four.shape
+    return (one[1:],two[1:],three[1:],four[1:])
+
 
 def pipeAcquisition(arg, fileName=None, measNr=None, offset=0):
     """function for acquiring data via pipe
@@ -279,7 +319,7 @@ def pipeAcquisition(arg, fileName=None, measNr=None, offset=0):
                     data = structDataBLE(output)
 #                    data = invertX(data)
 #                    print "raw output: ", output
-#                    print "data output: ", data
+                    print "data output: ", data
                 if "/dev/tty" in arg:
                     data = structDataSer(output)
 #                    data = invertX(data)
@@ -328,9 +368,10 @@ def RTdata(data,proc):
       line = proc.stdout.readline() 
 #      print "line in RT: ", line
       if line != ' ':
-        tmpData = structDataBLE(line)
+        tmpData = structDataBLE(line)        
         if tmpData[0] == 0: data[0][1:] = tmpData[1:]
         if tmpData[0] == 1: data[1][1:] = tmpData[1:]
         if tmpData[0] == 2: data[2][1:] = tmpData[1:]
         if tmpData[0] == 3: data[3][1:] = tmpData[1:]
+        
     return data    
