@@ -58,7 +58,7 @@ def RTdata(data,proc):
         if tmpData[0] == 1: data[1][1:] = tmpData[1:]
         if tmpData[0] == 2: data[2][1:] = tmpData[1:]
         if tmpData[0] == 3: data[3][1:] = tmpData[1:]
-#        print "NEW!\n", data
+        print "NEW!\n", data
 #        received += 1      
 #    else:
 #      print "nothing new...\n", data
@@ -72,10 +72,10 @@ data = np.array([[0,0.,0.,0.],
                  [2,0.,0.,0.],
                  [3,0.,0.,0.]])
 cnt = 0
-while cnt <1000:
+while True:
     data = RTdata(data,subuproc)
     print data
-    cnt += 1
+#    cnt += 1
  
 print "here" 
 subuproc.stdout.close()

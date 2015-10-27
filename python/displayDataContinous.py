@@ -3,7 +3,7 @@ import numpy as np
 import pyqtgraph as pg
 #from pyqtgraph.ptime import time
 import subprocess
-import dataAcquisitionMulti as datAcM
+import dataAcquisitionMulti as datAc
 import modelEq as modE
  
 app = QtGui.QApplication([])
@@ -31,7 +31,7 @@ curvesYellow.append(magPlot.plot(pen=pg.mkPen(color=QtGui.QColor(255,255,0), sty
 datax = [0]
 datay = [0]
 dataz = [0]
-dataArrRed = dataArrBlue = dataArrGreen = dataArrYellow = [[0.,0.,0.]]
+dataArrRed = dataArrBlue = dataArrGreen = dataArrYellow = np.array([[0.,0.,0.]])
 #dataArr = np.empty(300)
 displayArr = np.empty(shape=[0,3])
 #dataArr = np.append(dataArr, np.array([0,100,200]))
@@ -40,9 +40,9 @@ cnt = 0
 overcnt = 0
 overcntRed = overcntBlue = overcntGreen = overcntYellow = 0
  
-maxSize = 500       # amount of data, displayed on the screen
+maxSize = 50       # amount of data, displayed on the screen
 
-def updateMagnet():
+def updateMagnet(b):
     global cnt, dataArrRed, dataArrBlue, dataArrGreen, dataArrYellow, maxSize, overcntRed, overcntBlue, overcntGreen, overcntYellow
     
     if b[0] == 0:
@@ -69,14 +69,16 @@ def updateMagnet():
             curvesBlue[2].setData(dataArrBlue[overcntBlue:,2])  
         elif b[0] == 2:
             overcntGreen += 1
+#            print "shape green: ",dataArrGreen.shape
             curvesGreen[0].setData(factorX*dataArrGreen[overcntGreen:,0])
             curvesGreen[1].setData(dataArrGreen[overcntGreen:,1])
             curvesGreen[2].setData(dataArrGreen[overcntGreen:,2])  
         elif b[0] == 3:
             overcntYellow += 1
-            overcntYellow[0].setData(factorX*dataArrYellow[overcntYellow:,0])
-            overcntYellow[1].setData(dataArrYellow[overcntYellow:,1])
-            overcntYellow[2].setData(dataArrYellow[overcntYellow:,2])                      
+#            print "shape yellow: ",dataArrYellow.shape
+            curvesYellow[0].setData(factorX*dataArrYellow[overcntYellow:,0])
+            curvesYellow[1].setData(dataArrYellow[overcntYellow:,1])
+            curvesYellow[2].setData(dataArrYellow[overcntYellow:,2])                      
 
     else:
         if b[0] == 0:
@@ -132,6 +134,10 @@ proc = subprocess.Popen("gatttool -t random -b E3:C0:07:76:53:70 --char-write-re
 #proc = subprocess.Popen("stty -F /dev/ttyUSB0 time 50; cat /dev/ttyUSB0", 
 #                        stdout=subprocess.PIPE, close_fds=True, shell=True) 
 b = np.array([0.,0.,0.,0.]) 
+data = np.array([[0,0.,0.,0.],
+                 [1,0.,0.,0.],
+                 [2,0.,0.,0.],
+                 [3,0.,0.,0.]])
 #s0 = [0.00920 , 0.06755, 0.]             # sensor position
 #angle = [0., 0.02272, 0.01087]          # angle position of the finger
 #r = 0.08829                     # length of the finger
@@ -143,26 +149,17 @@ b = np.array([0.,0.,0.,0.])
 #
 #scale = [ 0., 0.41656681, 0.28542467]
 #offset = [ 0., 240.46739245, 5.38012971]
-i = 0
 try:
     while True:          
-        while proc.stdout.readline() == None:
-            print "waiting..."
-        output = proc.stdout.readline()
-        b = datAcM.structDataBLE(output)
-        updateMagnet()
-#        if (i==1) & (b.any()>0.0):
-#            print "one"
-#            p = modE.estimatePos(p0,s0,b[1:],bnds)
-#            updatePos()            
-        if i>1:                 # p should reflect the old position...???
-            print "bigger one"
-#            p = modE.estimatePos(p,s0,np.add(np.multiply(b[1:],scale),offset),bnds)
-#            print p
-#            p = [0.5*i, -0.05*i, 2*i]
-#            updatePos()            
-        i+=1
-
+#        while proc.stdout.readline() == None:
+#            print "waiting..."
+#        output = proc.stdout.readline()
+#        b = datAc.structDataBLE(output)
+        data = datAc.RTdata(data,proc)
+        for d in data:
+            updateMagnet(d)
+       
+        
 
 # to catch a ctrl-c
 except KeyboardInterrupt:    

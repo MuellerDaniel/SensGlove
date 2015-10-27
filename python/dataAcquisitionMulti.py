@@ -5,11 +5,7 @@ Created on Wed Jul 15 08:52:55 2015
 @author: daniel
 """
 import numpy as np
-import serial
-import string
-import time
-import subprocess
-import struct
+import serial,string,time,subprocess,struct,select
 
 def serialAcquisition(serPort, fileName, offset, measNr, timeStamp = True):
     """function for acquiring data from the serial port
@@ -143,7 +139,7 @@ def textAcquistion(fileName, timeStamp = False):
                             [[float(dataString[0]),
                               float(dataString[1]), 
                               float(dataString[2]), 
-                              float(dataString[3])]],axis=0)
+                              float(dataString[3])]],axis=0)                                         
         elif form == 3:
              dataMat = np.append(dataMat, 
                             [[float(dataString[1]), 
@@ -151,7 +147,7 @@ def textAcquistion(fileName, timeStamp = False):
                               float(dataString[3])]],axis=0)
 
         line = f.readline()    
-    dataMat = dataMat[1:]
+#    dataMat = dataMat[1:]
     dataMat = sortData(dataMat)
     return dataMat
     
@@ -166,8 +162,8 @@ def structDataBLE(inp):
         if len(x) == 2:
             dataHex.append(x) 
     if ((len(dataHex)<=0) or (len(dataHex)%4)) :
-        print 'not enough numbers!'
-        print dataHex
+#        print 'not enough numbers!'
+#        print dataHex
         return np.array([0.,0.,0.,0.])
         
     dataHex = [chr(int(x, base=16)) for x in dataHex] 
@@ -179,8 +175,9 @@ def structDataBLE(inp):
         d.append("".join(dataHex[(i*4):(i*4)+4]))
         tmp.append(struct.unpack("f", d[i]))    
         value[i] = "{0:.2f}".format(float(tmp[i][0]))             
-        i+=1
-        
+        #i+=1
+    
+#    print "pipe: ", value
     return value
 
 
@@ -228,13 +225,10 @@ def sortData(data):
     cnt = np.zeros((nrSens,1))
     for j in data:
         s[int(j[0])][int(cnt[int(j[0])])] = j[1:]              
-        cnt[int(j[0])] += 1        
-        
-
+        cnt[int(j[0])] += 1  
 #    else:
 #        print "right amount of measurements..."
-#        np.reshape(data,(nrSens,len(data),3))
-    
+#        np.reshape(data,(nrSens,len(data),3))    
     return s
 
 def pipeAcquisition(arg, fileName=None, measNr=None, offset=0):
@@ -271,7 +265,7 @@ def pipeAcquisition(arg, fileName=None, measNr=None, offset=0):
                                 stdout=subprocess.PIPE, close_fds=True)
     if fileName != None:
         fl = open(fileName, 'w')   
-    i=0                 
+    i=0               
     data = np.array([0.,0.,0.,0.])
     if measNr == None: 
         measNr = np.inf
@@ -285,7 +279,7 @@ def pipeAcquisition(arg, fileName=None, measNr=None, offset=0):
                     data = structDataBLE(output)
 #                    data = invertX(data)
 #                    print "raw output: ", output
-                    print "data output: ", data
+#                    print "data output: ", data
                 if "/dev/tty" in arg:
                     data = structDataSer(output)
 #                    data = invertX(data)
@@ -326,3 +320,17 @@ def pipeAcquisition(arg, fileName=None, measNr=None, offset=0):
     mat = sortData(mat)
 #    print "blabla"
     return mat
+    
+    
+def RTdata(data,proc):       
+    tmpData = np.array([0.,0.,0.,0.])     
+    while proc.stdout in select.select([proc.stdout], [], [], 0)[0]:
+      line = proc.stdout.readline() 
+#      print "line in RT: ", line
+      if line != ' ':
+        tmpData = structDataBLE(line)
+        if tmpData[0] == 0: data[0][1:] = tmpData[1:]
+        if tmpData[0] == 1: data[1][1:] = tmpData[1:]
+        if tmpData[0] == 2: data[2][1:] = tmpData[1:]
+        if tmpData[0] == 3: data[3][1:] = tmpData[1:]
+    return data    
