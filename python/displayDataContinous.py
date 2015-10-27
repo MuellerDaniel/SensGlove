@@ -40,7 +40,7 @@ cnt = 0
 overcnt = 0
 overcntRed = overcntBlue = overcntGreen = overcntYellow = 0
  
-maxSize = 50       # amount of data, displayed on the screen
+maxSize = 500       # amount of data, displayed on the screen
 
 def updateMagnet(b):
     global cnt, dataArrRed, dataArrBlue, dataArrGreen, dataArrYellow, maxSize, overcntRed, overcntBlue, overcntGreen, overcntYellow
@@ -149,6 +149,7 @@ data = np.array([[0,0.,0.,0.],
 #
 #scale = [ 0., 0.41656681, 0.28542467]
 #offset = [ 0., 240.46739245, 5.38012971]
+bla = 0
 try:
     while True:          
 #        while proc.stdout.readline() == None:
@@ -156,9 +157,12 @@ try:
 #        output = proc.stdout.readline()
 #        b = datAc.structDataBLE(output)
         data = datAc.RTdata(data,proc)
-        for d in data:
-            updateMagnet(d)
-       
+        if data[0][1:].any() != 0:
+#            print "waiting..."
+            for d in data:
+                updateMagnet(d)        
+                print bla
+                bla += 1
         
 
 # to catch a ctrl-c
