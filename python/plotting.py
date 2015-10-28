@@ -55,15 +55,25 @@ def plotIt2d(data, title, sizeData, shareAxis):
         for i in range(sizeData):
             cnt = 0            
             for j in data:
-                print j.shape
-                linCol = colorList[cnt]
-                lst[i].plot(j[:,0], color=linCol, ls='-', label='x')
-                lst[i].plot(j[:,1], color=linCol, ls='--', label='y')
-                lst[i].plot(j[:,2], color=linCol, ls=':', label='z')
-                lst[i].set_title(title[i])                
-                if cnt==0: plt.legend()
-                cnt+=1
+                linCol = colorList[cnt%4]
+            # 151027 code, that was working...
+#                lst[i].plot(j[:,0], color=linCol, ls='-', label='x')
+#                lst[i].plot(j[:,1], color=linCol, ls='--', label='y')
+#                lst[i].plot(j[:,2], color=linCol, ls=':', label='z')
+#                lst[i].set_title(title[i])                
                 
+                lst[cnt].plot(j[:,0], color=linCol, ls='-', label='x')
+                lst[cnt].plot(j[:,1], color=linCol, ls='--', label='y')
+                lst[cnt].plot(j[:,2], color=linCol, ls=':', label='z')
+#                plt.legend()
+#                else:
+#                    lst[cnt].plot(j[:,0], color=linCol, ls='-')
+#                    lst[cnt].plot(j[:,1], color=linCol, ls='--')
+#                    lst[cnt].plot(j[:,2], color=linCol, ls=':')
+                    
+                lst[cnt].set_title(title[cnt])
+#                if cnt==0: plt.legend()
+                cnt+=1        
 #            else:
     
 
@@ -151,26 +161,74 @@ def multiPlotter(data, title, comp=None):
 #        g.set_yticklabels([])
 
 
+#def visMagData(data,title = None):       
+#    if len(data.shape) == 3:    
+#        colorList = ('b','g','r','y')
+#        cnt = 0 
+#        fig = plt.figure()
+#        a = fig.add_subplot(2,3,2,projection='3d')
+#        a.axis('equal')        
+#        xy = fig.add_subplot(2,3,4)
+#        xz = fig.add_subplot(2,3,5)
+#        yz = fig.add_subplot(2,3,6)
+#        
+#        for i in data:
+#            a.scatter(i[:,0],i[:,1],i[:,2],c=colorList[cnt%4])
+#            
+#            xy.scatter(i[:,0],i[:,1],c=colorList[cnt%4])
+#            xz.scatter(i[:,0],i[:,2],c=colorList[cnt%4])
+#            yz.scatter(i[:,1],i[:,2],c=colorList[cnt%4])
+#            cnt += 1
+#    else:
+#        fig = plt.figure()
+#        a = fig.add_subplot(111,projection='3d')
+#        a.axis('equal')
+#        a.scatter(data[:,0],data[:,1],data[:,2],marker='o') 
+
 def visMagData(data,title = None):       
-    if len(data.shape) == 3:    
-        colorList = ('b','g','r','y')
-        cnt = 0 
-        fig = plt.figure()
-        a = fig.add_subplot(2,3,2,projection='3d')
-        a.axis('equal')        
-        xy = fig.add_subplot(2,3,4)
-        xz = fig.add_subplot(2,3,5)
-        yz = fig.add_subplot(2,3,6)
-        
-        for i in data:
-            a.scatter(i[:,0],i[:,1],i[:,2],c=colorList[cnt%4])
-            
-            xy.scatter(i[:,0],i[:,1],c=colorList[cnt%4])
-            xz.scatter(i[:,0],i[:,2],c=colorList[cnt%4])
-            yz.scatter(i[:,1],i[:,2],c=colorList[cnt%4])
-            cnt += 1
-    else:
-        fig = plt.figure()
-        a = fig.add_subplot(111,projection='3d')
-        a.axis('equal')
-        a.scatter(data[:,0],data[:,1],data[:,2],marker='o')                    
+    colorList = ('b','g','r','y')   
+    fig = plt.figure()
+    a = fig.add_subplot(2,3,2,projection='3d')
+    a.axis('equal')        
+    a.set_title('3d representation')
+    xy = fig.add_subplot(2,3,4)
+    xy.axis('equal')
+    xy.set_title('xy')
+    xz = fig.add_subplot(2,3,5)
+    xz.axis('equal')
+    xz.set_title('xz')
+    yz = fig.add_subplot(2,3,6)
+    yz.axis('equal')
+    yz.set_title('yz')
+    
+    cnt = 0
+    for i in data:
+        a.scatter(i[:,0],i[:,1],i[:,2],c=colorList[cnt%4])            
+        xy.scatter(i[:,0],i[:,1],c=colorList[cnt%4])
+        xz.scatter(i[:,0],i[:,2],c=colorList[cnt%4])
+        yz.scatter(i[:,1],i[:,2],c=colorList[cnt%4])
+        cnt += 1
+    
+    
+#    if len(data.shape) == 3:    
+#        colorList = ('b','g','r','y')
+#        cnt = 0 
+#        fig = plt.figure()
+#        a = fig.add_subplot(2,3,2,projection='3d')
+#        a.axis('equal')        
+#        xy = fig.add_subplot(2,3,4)
+#        xz = fig.add_subplot(2,3,5)
+#        yz = fig.add_subplot(2,3,6)
+#        
+#        for i in data:
+#            a.scatter(i[:,0],i[:,1],i[:,2],c=colorList[cnt%4])
+#            
+#            xy.scatter(i[:,0],i[:,1],c=colorList[cnt%4])
+#            xz.scatter(i[:,0],i[:,2],c=colorList[cnt%4])
+#            yz.scatter(i[:,1],i[:,2],c=colorList[cnt%4])
+#            cnt += 1
+#    else:
+#        fig = plt.figure()
+#        a = fig.add_subplot(111,projection='3d')
+#        a.axis('equal')
+#        a.scatter(data[:,0],data[:,1],data[:,2],marker='o')                   
