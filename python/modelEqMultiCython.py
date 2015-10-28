@@ -477,23 +477,3 @@ def shiftMeasurements(real, meas, valOffset):
     print "offset: " + str(offset)
     return resMat
 
-def moving_average(data, n) :
-    """simple moving average filter, returns the filtered data
-
-    Parameters
-    ----------
-    data : array
-        the dataset to be filtered
-    n : int
-        nr of points used for the avg filter
-
-    Returns
-    -------
-    dataFiltered : array
-        the filtered dataset
-    """
-    ret = np.cumsum(data, dtype=float, axis=0)
-#    print ret
-
-    ret[n:] = ret[n:] - ret[:-n]
-    return ret[n - 1:] / n

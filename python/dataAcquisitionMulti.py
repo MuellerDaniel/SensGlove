@@ -86,7 +86,7 @@ def serialAcquisition(serPort, fileName, offset, measNr, timeStamp = True):
     return magMat
     
 
-def textAcquistion(fileName, timeStamp = False):
+def textAcquisition(fileName, timeStamp = False):
     """function for acquiring data from a text file
     
     Parameters
@@ -108,24 +108,6 @@ def textAcquistion(fileName, timeStamp = False):
         print "File not found!"    
   
     line = f.readline() 
-#    dataString = string.split(line, "\t")
-#    form=0
-#    if len(dataString) == 4:
-#        form=4
-#        dataMat = [[0.,0.,0.,0.]]
-#        dataMat[0] = [float(dataString[0]), 
-#                     float(dataString[1]), 
-#                     float(dataString[2]), 
-#                     float(dataString[3])]
-#                     
-#    elif len(dataString) == 3:
-#        form=3
-#        dataMat = [[0.,0.,0.]]
-#        dataMat[0] = [float(dataString[0]), 
-#                       float(dataString[1]), 
-#                       float(dataString[2])]
-#    else: 
-#        print "wrong data format!!!!"
     dataMat = [[0.,0.,0.,0.]]
     form = 4
     while(line != ""):    
@@ -211,16 +193,15 @@ def eraseZeros(data):
         cnt+=1
     return data
 
-def sortData(data):     
+def sortData(data):  
+    ''' you return ONE matrix of shape=((nrSens,nrMeas,3))'''
     # erasing the first [0.,0.,0.] in the dataarray
-    print "sort beginning: ", data.shape
     cnt=0
     for i in data:
         if i[1:].any() == False:
             data = np.delete(data, cnt, 0)
             cnt-=1
-        cnt+=1
-    print "sort after deleting...", data.shape    
+        cnt+=1    
     # removing surplus taken measurements
     nrSens = int(max(data[:,0])+1)
     if len(data)%nrSens:
@@ -240,7 +221,7 @@ def sortData(data):
 #    else:
 #        print "right amount of measurements..."
 #        np.reshape(data,(nrSens,len(data),3))    
-    return data
+    return s
     
 def splitData(data):
     one = np.array([0.,0.,0.])    
@@ -362,7 +343,24 @@ def pipeAcquisition(arg, fileName=None, measNr=None, offset=0):
     return mat
     
     
-def RTdata(data,proc):       
+def RTdata(data,proc):     
+    """function for acquiring sensor data of mux
+        you only update the measurement, that you actually get
+    
+    Parameters
+    ----------
+    data : array (shape=(4,4))
+        array, where you save the data        
+        
+    proc : subprocess
+        the subprocess, which acquires the data (BLE or serial)
+                
+    Returns
+    -------
+    data : array (shape=(4,4))
+        the updated data array
+        
+    """
     tmpData = np.array([0.,0.,0.,0.])     
     while proc.stdout in select.select([proc.stdout], [], [], 0)[0]:
       line = proc.stdout.readline() 
@@ -375,3 +373,132 @@ def RTdata(data,proc):
         if tmpData[0] == 3: data[3][1:] = tmpData[1:]
         
     return data    
+  
+
+
+def moving_average(data, n) :
+    """simple moving average filter, returns the filtered data
+
+    Parameters
+    ----------
+    data : array (shape=(n,1))
+        the dataset to be filtered
+    n : int
+        nr of points used for the avg filter
+
+    Returns
+    -------
+    dataFiltered : array
+        the filtered dataset
+    """
+    ret = np.cumsum(data, dtype=float, axis=0)
+#    print ret
+
+    ret[n:] = ret[n:] - ret[:-n]
+    return ret[n - 1:] / n
+
+def moving_average3d(data, n) :
+    """simple moving average filter, returns the filtered data
+        for measurements with 3 dimensions!
+
+    Parameters
+    ----------
+    data : array (shape=(n,1))
+        the dataset to be filtered
+    n : int
+        nr of points used for the avg filter
+
+    Returns
+    -------
+    dataFiltered : array
+        the filtered dataset
+    """
+    ret = []
+    
+    for i in range(3):
+        tmp = np.cumsum(data[:,i], dtype=float, axis=0)
+#    print ret
+        tmp[n:] = tmp[n:] - tmp[:-n]
+        
+        ret.append(tmp[n-1:]/n)
+
+    mat = np.zeros((len(ret[0]),3))
+    mat[:,0] = ret[0]
+    mat[:,1] = ret[1]
+    mat[:,2] = ret[2]
+    
+    return mat
+  
+    
+def collectForTime(arg,sec,wait=0.01, fileName=None, avgFil=False, avgN=10):
+    """ collect the data of the muxed sensors for a given time interval
+        you can end the acquisition at any time, by presseing 'Ctrl-c'
+        
+    Parameters
+    ----------
+    arg : string
+        the command to start the subprocess for the data acquistion
+        
+    sec : int
+        time interval in seconds
+        
+    wait : int
+        time (in seconds) you wait between you read a new measurement 
+        (otherwise you will be flooded with equal values), default = 0.01
+    
+    Returns
+    -------
+    out : list
+        a list of arrays, each containing the data of one sensor
+    
+    """
+    subpro = subprocess.Popen(arg.split(), 
+                            stdout=subprocess.PIPE, close_fds=True)
+
+    data = np.array([[0,0.,0.,0.],
+                 [1,0.,0.,0.],
+                 [2,0.,0.,0.],
+                 [3,0.,0.,0.]])
+                 
+    collected = np.array([[0,0.,0.,0.],
+                 [1,0.,0.,0.],
+                 [2,0.,0.,0.],
+                 [3,0.,0.,0.]]) 
+                 
+    startTime = time.time()        
+    try:
+        print "taking measurements..."
+        while time.time()-startTime < sec:          
+            data = RTdata(data,subpro)
+    #        if data[-1][1:].any() != 0:
+            collected = np.append(collected,data,0)
+            if not len(collected) % 400:
+                print str(time.time()-startTime) + " seconds running"
+            time.sleep(wait)    # sleep a bit, otherwise you will be flooded by data...     
+            
+    except KeyboardInterrupt:
+        print "interrupted..."
+        
+    subpro.terminate()                     
+    out = splitData(eraseZeros(collected)) 
+    
+    # applying the moving average filter
+    if avgFil:        
+        for i in out:
+            i = moving_average3d(i,avgN)            
+    
+    # saving the things to a file
+    cnt = 0
+    if fileName != None:
+        fl = open(fileName, 'w')
+        for i in out:
+            for j in i:
+                fl.write(str(cnt) + "\t" +
+                        str(j[0]) + "\t" + 
+                        str(j[1]) + "\t" +
+                        str(j[2]) + "\n")
+            cnt += 1
+            
+        fl.close()     
+           
+    return out 
