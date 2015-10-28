@@ -24,14 +24,23 @@ float softBias[4][3] = {{0.99, 1.02, 1.00},
                          {1.06,  0.94,  1.01},
                          {1.00,  0.99,  1.01}};*/
 // recorded on 23.10.15
-float hardBias[4][3] = {{20.84,   26.35,  228.48},
+/*float hardBias[4][3] = {{20.84,   26.35,  228.48},
                         {100.35,   23.47,    9.1},
                         {11.26,  48.86,  13.17},
                         {80.71,  -87.9 ,  279.26}};
 float softBias[4][3] = {{1.0  ,  0.99,  1.01},
                          {0.97,  0.99,  1.05},
                          {0.98,  0.98,  1.04},
-                         {1.02,  0.98,  1.01}};                         
+                         {1.02,  0.98,  1.01}};*/
+
+float hardBias[4][3] = {{7.66,  -1.68, -55.8},
+                        {86.94,    8.62, -150.17},
+                        {33.29,  57.0  , -47.42},
+                        {-71.13,  -29.7 ,  152.56}};
+float softBias[4][3] = {{1.0  ,  1.01,  1.0},
+                         {0.97,  1.  ,  1.04},
+                         {0.98,  1.02,  1.0},
+                         {1.02,  1.01,  0.97}};                                               
 
 float conversionFactorMag = 0.479;  //for range +-12gauss
 char data[16];
@@ -65,8 +74,8 @@ void setup() {
       delay(50);
       compass.init();
       compass.enableDefault();
-      compass.writeReg(compass.CTRL5, 0x74);
-      compass.writeReg(compass.CTRL6, 0x60);      
+      compass.writeReg(compass.CTRL5, 0x74);    // put magnetic data rate to 100 Hz
+      compass.writeReg(compass.CTRL6, 0x60);    // put magnetic scale to +-12 gauss
     }
     
     RFduinoBLE.deviceName = "magnetic";
@@ -137,10 +146,7 @@ void getMagnetCali(int i){
 }
 
 void getRawMagnet(){    
-    //float startTime = micros();
     while(compass.readReg(compass.STATUS_M) <= 0x0F);  
-    //float endTime = micros();
-    //RFduinoBLE.sendFloat(endTime-startTime);
     compass.readMag();
     
     rawX = compass.m.x * conversionFactorMag;

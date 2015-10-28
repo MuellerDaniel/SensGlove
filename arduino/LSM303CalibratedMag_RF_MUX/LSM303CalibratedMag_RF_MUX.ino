@@ -68,7 +68,8 @@ void setup()
     delay(50);
     compass.init();
     compass.enableDefault();
-    compass.writeReg(compass.CTRL6, 0x60);
+    compass.writeReg(compass.CTRL5, 0x74);    // put magnetic data rate to 100 Hz
+    compass.writeReg(compass.CTRL6, 0x60);    // put magnetic scale to +-12 gauss
   }
   
   RFduinoBLE.deviceName = "magnetic";
@@ -151,11 +152,11 @@ void getMinMaxData(){
     setChannel(s);
     delay(50);
     getRawMagnet();
-    //finding the minimum
+    //updating the minimum
     minData[s][0] = min(minData[s][0], rawX);
     minData[s][1] = min(minData[s][1], rawY);
     minData[s][2] = min(minData[s][2], rawZ);
-    //finding the maximum
+    //updating the maximum
     maxData[s][0] = max(maxData[s][0], rawX);
     maxData[s][1] = max(maxData[s][1], rawY);
     maxData[s][2] = max(maxData[s][2], rawZ);     
