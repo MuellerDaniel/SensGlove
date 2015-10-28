@@ -56,7 +56,7 @@ phalMid = [0.03640, 0.03075, 0.02114]
 phalRin = [0.03344, 0.02782, 0.01853]
 phalPin = [0.02896, 0.02541, 0.01778]
 
-b = datAcM.textAcquistion("perfectB")
+b = datAcM.textAcquisition("perfectB")
 
 """ fitting the data to the model """
 
