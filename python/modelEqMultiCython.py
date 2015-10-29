@@ -56,13 +56,15 @@ def evalfuncMagDot(P,S):
     no = np.sqrt(R[0]**2+R[1]**2+R[2]**2)
     return [((3*(np.dot(H,R)*R)/(no**5)) - (H/(no**3)))] * factor
 
-def evalfuncMagH(P,H,S):
+def evalfuncMagDotH(P,H,S):
     """returns the magnetic field
 
     Parameters
     ----------
     P : array
         the position
+    H : array
+        the orientation
     S : array
         the position of the sensor
     """
@@ -73,8 +75,7 @@ def evalfuncMagH(P,H,S):
 #    return [((3*(np.cross(H,R)*R)/(np.linalg.norm(R)**5)) -
 #                                        (H/(np.linalg.norm(R)**3)))] * factor
     no = np.sqrt(R[0]**2+R[1]**2+R[2]**2)
-    return [((3*(np.cross(H,R)*R)/(no**5)) -
-                                        (H/(no**3)))] * factor
+    return [((3*(np.dot(H,R)*R)/(no**5)) - (H/(no**3)))] * factor
 
 def evalfuncMagH_dot(P,H,S):
     """returns the magnetic field

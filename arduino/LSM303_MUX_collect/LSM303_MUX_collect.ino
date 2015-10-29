@@ -69,7 +69,7 @@ void setup() {
     delay(50);
 
     //set up the magnetic range for each sensor
-    for(int i=0; i<sensCnt; i++){
+    for(int i=0; i<4; i++){
       setChannel(i);
       delay(50);
       compass.init();
@@ -98,7 +98,7 @@ void loop() {
     //float endTime = millis();    
     //RFduinoBLE.sendFloat(endTime-startTime);
     
-    for(int i = 0; i<4; i++){
+    for(int i = 0; i<sensCnt; i++){
       for(int j = 0; j<4; j++){
         memcpy(&data[j*sizeof(float)], &fData[i][j], sizeof(float));
       }      
