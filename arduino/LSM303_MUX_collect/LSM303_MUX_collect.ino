@@ -45,7 +45,7 @@ float softBias[4][3] = {{1.0  ,  1.01,  1.0},
 float conversionFactorMag = 0.479;  //for range +-12gauss
 char data[16];
 float fData[4][4];
-int sensCnt = 4;    //Number of sensors
+int sensCnt = 1;    //Number of sensors
 int a = 0;
 
 //pins

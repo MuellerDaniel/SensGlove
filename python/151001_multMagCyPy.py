@@ -28,7 +28,7 @@ the sensor is below the middle finger and the magnet is on the middle finger
 #                               "150901_testAll", measNr=500, offset=100)
 #fingDat=datAcM.textAcquistion("150825_middleLSM")
 
-# position of wooden-joints
+# absolute positions of wooden-joints
 jointInd = [0.09138, 0.02957, -0.01087]         # to wooden-joint(index)
 jointMid = [0.09138, 0.00920, -0.01087]          # to wooden-joint(middle)
 jointRin = [0.09138, -0.01117, -0.01087]         # to wooden-joint(ring)
