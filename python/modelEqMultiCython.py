@@ -225,8 +225,7 @@ def yPos(angle,phal,off):
 def zPos(angle,phal,off):
     return (phal[0]*np.sin((angle[0]))+
             phal[1]*np.sin((angle[0])+(angle[1]))+
-            phal[2]*np.sin((angle[0])+(angle[1])+(angle[2]))+off)*-1
-
+            phal[2]*np.sin((angle[0])+(angle[1])+(angle[2])))*-1+off
           
 def calcPosition_s(angle,phal,offSet):
     res = np.array([xPos(angle,phal,offSet[0]),
@@ -326,6 +325,107 @@ def estimateAngle_m(pos,guess,off,phal,bnds):
 
     return res       
 
+
+"""
+describing the whole estimation as angle-estimation
+"""
+
+def angToB(theta,finger,off,S):
+    """returns the magnetic field
+
+    Parameters
+    ----------
+    theta : array
+            the angles of the finger
+    finger : array
+            the length of the phalanges
+    off : array
+        the absolute position of the MCP
+    S : array
+        the position of the sensor
+    """
+#    H = 1*(P-S)        # this worked for the example on the flat paper...
+    P = np.array([xPos(theta,finger,off[0]),
+                  yPos(theta,finger,off[1]),
+                  zPos(theta,finger,off[2])])
+    R = S-P
+#    print "R: ", R
+    H = np.array([np.sin(-np.pi/2+abs(-theta[0]-theta[1]-theta[2])),
+                  0,
+                  np.cos(-np.pi/2+abs(-theta[0]-theta[1]-theta[2]))])
+#    print "H: ",H                  
+#    factor = np.array([1, 1, 1])
+
+    no = np.sqrt(R[0]**2+R[1]**2+R[2]**2)
+#    print "evalfuncMagAngle: ", ((3*(np.dot(H,R)*R)/(no**5)) - (H/(no**3))) * factor
+    res = np.array([((3*(np.dot(H,R)*R)/(no**5)) - (H/(no**3)))])
+#    print "P[0]_py ", P[0]
+#    print "res[0]_py ", res[0][0]
+    return res
+
+def funcMagY_angle(theta,finger,off,S,B):
+    """The function to minimize 
+    
+    Parameters
+    ----------
+    theta : array (concatenated)
+            the angles of the finger
+    finger : list (of arrays)
+            the length of the phalanges
+    off : list (of arrays)
+        the absolute positions of the MCP
+    S : list (of arrays)
+        the positions of the sensors
+    B : array (concatenated)    
+        the measured B-field
+    """
+    cal = np.zeros((len(S)*3,))  
+#    print cal.shape          
+    for i in range(len(S)):
+        for j in range(len(theta)/3):
+#            print "j: ",j
+            tmp = angToB(theta[j*3:j*3+3],finger[j],off[j],S[i]).reshape((3,))           
+            cal[i*3:i*3+3] += tmp
+        
+#    cal = evalfuncMagAngle(theta,finger,off,S)     # simple approach for one magnet and one sensor
+#    print "python cal: ",cal
+#    print "B: ", B
+    return np.linalg.norm(B-cal)**2     #take the square of it!
+
+def estimate_BtoAng(theta_0, fingerL, offL, sL, measB,bnds):
+    """Estimates the angles for a certain (measured) B-field
+    
+    Parameters
+    ----------
+    theta_0 : array (concatenated)
+            the angles of the finger
+    fingerL : list (of arrays)
+            the length of the phalanges
+    offL : list (of arrays)
+        the absolute positions of the MCP
+    sL : list (of arrays)
+        the positions of the sensors
+    measB : array (concatenated)    
+        the measured B-field
+    bnds : tuple
+        the static (inequality) bounds for the angles
+    """
+
+    # python version
+#    res = minimize(funcMagY_angle, theta_0, 
+#                   args=(fingerL, offL, sL, measB),
+#                   method='slsqp', bounds=bnds)
+    
+    # cython version
+    res = minimize(fcn.funcMagY_angle_cy, theta_0, 
+                   args=(np.reshape(fingerL,((12,))), 
+                         np.reshape(offL,((12,))), 
+                         np.reshape(sL,((12,))), measB),
+                   method='slsqp', bounds=bnds)
+                      
+    # returning only the angles
+#    return np.array([res[0:3], res[3:6], res[6:9], res[9:12]])    
+    return res
 
 """
 calculating the jacobi

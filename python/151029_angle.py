@@ -5,69 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy.optimize import *
 import time
-
-
-def xPos(angle,phal,off):
-    return phal[0]*np.cos(angle[0])+phal[1]*np.cos((angle[0])+(angle[1]))+phal[2]*np.cos((angle[0])+(angle[1])+(angle[2]))+off
-            
-# for simplicity neglect it...            
-def yPos(angle,phal,off):
-    return off            
-
-def zPos(angle,phal,off):
-    return (phal[0]*np.sin((angle[0]))+
-            phal[1]*np.sin((angle[0])+(angle[1]))+
-            phal[2]*np.sin((angle[0])+(angle[1])+(angle[2])))*-1+off
-
-def evalfuncMagAngle(theta,finger,off,S):
-    """returns the magnetic field
-
-    Parameters
-    ----------
-    theta : array
-            the angles of the finger
-    finger : array
-            the length of the phalanges
-    off : array
-        the absolute position of the MCP
-    S : array
-        the position of the sensor
-    """
-#    H = 1*(P-S)        # this worked for the example on the flat paper...
-    P = np.array([xPos(theta,finger,off[0]),
-                  yPos(theta,finger,off[1]),
-                  zPos(theta,finger,off[2])])
-    R = S-P
-#    print "R: ", R
-    H = np.array([np.sin(-np.pi/2+abs(-theta[0]-theta[1]-theta[2])),
-                  0,
-                  np.cos(-np.pi/2+abs(-theta[0]-theta[1]-theta[2]))])
-#    print "H: ",H                  
-#    factor = np.array([1, 1, 1])
-
-    no = np.sqrt(R[0]**2+R[1]**2+R[2]**2)
-#    print "evalfuncMagAngle: ", ((3*(np.dot(H,R)*R)/(no**5)) - (H/(no**3))) * factor
-    return np.array([((3*(np.dot(H,R)*R)/(no**5)) - (H/(no**3)))])
-
-def funcMagY_angle(theta,finger,off,S,B):
-    """The function to minimize 
-        REMEMBER: pass in everything as list(or concatenated???)!!!   
-        like: [theta0,theta1,...]
-    """
-    cal = np.zeros((len(S)*3,))  
-#    print cal.shape          
-    for i in range(len(S)):
-        for j in range(len(theta)/3):
-#            print "j: ",j
-            tmp = evalfuncMagAngle(theta[j*3:j*3+3],finger[j],off[j],S[i]).reshape((3,))           
-            cal[i*3:i*3+3] += tmp
-        
-#    cal = evalfuncMagAngle(theta,finger,off,S)     # simple approach for one magnet and one sensor
-#    print "cal: ",cal
-#    print "B: ", B
-    return np.linalg.norm(B-cal)**2     #take the square of it!
-    
-'''---------------------------------------------------------------------'''
+import fcnCyPy as fcn
 
 # absolute positions of wooden-joints
 jointInd = [0.09138, 0.02957, -0.01087]         # to wooden-joint(index)
@@ -156,14 +94,18 @@ angles = angles[1:]
 calcBdata = datAc.textAcquisition("151030_perfectB_H")
 
 ''' estimating the angles '''
+#estAngIndPy = np.zeros((len(t),3))
+#estAngMidPy = np.zeros((len(t),3))
+#estAngRinPy = np.zeros((len(t),3))
+#estAngPinPy = np.zeros((len(t),3))
+#estAngIndCy = np.zeros((len(t),3))
+#estAngMidCy = np.zeros((len(t),3))
+#estAngRinCy = np.zeros((len(t),3))
+#estAngPinCy = np.zeros((len(t),3))
 estAngInd = np.zeros((len(t),3))
-#estAngInd[0] = angles[0]
 estAngMid = np.zeros((len(t),3))
-#estAngMid[0] = angles[0]
 estAngRin = np.zeros((len(t),3))
-#estAngRin[0] = angles[0]
 estAngPin = np.zeros((len(t),3))
-#estAngPin[0] = angles[0]
 
 bnds = ((0.0,np.pi/2),    # index
         (0.0,np.pi/2),
@@ -179,70 +121,114 @@ bnds = ((0.0,np.pi/2),    # index
         (0.0,np.pi/2))
 cnt = 0
 hurray = 0
-#i=0
-#a=funcMagY_angle(np.concatenate((estAngInd[i], estAngMid[i], estAngRin[i], estAngPin[i])),
-#             [phalInd,phalMid,phalRin,phalPin],
-#             [jointInd,jointMid,jointRin,jointPin],
-#             [s1,s2,s3,s4],
-#             np.concatenate((calcBdata[0][0],calcBdata[1][0],calcBdata[2][0],calcBdata[3][0])))
-                       
+
+startTime = time.time()                      
 for i in range(len(calcBdata[0][1:])):
-    res = minimize(funcMagY_angle,
-                   np.concatenate((estAngInd[i], estAngMid[i], estAngRin[i], estAngPin[i])),
-                   args=([phalInd,phalMid,phalRin,phalPin],
-                         [jointInd,jointMid,jointRin,jointPin],
-                         [s1,s2,s3,s4],
-                         np.concatenate((calcBdata[0][i+1],calcBdata[1][i+1],calcBdata[2][i+1],calcBdata[3][i+1]))),
-                    method='slsqp',bounds=bnds)
-    if res.success:
-        hurray += 1
-    else:
-        print "error, iteration: ",cnt
     
+       
+    res = modE.estimate_BtoAng(np.concatenate((estAngInd[i], estAngMid[i], estAngRin[i], estAngPin[i])),
+                                [phalInd,phalMid,phalRin,phalPin],
+                                [jointInd,jointMid,jointRin,jointPin],
+                                [s1,s2,s3,s4],
+                                np.concatenate((calcBdata[0][i+1],calcBdata[1][i+1],calcBdata[2][i+1],calcBdata[3][i+1])),
+                                bnds)
+    # python way
+#    resPy = modE.estimate_BtoAngPy(np.concatenate((estAngIndPy[i], estAngMidPy[i], estAngRinPy[i], estAngPinPy[i])),
+#                                [phalInd,phalMid,phalRin,phalPin],
+#                                [jointInd,jointMid,jointRin,jointPin],
+#                                [s1,s2,s3,s4],
+#                                np.concatenate((calcBdata[0][i+1],calcBdata[1][i+1],calcBdata[2][i+1],calcBdata[3][i+1])),
+#                                bnds)
     
-    estAngInd[i+1] = res.x[0:3]
-    estAngMid[i+1] = res.x[3:6]
-    estAngRin[i+1] = res.x[6:9]
-    estAngPin[i+1] = res.x[9:12]
+    # cython way                                
+#    resCy = modE.estimate_BtoAngCy(np.concatenate((estAngIndCy[i], estAngMidCy[i], estAngRinCy[i], estAngPinCy[i])),
+#                                np.reshape([phalInd,phalMid,phalRin,phalPin],((12,))),
+#                                np.reshape([jointInd,jointMid,jointRin,jointPin],((12,))),
+#                                np.reshape([s1,s2,s3,s4],((12,))),
+#                                np.concatenate((calcBdata[0][i+1],calcBdata[1][i+1],calcBdata[2][i+1],calcBdata[3][i+1])),
+#                                bnds)
+        
+#    if res.success:
+#        hurray += 1
+#    else:
+#        print "error, iteration: ",cnt
     
-    cnt += 1
+    estAngInd[i+1] = res.x[0:3]    
+    estAngMid[i+1] = res.x[3:6]    
+    estAngRin[i+1] = res.x[6:9]    
+    estAngPin[i+1] = res.x[9:12]    
+#    estAngIndPy[i+1] = resPy.x[0:3]
+#    estAngMidPy[i+1] = resPy.x[3:6]
+#    estAngRinPy[i+1] = resPy.x[6:9]
+#    estAngPinPy[i+1] = resPy.x[9:12]
+#    
+#    estAngIndCy[i+1] = resCy.x[0:3]
+#    estAngMidCy[i+1] = resCy.x[3:6]
+#    estAngRinCy[i+1] = resCy.x[6:9]
+#    estAngPinCy[i+1] = resCy.x[9:12]    
     
+print "time needed: ",time.time()-startTime    
+
 
 
 '''----------PLOTTING----------'''
 
-plt.close('all')
+#plt.close('all')
 
 #plo.plotter2d((calcBdata[0],calcBdata[1],calcBdata[2],calcBdata[3]),("oldind","oldmid","oldrin","oldpin"))
 #plo.plotter2d((calcBInd,calcBMid,calcBRin,calcBPin),("ind","mid","rin","pin"))
 plo.plotter2d((estAngInd,estAngMid,estAngRin,estAngPin),("angleInd","angleMid","angleRin","anglePin"))
-
-#plt.figure()            # the given orientation
-#plt.plot(calcB[:,0],linestyle='-')
-#plt.plot(calcB[:,1],linestyle='--')
-#plt.plot(calcB[:,2],linestyle=':')
-#plt.title("B-field")
+''' code for comparing python and cython results with the perfect angles '''
+#pyDev0 = estAngIndPy-angles
+#pyDev1 = estAngMidPy-angles
+#pyDev2 = estAngRinPy-angles
+#pyDev3 = estAngPinPy-angles
 #
-#plt.figure()            # the given orientation
-#plt.plot(estAng[:,0],linestyle='-')
-#plt.plot(estAng[:,1],linestyle='--')
-#plt.plot(estAng[:,2],linestyle=':')
-#plt.title("angles")
+#cyDev0 = estAngIndCy-angles
+#cyDev1 = estAngMidCy-angles
+#cyDev2 = estAngRinCy-angles
+#cyDev3 = estAngPinCy-angles
+#plo.plotter2d((estAngIndPy,estAngMidPy,estAngRinPy,estAngPinPy),("angleInd","angleMid","angleRin","anglePin"))
+#plo.plotter2d((estAngIndCy,estAngMidCy,estAngRinCy,estAngPinCy),("angleIndCy","angleMidCy","angleRinCy","anglePinCy"))
 
-#plt.figure()            # the given orientation
-#plt.plot(orienN[:,0],linestyle='-')
-#plt.plot(orienN[:,1],linestyle='--')
-#plt.plot(orienN[:,2],linestyle=':')
-#plt.title("optimal orientation")
+#f = plt.figure()
+#a=f.add_subplot(3,4,1,title='X-deviation index')
+#a.scatter(np.arange(len(angles[:,0])),pyDev0[:,0],color='r')
+#a.scatter(np.arange(len(angles[:,0])),cyDev0[:,0],color='b')
+#a=f.add_subplot(3,4,2,title='X-deviation middle')
+#a.scatter(np.arange(len(angles[:,0])),pyDev1[:,0],color='r')
+#a.scatter(np.arange(len(angles[:,0])),cyDev1[:,0],color='b')
+#a=f.add_subplot(3,4,3,title='X-deviation ring')
+#a.scatter(np.arange(len(angles[:,0])),pyDev2[:,0],color='r')
+#a.scatter(np.arange(len(angles[:,0])),cyDev2[:,0],color='b')
+#a=f.add_subplot(3,4,4,title='X-deviation pinky')
+#a.scatter(np.arange(len(angles[:,0])),pyDev3[:,0],color='r')
+#a.scatter(np.arange(len(angles[:,0])),cyDev3[:,0],color='b')
+#
+#a=f.add_subplot(3,4,5,title='Y-deviation index')
+#a.scatter(np.arange(len(angles[:,1])),pyDev0[:,1],color='r')
+#a.scatter(np.arange(len(angles[:,1])),cyDev0[:,1],color='b')
+#a=f.add_subplot(3,4,6,title='Y-deviation middle')
+#a.scatter(np.arange(len(angles[:,1])),pyDev1[:,1],color='r')
+#a.scatter(np.arange(len(angles[:,1])),cyDev1[:,1],color='b')
+#a=f.add_subplot(3,4,7,title='Y-deviation ring')
+#a.scatter(np.arange(len(angles[:,1])),pyDev2[:,1],color='r')
+#a.scatter(np.arange(len(angles[:,1])),cyDev2[:,1],color='b')
+#a=f.add_subplot(3,4,8,title='Y-deviation pinky')
+#a.scatter(np.arange(len(angles[:,1])),pyDev3[:,1],color='r')
+#a.scatter(np.arange(len(angles[:,1])),cyDev3[:,1],color='b')
+#
+#a=f.add_subplot(3,4,9,title='Z-deviation index')
+#a.scatter(np.arange(len(angles[:,2])),pyDev0[:,2],color='r')
+#a.scatter(np.arange(len(angles[:,2])),cyDev0[:,2],color='b')
+#a=f.add_subplot(3,4,10,title='Z-deviation middle')
+#a.scatter(np.arange(len(angles[:,2])),pyDev1[:,2],color='r')
+#a.scatter(np.arange(len(angles[:,2])),cyDev1[:,2],color='b')
+#a=f.add_subplot(3,4,11,title='Z-deviation ring')
+#a.scatter(np.arange(len(angles[:,2])),pyDev2[:,2],color='r')
+#a.scatter(np.arange(len(angles[:,2])),cyDev2[:,2],color='b')
+#a=f.add_subplot(3,4,12,title='Z-deviation pinky')
+#a.scatter(np.arange(len(angles[:,2])),pyDev3[:,2],color='r',label='python version')
+#a.scatter(np.arange(len(angles[:,2])),cyDev3[:,2],color='b', label='cython version')
+#a.legend(loc='lower left')
 
-#plt.figure()            # the given orientation
-#plt.plot(calcOrien[:,0],linestyle='-')
-#plt.plot(calcOrien[:,1],linestyle='--')
-#plt.plot(calcOrien[:,2],linestyle=':')
-#plt.title("calc orientation")
-
-#plt.figure()            # the given orientation
-#plt.plot(calcPos[:,0],calcPos[:,2],linestyle='-')
-#plt.plot(calcPos[:,1],linestyle='--')
-#plt.plot(calcPos[:,2],linestyle=':')
-#plt.title("position x vs z")
