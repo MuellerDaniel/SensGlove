@@ -233,7 +233,7 @@ def yPos_py(angle,phal,off):
 def zPos_py(angle,phal,off):
     return (phal[0]*np.sin((angle[0]))+
             phal[1]*np.sin((angle[0])+(angle[1]))+
-            phal[2]*np.sin((angle[0])+(angle[1])+(angle[2]))+off)*-1
+            phal[2]*np.sin((angle[0])+(angle[1])+(angle[2])))*-1+off
 
 def calcPosition_py(angle,phal,offSet):
     cdef int i = 0
@@ -259,6 +259,133 @@ def estimateAngle_mCy(pos,guess,off,phal,bnds):
 #    fcn.test(pos)
 #    res = 0
   return res
+
+#'''
+#  describing the whole estimation as angle-estimation
+#'''
+cdef long double xPos_cy(long double *angle,long double *phal,long double off):
+    return (phal[0]*np.cos(angle[0])+
+            phal[1]*np.cos((angle[0])+(angle[1]))+
+            phal[2]*np.cos((angle[0])+(angle[1])+(angle[2]))+off)
+
+cdef long double yPos_cy(long double *angle,long double *phal,long double off):
+    return off
+
+cdef long double zPos_cy(long double *angle,long double *phal,long double off):
+    return (phal[0]*np.sin((angle[0]))+
+            phal[1]*np.sin((angle[0])+(angle[1]))+
+            phal[2]*np.sin((angle[0])+(angle[1])+(angle[2])))*-1+off
+
+cdef long double * angToB_cy(long double *theta,long double *finger,long double *off,long double *S):
+    """returns the magnetic field
+
+    Parameters
+    ----------
+    theta : array
+            the angles of the finger
+    finger : array
+            the length of the phalanges
+    off : array
+        the absolute position of the MCP
+    S : array
+        the position of the sensor
+    """
+    cdef long double *P
+    P = <long double*> malloc(3*sizeof(long double))
+    P[0] = xPos_cy(theta,finger,off[0])
+    P[1] = yPos_cy(theta,finger,off[1])
+    P[2] = zPos_cy(theta,finger,off[2])
+
+    cdef long double *R = sub(S,P,3)
+
+    cdef long double *H
+    H = <long double*> malloc(3*sizeof(long double))
+    H[0] = np.sin(-np.pi/2+abs(-theta[0]-theta[1]-theta[2]))
+    H[1] = 0
+    H[2] = np.cos(-np.pi/2+abs(-theta[0]-theta[1]-theta[2]))
+    #cdef long double normR = cal_norm_cy(R,3)
+
+    cdef long double *res
+    res = <long double*> malloc(3*sizeof(long double))
+    res[0] = ((3*(dot_product(H,R,3)*R[0])/pow(cal_norm_cy(R,3),5)) -
+                  (H[0]/pow(cal_norm_cy(R,3),3)))
+    res[1] = ((3*(dot_product(H,R,3)*R[1])/pow(cal_norm_cy(R,3),5)) -
+                  (H[1]/pow(cal_norm_cy(R,3),3)))
+    res[2] = ((3*(dot_product(H,R,3)*R[2])/pow(cal_norm_cy(R,3),5)) -
+                  (H[2]/pow(cal_norm_cy(R,3),3)))
+
+    #no = np.sqrt(R[0]**2+R[1]**2+R[2]**2)
+    #print "P[0]_cy ", P[0]
+    free(H)
+    free(P)
+    free(R)
+    #print "res[0]_cy ", res[0]
+    return res
+
+def funcMagY_angle_cy(theta,finger,off,S,B):
+    # converting the input arrays to c arrays
+    cdef int lenB = len(B)
+    cdef int lenTheta = len(theta)
+    cdef int lenFinger = len(finger)
+    cdef int lenOff = len(off)
+    cdef int lenS = len(S)
+    cdef int i = 0
+    cdef int k = 0
+    cdef int l = 0
+
+    # value arrays...
+    cdef long double *arrCal
+    arrCal = <long double*> malloc(lenB*sizeof(long double))
+
+    cdef long double *tmp
+    tmp = <long double*> malloc(3*sizeof(long double))
+
+    cdef long double *actS
+    actS = <long double*> malloc(3*sizeof(long double))
+    cdef long double *actTheta
+    actTheta = <long double*> malloc(3*sizeof(long double))
+    cdef long double *actFinger
+    actFinger = <long double*> malloc(3*sizeof(long double))
+    cdef long double *actOff
+    actOff = <long double*> malloc(3*sizeof(long double))
+
+    cal = [0] * lenB
+
+    cdef int iEnd = 4
+    cdef int jEnd = 4
+
+    cdef int j = 0
+    i = 0
+    for i in range(iEnd):
+        b = [0]*3
+        k = 0
+        for k in range(3):
+            actS[k] = S[k+i*3]
+        for j in range(jEnd):
+            l = 0
+            for l in range(3):
+                actTheta[l] = theta[l+j*3]
+                actFinger[l] = finger[l+j*3]
+                actOff[l] = off[l+j*3]
+            b = add_py(b,angToB_cy(actTheta,actFinger,actOff,actS),3)
+        cal[i*3:i*3+3] = b
+
+    #cdef long double res_cy = cal_norm_cy(sub(arrB,arrCal,lenB),lenB)
+    #print "cython cal: ", cal
+
+    res_py = cal_norm_py(B-cal)
+    res_py = res_py**2
+    #res_py = res_cy     # don't know if it works....
+    free(arrCal)
+    free(tmp)
+    free(actS)
+    free(actTheta)
+    free(actFinger)
+    free(actOff)
+
+    return res_py     #take the square of it!
+
+
 
 '''
 ###############################################################################
