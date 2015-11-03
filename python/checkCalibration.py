@@ -9,7 +9,7 @@ import plotting as plo
 #data = datAc.pipeAcquisition("gatttool -t random -b E3:C0:07:76:53:70 --char-write-req --handle=0x000f --value=0300 --listen",
 #                             measNr=100)
 data = datAc.collectForTime("gatttool -t random -b E3:C0:07:76:53:70 --char-write-req --handle=0x000f --value=0300 --listen",
-                            20)      
+                            20)
 
 plo.visMagData(data)                
 
@@ -27,7 +27,7 @@ for i in data:
     maxZ = max(i[:,2])            
     minZ = min(i[:,2])
     offZ = (maxZ+minZ)/2
-    print "hard iron offset sensor " + str(cnt)
+    print "\nhard iron offset sensor " + str(cnt)
     print [offX, offY, offZ]
     
     # check soft iron
@@ -40,4 +40,4 @@ for i in data:
     
     cnt += 1
     print "\n"
-    
+ 

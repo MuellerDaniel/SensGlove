@@ -133,7 +133,7 @@ for i in range(pos.shape[1]):
 
 calcBInd = np.delete(calcBInd,0,1)
 calcBMid = np.delete(calcBMid,0,1)
-calcBMid_dot = np.delete(calcBMid_dot,0,1)
+#calcBMid_dot = np.delete(calcBMid_dot,0,1)
 calcBRin = np.delete(calcBRin,0,1)
 calcBPin = np.delete(calcBPin,0,1)
 
