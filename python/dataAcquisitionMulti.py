@@ -224,6 +224,7 @@ def sortData(data):
     return s
     
 def splitData(data):
+    ''' returns a list with the 4 sensor values '''
     one = np.array([0.,0.,0.])    
     two = np.array([0.,0.,0.])    
     three = np.array([0.,0.,0.])     
@@ -445,6 +446,15 @@ def collectForTime(arg,sec,wait=0.01, fileName=None, avgFil=False, avgN=10):
     wait : int
         time (in seconds) you wait between you read a new measurement 
         (otherwise you will be flooded with equal values), default = 0.01
+        
+    fileName : string, optional
+        name of the file, to save the data (leave out, if saving is not required)    
+        
+    avgFil : bool, optional
+        whether the moving average filter should be applied, or not
+        
+    avgN : int, optional
+        the step size of the moving average filter
     
     Returns
     -------
@@ -470,7 +480,6 @@ def collectForTime(arg,sec,wait=0.01, fileName=None, avgFil=False, avgN=10):
         print "taking measurements..."
         while time.time()-startTime < sec:          
             data = RTdata(data,subpro)
-    #        if data[-1][1:].any() != 0:
             collected = np.append(collected,data,0)
             if not len(collected) % 400:
                 print str(time.time()-startTime) + " seconds running"
