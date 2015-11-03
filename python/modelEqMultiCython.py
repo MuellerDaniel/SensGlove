@@ -330,6 +330,19 @@ def estimateAngle_m(pos,guess,off,phal,bnds):
 describing the whole estimation as angle-estimation
 """
 
+def angToP(theta,finger,off):
+     P = np.array([xPos(theta,finger,off[0]),
+                  yPos(theta,finger,off[1]),
+                  zPos(theta,finger,off[2])])
+     return P             
+     
+def angToH(theta):
+    H = np.array([np.sin(-np.pi/2+abs(-theta[0]-theta[1]-theta[2])),
+                  0,
+                  np.cos(-np.pi/2+abs(-theta[0]-theta[1]-theta[2]))])*factorH
+    return H                  
+    
+
 def angToB(theta,finger,off,S):
     """returns the magnetic field
 
@@ -349,16 +362,18 @@ def angToB(theta,finger,off,S):
                   yPos(theta,finger,off[1]),
                   zPos(theta,finger,off[2])])
     R = S-P
-#    print "R: ", R
+#    factorH = np.array([0.75,0.25,0.5])
+    factorH = np.array([1.,1.,1.])
     H = np.array([np.sin(-np.pi/2+abs(-theta[0]-theta[1]-theta[2])),
                   0,
-                  np.cos(-np.pi/2+abs(-theta[0]-theta[1]-theta[2]))])
-#    print "H: ",H                  
-#    factor = np.array([1, 1, 1])
+                  np.cos(-np.pi/2+abs(-theta[0]-theta[1]-theta[2]))])*factorH
 
+#    factor = np.array([1, 1, 1])
+    
+    factorB = np.array([1.,1.,1.])
     no = np.sqrt(R[0]**2+R[1]**2+R[2]**2)
 #    print "evalfuncMagAngle: ", ((3*(np.dot(H,R)*R)/(no**5)) - (H/(no**3))) * factor
-    res = np.array([((3*(np.dot(H,R)*R)/(no**5)) - (H/(no**3)))])
+    res = np.array([((3*(np.dot(H,R)*R)/(no**5)) - (H/(no**3)))])*factorB
 #    print "P[0]_py ", P[0]
 #    print "res[0]_py ", res[0][0]
     return res
@@ -412,16 +427,16 @@ def estimate_BtoAng(theta_0, fingerL, offL, sL, measB,bnds):
     """
 
     # python version
-#    res = minimize(funcMagY_angle, theta_0, 
-#                   args=(fingerL, offL, sL, measB),
-#                   method='slsqp', bounds=bnds)
+    res = minimize(funcMagY_angle, theta_0, 
+                   args=(fingerL, offL, sL, measB),
+                   method='slsqp', bounds=bnds)
     
     # cython version
-    res = minimize(fcn.funcMagY_angle_cy, theta_0, 
-                   args=(np.reshape(fingerL,((12,))), 
-                         np.reshape(offL,((12,))), 
-                         np.reshape(sL,((12,))), measB),
-                   method='slsqp', bounds=bnds)
+#    res = minimize(fcn.funcMagY_angle_cy, theta_0, 
+#                   args=(np.reshape(fingerL,((12,))), 
+#                         np.reshape(offL,((12,))), 
+#                         np.reshape(sL,((12,))), measB),
+#                   method='slsqp', bounds=bnds)
                       
     # returning only the angles
 #    return np.array([res[0:3], res[3:6], res[6:9], res[9:12]])    
