@@ -1,3 +1,4 @@
+''' example script, how to estimate the joint-angles from a measured B-field '''
 import modelEqMultiCython as modE
 import dataAcquisitionMulti as datAc
 import plotting as plo
@@ -6,28 +7,22 @@ import numpy as np
 from scipy.optimize import *
 import time
 import fcnCyPy as fcn
+import perfectBangles as b
 
-# absolute positions of wooden-joints
-jointInd = [0.09138, 0.02957, -0.01087]         # to wooden-joint(index)
-jointMid = [0.09138, 0.00920, -0.01087]          # to wooden-joint(middle)
-jointRin = [0.09138, -0.01117, -0.01087]         # to wooden-joint(ring)
-jointPin = [0.09138, -0.03154, -0.01087]         # to wooden-joint(pinky)
+jointInd = b.jointInd
+jointRin = b.jointRin
+jointMid = b.jointMid
+jointPin = b.jointPin
 
-# position of sensor
-s1 = [0.06755, 0.02957, 0.]     # sensor beneath index
-#s1 = [0.08755, 0.02957, 0.]
-#s2 = [0.06755, 0.00920, 0.]    
-s2 = [0.04755, 0.00920, 0.]     # sensor beneath middle
-s3 = [0.06755, -0.01117, 0.]    # sensor beneath ring
-#s3 = [0.08755, -0.01117, 0.]
-#s4 = [0.06755, -0.03012, 0.]     
-s4 = [0.04755, -0.03012, 0.]    # sensor beneath pinky
+s1 = b.s1
+s2 = b.s2
+s3 = b.s3
+s4 = b.s4
 
-# lengths of phalanges
-phalInd = [0.03038, 0.02728, 0.02234]
-phalMid = [0.03640, 0.03075, 0.02114]
-phalRin = [0.03344, 0.02782, 0.01853]
-phalPin = [0.02896, 0.02541, 0.01778]
+phalInd = b.phalInd
+phalRin = b.phalRin
+phalMid = b.phalMid
+phalPin = b.phalPin
 
 t = np.arange(0,1/2.*np.pi,0.01)
 angles = np.array([[0.,0.,0.]])
@@ -63,25 +58,25 @@ angles = angles[1:]
 #calcB_old = np.array([[0.,0.,0.]])
 #cnt = 0
 #for i in angles:
-#    calcBInd = np.append(calcBInd,evalfuncMagAngle(i,phalInd,jointInd,s1)+
-#                                  evalfuncMagAngle(i,phalMid,jointMid,s1)+
-#                                  evalfuncMagAngle(i,phalRin,jointRin,s1)+
-#                                  evalfuncMagAngle(i,phalPin,jointPin,s1),axis=0)
+#    calcBInd = np.append(calcBInd,modE.angToB(i,phalInd,jointInd,s1)+
+#                                  modE.angToB(i,phalMid,jointMid,s1)+
+#                                  modE.angToB(i,phalRin,jointRin,s1)+
+#                                  modE.angToB(i,phalPin,jointPin,s1),axis=0)
 #    
-#    calcBMid = np.append(calcBMid,evalfuncMagAngle(i,phalInd,jointInd,s2)+
-#                                  evalfuncMagAngle(i,phalMid,jointMid,s2)+
-#                                  evalfuncMagAngle(i,phalRin,jointRin,s2)+
-#                                  evalfuncMagAngle(i,phalPin,jointPin,s2),axis=0)
+#    calcBMid = np.append(calcBMid,modE.angToB(i,phalInd,jointInd,s2)+
+#                                  modE.angToB(i,phalMid,jointMid,s2)+
+#                                  modE.angToB(i,phalRin,jointRin,s2)+
+#                                  modE.angToB(i,phalPin,jointPin,s2),axis=0)
 #                                  
-#    calcBRin = np.append(calcBRin,evalfuncMagAngle(i,phalInd,jointInd,s3)+
-#                                  evalfuncMagAngle(i,phalMid,jointMid,s3)+
-#                                  evalfuncMagAngle(i,phalRin,jointRin,s3)+
-#                                  evalfuncMagAngle(i,phalPin,jointPin,s3),axis=0)
+#    calcBRin = np.append(calcBRin,modE.angToB(i,phalInd,jointInd,s3)+
+#                                  modE.angToB(i,phalMid,jointMid,s3)+
+#                                  modE.angToB(i,phalRin,jointRin,s3)+
+#                                  modE.angToB(i,phalPin,jointPin,s3),axis=0)
 #
-#    calcBPin = np.append(calcBPin,evalfuncMagAngle(i,phalInd,jointInd,s4)+
-#                                  evalfuncMagAngle(i,phalMid,jointMid,s4)+
-#                                  evalfuncMagAngle(i,phalRin,jointRin,s4)+
-#                                  evalfuncMagAngle(i,phalPin,jointPin,s4),axis=0)                                  
+#    calcBPin = np.append(calcBPin,modE.angToB(i,phalInd,jointInd,s4)+
+#                                  modE.angToB(i,phalMid,jointMid,s4)+
+#                                  modE.angToB(i,phalRin,jointRin,s4)+
+#                                  modE.angToB(i,phalPin,jointPin,s4),axis=0)                                  
 ##    calcB_old = np.append(calcB_old,modE.evalfuncMagDotH(calcPos[cnt],calcOrien[cnt],s1),axis=0)
 #    cnt += 1    
 #calcBInd = calcBInd[1:]    
@@ -91,7 +86,8 @@ angles = angles[1:]
 #calcB_old = calcB_old[1:]
 
 # simply get the data from the textfile...
-calcBdata = datAc.textAcquisition("151030_perfectB_H")
+calcBdata = datAc.textAcquisition("151103_perfectB_straight")
+#calcBdata = datAc.textAcquisition("151030_perfectB_H")
 
 ''' estimating the angles '''
 #estAngIndPy = np.zeros((len(t),3))
@@ -125,38 +121,24 @@ hurray = 0
 startTime = time.time()                      
 for i in range(len(calcBdata[0][1:])):
     
-       
+    # estimating 4 magnets with 4 sensors
     res = modE.estimate_BtoAng(np.concatenate((estAngInd[i], estAngMid[i], estAngRin[i], estAngPin[i])),
                                 [phalInd,phalMid,phalRin,phalPin],
                                 [jointInd,jointMid,jointRin,jointPin],
                                 [s1,s2,s3,s4],
                                 np.concatenate((calcBdata[0][i+1],calcBdata[1][i+1],calcBdata[2][i+1],calcBdata[3][i+1])),
                                 bnds)
-    # python way
-#    resPy = modE.estimate_BtoAngPy(np.concatenate((estAngIndPy[i], estAngMidPy[i], estAngRinPy[i], estAngPinPy[i])),
-#                                [phalInd,phalMid,phalRin,phalPin],
-#                                [jointInd,jointMid,jointRin,jointPin],
-#                                [s1,s2,s3,s4],
-#                                np.concatenate((calcBdata[0][i+1],calcBdata[1][i+1],calcBdata[2][i+1],calcBdata[3][i+1])),
-#                                bnds)
-    
-    # cython way                                
-#    resCy = modE.estimate_BtoAngCy(np.concatenate((estAngIndCy[i], estAngMidCy[i], estAngRinCy[i], estAngPinCy[i])),
-#                                np.reshape([phalInd,phalMid,phalRin,phalPin],((12,))),
-#                                np.reshape([jointInd,jointMid,jointRin,jointPin],((12,))),
-#                                np.reshape([s1,s2,s3,s4],((12,))),
-#                                np.concatenate((calcBdata[0][i+1],calcBdata[1][i+1],calcBdata[2][i+1],calcBdata[3][i+1])),
-#                                bnds)
-        
-#    if res.success:
-#        hurray += 1
-#    else:
-#        print "error, iteration: ",cnt
+            
+    if res.success:
+        hurray += 1
+    else:
+        print "error, iteration: ",cnt
     
     estAngInd[i+1] = res.x[0:3]    
     estAngMid[i+1] = res.x[3:6]    
     estAngRin[i+1] = res.x[6:9]    
-    estAngPin[i+1] = res.x[9:12]    
+    estAngPin[i+1] = res.x[9:12]  
+    cnt += 1
 #    estAngIndPy[i+1] = resPy.x[0:3]
 #    estAngMidPy[i+1] = resPy.x[3:6]
 #    estAngRinPy[i+1] = resPy.x[6:9]
@@ -175,7 +157,7 @@ print "time needed: ",time.time()-startTime
 
 #plt.close('all')
 
-#plo.plotter2d((calcBdata[0],calcBdata[1],calcBdata[2],calcBdata[3]),("oldind","oldmid","oldrin","oldpin"))
+plo.plotter2d((calcBdata[0],calcBdata[1],calcBdata[2],calcBdata[3]),("oldind","oldmid","oldrin","oldpin"))
 #plo.plotter2d((calcBInd,calcBMid,calcBRin,calcBPin),("ind","mid","rin","pin"))
 plo.plotter2d((estAngInd,estAngMid,estAngRin,estAngPin),("angleInd","angleMid","angleRin","anglePin"))
 ''' code for comparing python and cython results with the perfect angles '''
