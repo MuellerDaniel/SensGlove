@@ -161,7 +161,7 @@ void getMinMaxData(){
     maxData[s][1] = max(maxData[s][1], rawY);
     maxData[s][2] = max(maxData[s][2], rawZ);     
   } 
-  if(!(i%50)) RFduinoBLE.sendInt(i); 
+  if(!(i%20)) RFduinoBLE.sendInt(i); 
  }
 }
 
