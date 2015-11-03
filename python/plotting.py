@@ -61,10 +61,14 @@ def plotIt2d(data, title, sizeData, shareAxis):
 #                lst[i].plot(j[:,1], color=linCol, ls='--', label='y')
 #                lst[i].plot(j[:,2], color=linCol, ls=':', label='z')
 #                lst[i].set_title(title[i])                
-                
+                # line plot representation
                 lst[cnt].plot(j[:,0], color=linCol, ls='-', label='x')
                 lst[cnt].plot(j[:,1], color=linCol, ls='--', label='y')
                 lst[cnt].plot(j[:,2], color=linCol, ls=':', label='z')
+                # scatter plot representation
+#                lst[cnt].scatter(np.arange(len(j[:,0])),j[:,0], color=linCol, label='x')
+#                lst[cnt].scatter(np.arange(len(j[:,1])),j[:,1], color=linCol, label='y')
+#                lst[cnt].scatter(np.arange(len(j[:,2])),j[:,2], color=linCol, label='z')
 #                plt.legend()
 #                else:
 #                    lst[cnt].plot(j[:,0], color=linCol, ls='-')
@@ -188,18 +192,21 @@ def multiPlotter(data, title, comp=None):
 def visMagData(data,title = None):       
     colorList = ('b','g','r','y')   
     fig = plt.figure()
-    a = fig.add_subplot(2,3,2,projection='3d')
+    a = fig.add_subplot(2,3,2,projection='3d')      # 3d scatter plot
     a.axis('equal')        
     a.set_title('3d representation')
-    xy = fig.add_subplot(2,3,4)
+    xy = fig.add_subplot(2,3,4)                     # 2d scatter plot
     xy.axis('equal')
     xy.set_title('xy')
-    xz = fig.add_subplot(2,3,5)
+    xy.grid()
+    xz = fig.add_subplot(2,3,5)                     # 2d scatter plot
     xz.axis('equal')
     xz.set_title('xz')
-    yz = fig.add_subplot(2,3,6)
+    xz.grid()
+    yz = fig.add_subplot(2,3,6)                     # 2d scatter plot
     yz.axis('equal')
     yz.set_title('yz')
+    yz.grid()
     
     cnt = 0
     for i in data:
