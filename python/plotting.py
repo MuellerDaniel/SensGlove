@@ -39,15 +39,23 @@ def plotIt2d(data, title, sizeData, shareAxis):
     cnt = 0
     if sizeData == 1:
         for i in data:
-            cnt = 0
-            for j in i:
-                linCol = colorList[cnt%4]
-                plt.plot(j[:,0], color=linCol, ls='-', label='x')
-                plt.plot(j[:,1], color=linCol, ls='--', label='y')
-                plt.plot(j[:,2], color=linCol, ls=':', label='z')
-                plt.title(title[0])
-                if cnt==0: plt.legend()
-                cnt+=1
+            print i.shape
+            plt.plot(i[:,0], ls='-',color='r', label='x')
+            plt.plot(i[:,1], ls='--',color='r', label='y')
+            plt.plot(i[:,2], ls=':',color='r', label='z')
+            plt.title(title[0])
+            plt.legend()
+#            cnt = 0
+#            for j in i:
+#                linCol = colorList[cnt%4]
+#                plt.plot(j[:,0], color=linCol, ls='-', label='x')
+#                plt.plot(j[:,1], color=linCol, ls='--', label='y')
+#                plt.plot(j[:,2], color=linCol, ls=':', label='z')
+#                plt.title(title[0])
+#                if cnt==0: plt.legend()
+#                cnt+=1
+        
+       
 
     if sizeData >= 2:
         lst = [sizeData]

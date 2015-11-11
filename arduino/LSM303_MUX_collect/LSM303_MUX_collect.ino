@@ -55,7 +55,7 @@ float softBias[4][3] = {{1.01,  1.0  ,  1.0},
 float conversionFactorMag = 0.479;  //for range +-12gauss
 char data[16];
 float fData[4][4];
-int sensCnt = 4;    //Number of sensors
+int sensCnt = 2;    //Number of sensors
 int a = 0;
 
 //pins
@@ -96,11 +96,11 @@ void setup() {
 void loop() {   
     //int a = cnt%sensCnt;
     //float startTime = millis();
-    for(int a = 0; a<sensCnt; a++){
+    for(int a = 1; a<sensCnt; a++){
       setChannel(a);
       getMagnetCali(a);
       
-      fData[a][0] = a;
+      fData[a][0] = 0;
       fData[a][1] = magX;
       fData[a][2] = magY;
       fData[a][3] = magZ;   
@@ -108,7 +108,7 @@ void loop() {
     //float endTime = millis();    
     //RFduinoBLE.sendFloat(endTime-startTime);
     
-    for(int i = 0; i<sensCnt; i++){
+    for(int i = 1; i<sensCnt; i++){
       for(int j = 0; j<4; j++){
         memcpy(&data[j*sizeof(float)], &fData[i][j], sizeof(float));
       }      
