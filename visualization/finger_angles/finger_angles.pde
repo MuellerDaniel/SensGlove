@@ -57,7 +57,7 @@ FileInputStream pipe;
 Path mpath;
 ByteBuffer buffer;
 int cnt = 0;
-static int timeout = 10000;
+static int timeout = 200;
 
 void setup()
 {
@@ -100,10 +100,11 @@ void draw()
   popMatrix();
   
   try{    
-    while(pipe.available() < 104){
+    while(pipe.available() < 104){      
       if(cnt > timeout){
         endLoop();
       }
+      System.out.println("waiting..."+cnt);
       //drawing action...
       updateTubes(cpts);      
       for (BezTube tube : tubes ){
@@ -116,11 +117,14 @@ void draw()
       drawCoordinates(300);
       cnt += 1;
     }
+    // new data is there, do a update
     cnt = 0;
-    byte[] data = new byte[104];
-    pipe.read(data,0,104);    
-    line = new String(data,Charset.forName("UTF-8"));
-    //System.out.println("Line: "+line);
+    byte[] data = new byte[104];    
+    
+    pipe.read(data,0,104);        
+    line = new String(data,Charset.forName("UTF-8"));    
+    System.out.println("Line: "+line);
+    System.out.println("Length: "+line.length());
     extractAngles(line);
     updateCtrlPts();
   }catch(IOException e){
@@ -135,6 +139,7 @@ void endLoop(){
 void extractAngles(String line){
   String[] list;  
   list = split(line,' ');
+  //System.out.println("extrAngles length: " + list.length);
   angles = new float[list.length];
   for(int i = 0; i<list.length; i++){
      angles[i] = Float.parseFloat(list[i]);
