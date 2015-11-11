@@ -4,3 +4,5 @@ application.linux-armv6hf/
 python/*
 !python/*.*
 python/*.pyc
+textures/
+2.76/
