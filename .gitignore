@@ -13,4 +13,5 @@ textures/
 *.out
 *.synctex.gz
 *.lot
+*.lof
 *.toc
