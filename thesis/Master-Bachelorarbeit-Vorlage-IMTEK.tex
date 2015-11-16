@@ -1,0 +1,270 @@
+%% LyX 2.0.2 created this file.  For more info, see http://www.lyx.org/.
+%% Do not edit unless you really know what you are doing.
+\documentclass[12pt,a4paper,english,intoc,bibliography=totoc,index=totoc,BCOR10mm,captions=tableheading,titlepage,fleqn]{scrbook}
+\usepackage{lmodern}
+\renewcommand{\sfdefault}{lmss}
+\renewcommand{\ttdefault}{lmtt}
+
+\usepackage[T1]{fontenc}
+\usepackage[latin9]{inputenc}
+\usepackage{fancyhdr}
+\usepackage{listings}
+\pagestyle{fancy}
+\setcounter{secnumdepth}{3}
+\setlength{\parskip}{\medskipamount}
+\setlength{\parindent}{0pt}
+\usepackage[german,english]{babel}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{nomencl}
+\usepackage{rotating} 
+\usepackage[nohyperlinks, printonlyused]{acronym}
+
+\usepackage{lipsum}
+% the following is useful when we have the old nomencl.sty package
+\providecommand{\printnomenclature}{\printglossary}
+\providecommand{\makenomenclature}{\makeglossary}
+\makenomenclature
+\usepackage[unicode=true,
+ bookmarks=true,bookmarksnumbered=true,bookmarksopen=true,bookmarksopenlevel=1,
+ breaklinks=false,pdfborder={0 0 0},backref=false,colorlinks=false]
+ {hyperref}
+\hypersetup{pdftitle={Ihr Titel},
+ pdfauthor={Ihr Name},
+ pdfsubject={Arbeit zur Erlangung des Masters der Technischen Fakultät der Albert-Ludwigs-Universität Freiburg im Breisgau},
+ pdfkeywords={Masterarbeit},
+ pdfpagelayout=OneColumn, pdfnewwindow=true, pdfstartview=XYZ, plainpages=false}
+
+\makeatletter
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% LyX specific LaTeX commands.
+\pdfpageheight\paperheight
+\pdfpagewidth\paperwidth
+
+
+\@ifundefined{date}{}{\date{}}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% User specified LaTeX commands.
+% Linkfläche für Querverweise vergrößern und automatisch benennen
+\AtBeginDocument{\renewcommand{\ref}[1]{\mbox{\autoref{#1}}}}
+\newlength{\abc}
+\settowidth{\abc}{\space}
+\AtBeginDocument{%
+%\addto\extrasngerman{
+ %\renewcommand{\equationautorefname}{\hspace{-\abc}}
+ %\renewcommand{\sectionautorefname}{Kap.\negthinspace}
+ %\renewcommand{\subsectionautorefname}{Kap.\negthinspace}
+ %\renewcommand{\subsubsectionautorefname}{Kap.\negthinspace}
+ %\renewcommand{\figureautorefname}{Abb.\negthinspace}
+ %\renewcommand{\tableautorefname}{Tab.\negthinspace}
+%}
+}
+
+
+
+% für den Fall, dass jemand die Bezeichnung "Gleichung" haben will
+%\renewcommand{\eqref}[1]{equation~(\negthinspace\autoref{#1})}
+
+% Setzt den Link für Sprünge zu Gleitabbildungen
+% auf den Anfang des Gelitobjekts und nicht aufs Ende
+\usepackage[figure]{hypcap}
+
+% Die Seiten des Inhaltsverzeichnisses werden römisch numeriert,
+% ein PDF-Lesezeichen für das Inhaltsverzeichnis wird hinzugefügt
+\let\myTOC\tableofcontents
+\renewcommand\tableofcontents{%
+  \frontmatter
+  \pdfbookmark[1]{\contentsname}{}
+  \myTOC
+  %\mainmatter
+ }
+
+% make caption labels bold
+\setkomafont{captionlabel}{\bfseries}
+\setcapindent{1em}
+
+
+\usepackage{xcolor}
+\newcommand{\note}[1]{\textcolor{red}{#1}}
+
+%sections with pagebreak
+\newcommand{\mysection}[1]{\newpage\section{#1}}
+
+% erlaubt LaTeX-Berechnungen
+\usepackage{calc}
+
+% fancy page header/footer settings
+\renewcommand{\chaptermark}[1]{\markboth{#1}{#1}}
+\renewcommand{\sectionmark}[1]{\markright{\thesection\ #1}}
+
+% Vergrößert den Teil der Seite, in dem Gleitobjekte
+% unten angeordnet werden dürfen
+\renewcommand{\bottomfraction}{0.5}
+
+% Vermeidet, dass Gleitobjekte vor ihrem Abschnitt gedruckt werden
+\let\mySection\section\renewcommand{\section}{\suppressfloats[t]\mySection}
+
+% deutscher Name für die Nomenklatur 
+\renewcommand{\nomname}{Nomenklatur}
+
+\makeatother
+
+
+\setcounter{tocdepth}{4}
+\setcounter{secnumdepth}{4}
+
+\begin{document}
+%\hypersetup{pageanchor=false}
+
+
+\subject{Masterarbeit}
+
+
+\title{Something with magnets and hand motion...}
+
+
+\author{Daniel Müller}
+
+
+\date{aa.bb.cccc}
+
+
+\publishers{%\includegraphics{images/Uni_Logo-Grundversion_E1_A4_CMYK.pdf}\vspace{\baselineskip}\\
+Albert-Ludwigs-Universität Freiburg im Breisgau\\
+Technische Fakultät\\
+Embedded Systems Engineering\vspace{-3cm}
+}
+
+
+\uppertitleback{Eingereichte Masterarbeit gemäß den Bestimmungen der Prüfungsordnung
+der Albert-Ludwigs-Universität Freiburg für den Studiengang Master
+of Science (M.\,Sc.) Embedded Systems Engineering vom 3.\,6.\,2014.}
+
+
+\lowertitleback{\textbf{Bearbeitungszeitraum}\smallskip{}
+\\
+aa.\,bb.\,20zz -- 30.\,11.\,2015 \bigskip{}
+\\
+\textbf{Gutachter}\smallskip{}
+\\
+Prof.~Dr.~Kristof Van Laerhoven \smallskip{}
+\\
+Prof.~Dr.~Prof. Dr. Bernd Becker\bigskip{}
+\\
+\textbf{Betreuer}\smallskip{}
+\\
+Prof.~Dr.~Kristof Van Laerhoven \smallskip{}
+\\
+M.\,Sc.~Philipp M. Scholl}
+
+
+%\dedication{Widmung, Zitat, kluger Spruch oder Ähnliches (ist natürlich optional)}
+
+\maketitle
+\cleardoublepage{}
+
+\pagestyle{empty}
+
+\section*{Erklärung}
+
+Hiermit erkläre ich, dass ich diese Abschlussarbeit selbständig verfasst
+habe, keine anderen als die angegebenen Quellen/Hilfsmittel verwendet
+habe und alle Stellen, die wörtlich oder sinngemäß aus veröffentlichten
+Schriften entnommen wurden, als solche kenntlich gemacht habe. Darüber
+hinaus erkläre ich, dass diese Abschlussarbeit nicht, auch nicht auszugsweise,
+bereits für eine andere Prüfung angefertigt wurde.
+
+\cleardoublepage{}
+
+
+\lhead{\rightmark}
+
+
+\rhead[\leftmark]{}
+
+
+\lfoot[\thepage]{}
+
+
+\cfoot{}
+
+
+\rfoot[]{\thepage}
+
+
+\pagestyle{plain}
+
+\include{texfiles/summary}
+
+
+\include{texfiles/summary_ger}
+
+
+\cleardoublepage{}
+
+\tableofcontents{}
+
+\cleardoublepage{}
+
+\listoffigures
+\addcontentsline{toc}{chapter}{List of Figures} 
+
+\cleardoublepage{}
+
+\listoftables
+\addcontentsline{toc}{chapter}{List of Tables} 
+
+\cleardoublepage{}
+
+
+\mainmatter
+
+\cleardoublepage{}
+
+
+\pagestyle{fancy}
+
+
+\lhead[\chaptername~\thechapter]{\rightmark}
+
+\include{texfiles/introduction}
+
+\include{texfiles/relatedWork}
+
+%the other chapters go here...
+
+\cleardoublepage{}
+
+
+\lhead[]{Acknowledgment}
+
+
+\rhead[Acknowledgment]{}
+
+\include{texfiles/acknowledgment}
+
+\appendix
+\include{texfiles/appendix}
+
+\cleardoublepage{}
+
+
+\lhead[]{\rightmark}
+
+
+\rhead[\leftmark]{}
+
+\bibliographystyle{biblio/alphadin}
+\bibliography{biblio/Plasma}
+
+
+\cleardoublepage{}
+
+
+\lhead[]{Nomenklatur}
+
+
+\rhead[Nomenklatur]{}
+
+\printnomenclature[2.5cm]{}
+\end{document}
