@@ -6,3 +6,8 @@ python/*
 python/*.pyc
 textures/
 2.76/
+thesis/*.aux
+thesis/*.nlo
+thesis/*.log
+thesis/*.out
+thesis/*.synctex.gz
