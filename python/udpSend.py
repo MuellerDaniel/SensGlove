@@ -1,86 +1,73 @@
-import socket, time,subprocess
+# the server
 
-UDP_IP = "127.0.1.1"
+import socket, time,subprocess, select
+
+def doEstimation(counter):
+    outstr = "0.0000 0.0000 0.0000"
+    for i in range(12):
+        outstr = outstr+" {0:.4f}".format(counter)
+    time.sleep(0.3)
+    return outstr
+
+UDP_IP = "127.0.1.6"
 UDP_PORT = 5511
 counter = 0.0001
 sock = socket.socket(socket.AF_INET, # Internet
                          socket.SOCK_DGRAM) # UDP
-#sock.setsockopt(socket.SOL_SOCKET,socket.SO_REUSEADDR,1)
+sock.setsockopt(socket.SOL_SOCKET,socket.SO_REUSEADDR,1)
+sock.bind((UDP_IP,UDP_PORT))
 
 #cmd = "python udpReceive.py"
 #cmd = "./../SensGlove/visualization/blend-file/gameSock.blend"
 #cmd = "./../SensGlove/visualization/sockTestGame.blend"
 #cmd = "./RiggedsockTest.blend"
-cmd = "./../SensGlove/visualization/riggedAni/HandGame.blend"
-#subpro = subprocess.Popen(cmd.split())
+cmd = "./../visualization/riggedAni/HandGame.blend"
+subpro = subprocess.Popen(cmd.split())
+
+tosend = "0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000"
+#global msg
+#msg = tosend
+#doEstimation(counter)
 try:
     while True:
-        outstr = "0.0000 0.0000 0.0000 "
-        for i in range(12):
-            outstr = outstr+" {0:.4f}".format(counter)
-        sock.sendto(outstr, (UDP_IP, UDP_PORT))
+        data, addr = sock.recvfrom(1024)    # receive a message from the game, to determine its current address
+        # try it with a select method... -> doesn't work, because you have no file IO
+        # while doEstimation in select.select([doEstimation(counter)],[],[],0)[0]:
+        #     tosend = doEstimation(counter)
+        #     counter += 0.0051
+        # else:
+        #     sock.sendto(tosend,addr)
+
+        # the blocking method...
+        tosend = doEstimation(counter)
+        counter += 0.0051
+        sock.sendto(tosend, addr)
+        #sock.sendto(tosend, (UDP_IP,UDP_PORT))
         print "sent message!"
-        counter += 0.0001
-        time.sleep(0.5)
 
 except KeyboardInterrupt:
     print "interrupted"
+    print counter
 
-
-'''
-    Simple udp socket server
-    Silver Moon (m00n.silv3r@gmail.com)
-'''
-#import socket,time
-#import sys
+# import socket,time
+# import sys
 #
-#HOST = ''   # Symbolic name meaning all available interfaces
-#PORT = 8888 # Arbitrary non-privileged port
+# # Create a TCP/IP socket
+# sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 #
-## Datagram (udp) socket
-#try :
-#    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-#    print 'Socket created'
-#except socket.error, msg :
-#    print 'Failed to create socket. Error Code : ' + str(msg[0]) + ' Message ' + msg[1]
-#    sys.exit()
+# # Bind the socket to the port
+# server_address = ('localhost', 10000)
+# print >>sys.stderr, 'starting up on %s port %s' % server_address
+# sock.bind(server_address)
 #
-#
-## Bind socket to local host and port
-#try:
-#    s.bind((HOST, PORT))
-#except socket.error , msg:
-#    print 'Bind failed. Error Code : ' + str(msg[0]) + ' Message ' + msg[1]
-#    sys.exit()
-#
-#print 'Socket bind complete'
-#
-#clientUp = False
-#counter = 0.0001
-##now keep talking with the client
-#while 1:
-#    # receive data from client (data, addr)
-##    d = s.recvfrom(1024)
-##    data = d[0]
-##    addr = d[1]
-#    if clientUp:
-#        outstr = "0.0000 0.0000 0.0000"
-#        for i in range(12):
-#            outstr = outstr+" {0:.4f}".format(counter)
-#        s.sendto(outstr,(HOST,PORT))
-#        counter += 0.0001
-#        time.sleep(0.2)
-#    else:
-#        if s.recvfrom(1024)[0] == "start":
-#            clientUp = True
-#        else:
-#            print "waiting..."
-##    if not data:
-##        break
-#
-##    reply = 'OK...' + data
-#
-##    s.sendto(reply , addr)
-##    print 'Message[' + addr[0] + ':' + str(addr[1]) + '] - ' + data.strip()
-#
-#s.close()
+# print >>sys.stderr, '\nwaiting to receive message'
+# data, address = sock.recvfrom(4096)
+# print "received this: ",data
+# counter = 0.0001
+# while True:
+#     outstr = "0.0000 0.0000 0.0000"
+#     for i in range(12):
+#         outstr = outstr+" {0:.4f}".format(counter)
+#     sent = sock.sendto(outstr, address)
+#     print >>sys.stderr, 'sent %s bytes back to %s' % (sent, address)
+#     time.sleep(0.5)
