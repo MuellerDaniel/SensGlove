@@ -15,13 +15,13 @@ counter = 0.0001
 sock = socket.socket(socket.AF_INET, # Internet
                          socket.SOCK_DGRAM) # UDP
 sock.setsockopt(socket.SOL_SOCKET,socket.SO_REUSEADDR,1)
-sock.bind((UDP_IP,UDP_PORT))
+#sock.bind((UDP_IP,UDP_PORT))
 
-#cmd = "python udpReceive.py"
+cmd = "python udpReceive.py"
 #cmd = "./../SensGlove/visualization/blend-file/gameSock.blend"
 #cmd = "./../SensGlove/visualization/sockTestGame.blend"
 #cmd = "./RiggedsockTest.blend"
-cmd = "./../visualization/riggedAni/HandGame.blend"
+#cmd = "./../visualization/riggedAni/HandGame.blend"
 subpro = subprocess.Popen(cmd.split())
 
 tosend = "0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000"
@@ -30,7 +30,7 @@ tosend = "0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 0.0000 
 #doEstimation(counter)
 try:
     while True:
-        data, addr = sock.recvfrom(1024)    # receive a message from the game, to determine its current address
+        #data, addr = sock.recvfrom(1024)    # receive a message from the game, to determine its current address
         # try it with a select method... -> doesn't work, because you have no file IO
         # while doEstimation in select.select([doEstimation(counter)],[],[],0)[0]:
         #     tosend = doEstimation(counter)
@@ -41,13 +41,15 @@ try:
         # the blocking method...
         tosend = doEstimation(counter)
         counter += 0.0051
-        sock.sendto(tosend, addr)
-        #sock.sendto(tosend, (UDP_IP,UDP_PORT))
+        #sock.sendto(tosend, addr)
+        sock.sendto(tosend, (UDP_IP,UDP_PORT))
         print "sent message!"
+        print "fileno: ",sock.fileno()
 
 except KeyboardInterrupt:
     print "interrupted"
-    print counter
+    print "send ",counter
+    sock.close()
 
 # import socket,time
 # import sys
