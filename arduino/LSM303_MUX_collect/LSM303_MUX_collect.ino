@@ -43,16 +43,29 @@ float softBias[4][3] = {{1.0  ,  1.01,  1.0},
                          {1.02,  1.01,  0.97}};*/                                               
 
 //recorded151101
-float hardBias[4][3] = {{-34.25, -5.99, -52.45},
+/*float hardBias[4][3] = {{-34.25, -5.99, -52.45},
                         {29.94,   26.82, -186.09},
                         {-74.72,  64.19, -44.79},
                         {-85.26, -36.88, -11.26}};
 float softBias[4][3] = {{1.01,  1.0  ,  1.0},
                          {0.98,  0.99,  1.03},
                          {0.98,  1.0  ,  1.02},
-                         {1.04,  1.02,  0.94}};
+                         {1.04,  1.02,  0.94}};*/
 
-float conversionFactorMag = 0.479;  //for range +-12gauss
+float hardBias[4][3] = {{0, 0, 0},
+                        {0, 0, 0},
+                        {0, 0, 0},
+                        {0, 0, 0}};
+float softBias[4][3] = {{1, 1, 1},
+                        {1, 1, 1},
+                        {1, 1, 1},
+                        {1, 1, 1}};                         
+
+float conversionFactorMag = 0.080;  //for range +-2gauss
+//float conversionFactorMag = 0.160;  //for range +-4gauss
+//float conversionFactorMag = 0.320;  //for range +-8gauss
+//float conversionFactorMag = 0.479;  //for range +-12gauss
+
 char data[16];
 float fData[4][4];
 int sensCnt = 2;    //Number of sensors
@@ -85,7 +98,10 @@ void setup() {
       compass.init();
       compass.enableDefault();
       compass.writeReg(compass.CTRL5, 0x74);    // put magnetic data rate to 100 Hz
-      compass.writeReg(compass.CTRL6, 0x60);    // put magnetic scale to +-12 gauss
+      compass.writeReg(compass.CTRL6, 0x00);    // put magnetic scale to +-2 gauss
+      //compass.writeReg(compass.CTRL6, 0x20);    // put magnetic scale to +-4 gauss
+      //compass.writeReg(compass.CTRL6, 0x40);    // put magnetic scale to +-8 gauss
+      //compass.writeReg(compass.CTRL6, 0x60);    // put magnetic scale to +-12 gauss
     }
     
     RFduinoBLE.deviceName = "magnetic";

@@ -25,6 +25,7 @@ rRin = 0.07979  # length of ring finger (from angle)
 rPin = 0.07215  # length of pinky finger (from angle)
 # values for the half circle
 t = np.arange(0, 1/2.*np.pi, 0.01)
+
 pos1 = [[0.,0.,0.]]
 pos2 = [[0.,0.,0.]]
 pos3 = [[0.,0.,0.]]
@@ -148,21 +149,22 @@ summedRin+=(calcBRin[0]+calcBRin[1]+calcBRin[2]+calcBRin[3])
 summedPin=np.zeros(shape=(len(calcBPin[0]),3))
 summedPin+=(calcBPin[0]+calcBPin[1]+calcBPin[2]+calcBPin[3])
 
+
 ''' save it to a file in the desired format '''
-fi = open("151030_perfectB_H",'w')
-for i in range(len(summedInd)):
-    fi.write(str(0) + "\t" + str(summedInd[i][0]) + "\t" + 
-                            str(summedInd[i][1]) + "\t" + 
-                            str(summedInd[i][2]) + "\n")
-    fi.write(str(1) + "\t" + str(summedMid[i][0]) + "\t" + 
-                            str(summedMid[i][1]) + "\t" + 
-                            str(summedMid[i][2]) + "\n")
-    fi.write(str(2) + "\t" + str(summedRin[i][0]) + "\t" + 
-                            str(summedRin[i][1]) + "\t" + 
-                            str(summedRin[i][2]) + "\n")
-    fi.write(str(3) + "\t" + str(summedPin[i][0]) + "\t" + 
-                            str(summedPin[i][1]) + "\t" + 
-                            str(summedPin[i][2]) + "\n")
-fi.close()                            
+#fi = open("151030_perfectB_H",'w')
+#for i in range(len(summedInd)):
+#    fi.write(str(0) + "\t" + str(summedInd[i][0]) + "\t" + 
+#                            str(summedInd[i][1]) + "\t" + 
+#                            str(summedInd[i][2]) + "\n")
+#    fi.write(str(1) + "\t" + str(summedMid[i][0]) + "\t" + 
+#                            str(summedMid[i][1]) + "\t" + 
+#                            str(summedMid[i][2]) + "\n")
+#    fi.write(str(2) + "\t" + str(summedRin[i][0]) + "\t" + 
+#                            str(summedRin[i][1]) + "\t" + 
+#                            str(summedRin[i][2]) + "\n")
+#    fi.write(str(3) + "\t" + str(summedPin[i][0]) + "\t" + 
+#                            str(summedPin[i][1]) + "\t" + 
+#                            str(summedPin[i][2]) + "\n")
+#fi.close()                            
 
 plo.plotter2d((summedInd, summedMid, summedRin, summedPin),("ind","mid","rin","pin"))

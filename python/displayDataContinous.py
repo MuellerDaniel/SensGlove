@@ -156,13 +156,16 @@ try:
 #            print "waiting..."
 #        output = proc.stdout.readline()
 #        b = datAc.structDataBLE(output)
+#        print "here"
         data = datAc.RTdata(data,proc)
-        if data[0][1:].any() != 0:
+#        if data[0][1:].any() != 0:
 #            print "waiting..."
-            for d in data:
-                updateMagnet(d)        
-                print bla
-                bla += 1
+        for d in data:
+            updateMagnet(d)        
+#            print bla
+            bla += 1
+#        else:
+#            print "else..."                
         
 
 # to catch a ctrl-c
@@ -172,11 +175,12 @@ except KeyboardInterrupt:
     print "Killed ble listener!"
     pass
 
-
 #app.closeAllWindows()
     
 if __name__ == '__main__':
     import sys
     if (sys.flags.interactive != 1) or not hasattr(QtCore, 'PYQT_VERSION'):
-        QtGui.QApplication.instance().exec_()
+        app = QtGui.QApplication.instance()
+        app.exec_()
+        
         print "here!"

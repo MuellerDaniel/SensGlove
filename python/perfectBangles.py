@@ -69,28 +69,29 @@ calcBPin = np.array([[0.,0.,0.]])
 
 # for moving all 4 fingers the same way...
 for i in angles:
-#    calcBInd = np.append(calcBInd,modE.angToB(i,phalInd,jointInd,s1)+
-#                                  modE.angToB(i,phalMid,jointMid,s1)+
-#                                  modE.angToB(i,phalRin,jointRin,s1)+
-#                                  modE.angToB(i,phalPin,jointPin,s1),axis=0)    
-#    calcBMid = np.append(calcBMid,modE.angToB(i,phalInd,jointInd,s2)+
-#                                  modE.angToB(i,phalMid,jointMid,s2)+
-#                                  modE.angToB(i,phalRin,jointRin,s2)+
-#                                  modE.angToB(i,phalPin,jointPin,s2),axis=0)
-#    calcBRin = np.append(calcBRin,modE.angToB(i,phalInd,jointInd,s3)+
-#                                  modE.angToB(i,phalMid,jointMid,s3)+
-#                                  modE.angToB(i,phalRin,jointRin,s3)+
-#                                  modE.angToB(i,phalPin,jointPin,s3),axis=0)
-#    calcBPin = np.append(calcBPin,modE.angToB(i,phalInd,jointInd,s4)+
-#                                  modE.angToB(i,phalMid,jointMid,s4)+
-#                                  modE.angToB(i,phalRin,jointRin,s4)+
-#                                  modE.angToB(i,phalPin,jointPin,s4),axis=0)                                  
-    calcBInd = np.append(calcBInd,modE.angToB(i,phalInd,jointInd,s1),axis=0)
-    calcBMid = np.append(calcBMid,[modE.angToP(i,phalInd,jointInd)],axis=0)
+    # the cummulative B-fields
+    calcBInd = np.append(calcBInd,modE.angToB(i,phalInd,jointInd,s1)+
+                                  modE.angToB(i,phalMid,jointMid,s1)+
+                                  modE.angToB(i,phalRin,jointRin,s1)+
+                                  modE.angToB(i,phalPin,jointPin,s1),axis=0)    
+    calcBMid = np.append(calcBMid,modE.angToB(i,phalInd,jointInd,s2)+
+                                  modE.angToB(i,phalMid,jointMid,s2)+
+                                  modE.angToB(i,phalRin,jointRin,s2)+
+                                  modE.angToB(i,phalPin,jointPin,s2),axis=0)
+    calcBRin = np.append(calcBRin,modE.angToB(i,phalInd,jointInd,s3)+
+                                  modE.angToB(i,phalMid,jointMid,s3)+
+                                  modE.angToB(i,phalRin,jointRin,s3)+
+                                  modE.angToB(i,phalPin,jointPin,s3),axis=0)
+    calcBPin = np.append(calcBPin,modE.angToB(i,phalInd,jointInd,s4)+
+                                  modE.angToB(i,phalMid,jointMid,s4)+
+                                  modE.angToB(i,phalRin,jointRin,s4)+
+                                  modE.angToB(i,phalPin,jointPin,s4),axis=0)    
+    # single B-fields                              
+#    calcBInd = np.append(calcBInd,modE.angToB(i,phalInd,jointInd,s1),axis=0)    
 calcBInd = calcBInd[1:]    
 calcBMid = calcBMid[1:]    
-#calcBRin = calcBRin[1:]    
-#calcBPin = calcBPin[1:]  
+calcBRin = calcBRin[1:]    
+calcBPin = calcBPin[1:]  
 
 
 ''' save it to a file in the desired format '''

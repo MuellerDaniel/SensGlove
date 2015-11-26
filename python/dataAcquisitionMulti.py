@@ -207,17 +207,21 @@ def sortData(data):
     if len(data)%nrSens:
         print "too much  measurements taken...", len(data)%nrSens
         datadel = np.delete(data, np.s_[-1*(len(data)%nrSens):], axis=0)
-        print datadel.shape
+#        print datadel.shape
 #        np.reshape(datadel,(nrSens,len(datadel),3))
         data = None
         data = datadel
     # matrix for results
     s=np.zeros((nrSens, (len(data)/nrSens), 3))
+    print s.shape
     #cnt = np.zeros(shape=(nrSens,1), dtype=np.int)
     cnt = np.zeros((nrSens,1))
     for j in data:
-        s[int(j[0])][int(cnt[int(j[0])])] = j[1:]              
-        cnt[int(j[0])] += 1  
+        try:
+            s[int(j[0])][int(cnt[int(j[0])])] = j[1:]              
+            cnt[int(j[0])] += 1  
+        except:
+            print "error!!!", j
 #    else:
 #        print "right amount of measurements..."
 #        np.reshape(data,(nrSens,len(data),3))    
@@ -253,7 +257,7 @@ def splitData(data):
     return (one[1:],two[1:],three[1:],four[1:])
 
 
-def pipeAcquisition(arg, fileName=None, measNr=None, offset=0):
+def pipeAcquisition(arg, nrSens, fileName=None, measNr=None, offset=0):
     """function for acquiring data via pipe
     
     Parameters
@@ -269,6 +273,9 @@ def pipeAcquisition(arg, fileName=None, measNr=None, offset=0):
         
     measNr : int
         Number of measurements, that should be taken
+        
+    nrSens : int
+        Number of active sensors
         
     Returns
     -------
@@ -306,12 +313,17 @@ def pipeAcquisition(arg, fileName=None, measNr=None, offset=0):
                     data = structDataSer(output)
 #                    data = invertX(data)
     #                print data
-                if (i>offset) and not bool((i-offset)%100) :                    
+                if (i>offset) and not bool((i-offset)%100):                    
                     print i-offset, "measurements taken"
                     
 #                else: print "below offset ", i
 #                print "data: ",data
+                #if data[0] != mat[-1][0] :   #
+#                if data[0] == (mat[-1][0]+1)%nrSens:    
                 mat = np.append(mat, [data], axis=0)
+#                else:   #
+#                    print "!!!!!!!!!!!!!!!!!!!!!!!!!oh no!!!!!!!!!!!!!!!!!!!!!!!!!"   #
+#                    i -= 1  #
     #                print "writing...", data
 #                if i%10 == 0: print "measurement nr ", i
                 
@@ -372,6 +384,9 @@ def RTdata(data,proc):
         if tmpData[0] == 1: data[1][1:] = tmpData[1:]
         if tmpData[0] == 2: data[2][1:] = tmpData[1:]
         if tmpData[0] == 3: data[3][1:] = tmpData[1:]
+            
+#    else:
+#        print "nothing new!"            
         
     return data    
   
@@ -481,6 +496,7 @@ def collectForTime(arg,sec,wait=0.01, fileName=None, avgFil=False, avgN=10):
         while time.time()-startTime < sec:          
             data = RTdata(data,subpro)
             collected = np.append(collected,data,0)
+            print data
             if not len(collected) % 400:
                 print str(time.time()-startTime) + " seconds running"
             time.sleep(wait)    # sleep a bit, otherwise you will be flooded by data...     
