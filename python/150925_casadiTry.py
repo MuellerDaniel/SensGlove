@@ -18,7 +18,7 @@ def estimate(P0,Sa,Ba):
     #g = x[2] + (1-x[0])**2 - x[1]
     
     # Create NLP function
-    nlp = SXFunction( nlpIn(x=P), nlpOut(f=B) )
+    nlp = SXFunction( nlpIn(x=P), nlpOut(f=B,g=B) )
     
     # Formulate and solve NLP
     solver = NlpSolver("ipopt", nlp)
@@ -26,8 +26,8 @@ def estimate(P0,Sa,Ba):
     solver.init()
 #    solver.setInput([0.02957,  0.17138,  0.01087],'x0')
     solver.setInput(P0,'x0')
-    solver.setInput(P0-[0.001,  0.003,  0.003],'lbx')
-    solver.setInput(P0+[0.001,  0.003,  0.003],'ubx')
+    solver.setInput(0,'lbg')
+    solver.setInput(0,'ubg')
     solver.evaluate()
 #    print "this is the output: ",solver.getOutput('x')
     return solver.getOutput('x')
@@ -66,4 +66,4 @@ for i in range(pos1.shape[0]-1):
     estPos[i+1] = estimate(estPos[i],s1,calcB[i+1]).T
 
 plo.multiPlotter(estPos,"Index",pos1)
-    
+#    
