@@ -217,22 +217,22 @@ def xPos(angle,phal,off):
     return (phal[0]*np.cos(angle[0])+
             phal[1]*np.cos((angle[0])+(angle[1]))+
             phal[2]*np.cos((angle[0])+(angle[1])+(angle[2]))+off)
-            
-# for simplicity neglect it...            
+
+# for simplicity neglect it...
 def yPos(angle,phal,off):
-    return off            
+    return off
 
 def zPos(angle,phal,off):
     return (phal[0]*np.sin((angle[0]))+
             phal[1]*np.sin((angle[0])+(angle[1]))+
             phal[2]*np.sin((angle[0])+(angle[1])+(angle[2])))*-1+off
-          
+
 def calcPosition_s(angle,phal,offSet):
     res = np.array([xPos(angle,phal,offSet[0]),
                     yPos(angle,phal,offSet[1]),
                     zPos(angle,phal,offSet[2])])
     return res
-          
+
 def posFun_s(angle,pos,phal,off):
 #    print "angle", angle
 #    print "pos", pos
@@ -241,8 +241,8 @@ def posFun_s(angle,pos,phal,off):
     diff = pos - estimated
 #    print "diff: ", diff
     res = np.linalg.norm(diff)
-    return res                  
-                     
+    return res
+
 def estimateAngle_s(pos,guess,off,phal,bnds):
     """estimate the angle(rad) for a position (using Python function)
 
@@ -253,7 +253,7 @@ def estimateAngle_s(pos,guess,off,phal,bnds):
     guess : array
         initial guess for the angle (in rad)
     off : array
-        the offset of the finger joint 
+        the offset of the finger joint
     phal : array
         length of the three phalanges (proximal, middle, distal)
     bnds : tuple
@@ -269,10 +269,10 @@ def estimateAngle_s(pos,guess,off,phal,bnds):
 #    print "bla"
     res = minimize(posFun_s,guess,args=(pos,phal,off),method='slsqp',
                    bounds=bnds)
-    return res    
-   
-   
-    
+    return res
+
+
+
 def calcPosition_m(angle,phal,offSet):
     res = np.zeros((12,))
     for i in range(4):
@@ -280,7 +280,7 @@ def calcPosition_m(angle,phal,offSet):
                             yPos(angle[i*3:i*3+3],phal[i*3:i*3+3],offSet[i*3+1]),
                             zPos(angle[i*3:i*3+3],phal[i*3:i*3+3],offSet[i*3+2])])
     return res
-          
+
 def posFun_m(angle,pos,phal,off):
 #    print "angle", angle
 #    print "pos", pos
@@ -290,8 +290,8 @@ def posFun_m(angle,pos,phal,off):
 #    print "diff: ", diff
     res = np.linalg.norm(diff)
     print "function ",res
-    return res                  
-                     
+    return res
+
 def estimateAngle_m(pos,guess,off,phal,bnds):
     """estimate the angle(rad) for a position (using Python function)
 
@@ -302,7 +302,7 @@ def estimateAngle_m(pos,guess,off,phal,bnds):
     guess : array
         initial guess for the angle (in rad)
     off : array
-        the offset of the finger joint 
+        the offset of the finger joint
     phal : array
         length of the three phalanges (proximal, middle, distal)
     bnds : tuple
@@ -317,13 +317,13 @@ def estimateAngle_m(pos,guess,off,phal,bnds):
     """
     # normal version
 #    res = minimize(posFun_m,guess,args=(pos,phal,off),method='slsqp',
-#                   bounds=bnds,tol=1e-12)    
+#                   bounds=bnds,tol=1e-12)
     # calling the cython function
     res = minimize(fcn.posFun_cy,guess,args=(pos,phal,off),method='slsqp',
                    bounds=bnds)
 #    res = fcn.estimateAngle_mCy(pos,guess,off,phal,bnds)
 
-    return res       
+    return res
 
 
 """
@@ -331,56 +331,71 @@ describing the whole estimation as angle-estimation
 """
 
 def angToP(theta,finger,off):
-     P = np.array([xPos(theta,finger,off[0]),
-                  yPos(theta,finger,off[1]),
-                  zPos(theta,finger,off[2])])
-     return P             
-     
-def angToH(theta):
-    H = np.array([np.sin(-np.pi/2+abs(-theta[0]-theta[1]-theta[2])),
-                  0,
-                  np.cos(-np.pi/2+abs(-theta[0]-theta[1]-theta[2]))])*factorH
-    return H                  
-    
+    finger_0 = 0.
+    theta_k = 0.0
+    dk = off
+    P = np.array([(1*(finger_0*np.sin(np.pi/2) + finger[0]*np.sin(np.pi/2-theta[0]) +              # x
+                finger[1]*np.sin(np.pi/2-theta[0]-theta[1]) +
+                finger[2]*np.sin(np.pi/2-theta[0]-theta[1]-theta[2]))),
+                ((finger[0]*np.cos(np.pi/2-theta[0]) +                  # y
+                finger[1]*np.cos(np.pi/2-theta[0]-theta[1]) +
+                finger[2]*np.cos(np.pi/2-theta[0]-theta[1]-theta[2]))*np.sin(theta_k)+dk),
+                (-1*(finger[0]*np.cos(np.pi/2-theta[0]) +               # z (*-1 because you move in neg. z-direction)
+                finger[1]*np.cos(np.pi/2-theta[0]-theta[1]) +
+                finger[2]*np.cos(np.pi/2-theta[0]-theta[1]-theta[2]))*np.cos(theta_k))])
+    return P
 
-def angToB(theta,finger,off,S):
+def angToH(theta):
+    # for axial magnetised cylinder magnet
+    H = np.array([np.cos(-theta[0]-theta[1]-theta[2]),
+                     0,
+                     1*np.sin(-theta[0]-theta[1]-theta[2])])
+
+    return H
+
+def angToH_dia(theta):
+    # for diametral magnetised cylinder magnet
+    H = np.array([-np.cos(-np.pi/2+abs(-theta[0]-theta[1]-theta[2])),
+                  0,
+                  np.sin(-np.pi/2+abs(-theta[0]-theta[1]-theta[2]))])
+    return H
+
+def calcB(r,h):
+#    factor = np.array([1, 1, 1])
+    factor = (1/(4*np.pi))
+#    factor = 0.0001
+#    no = sqrt(r[0]**2+r[1]**2+r[2]**2)
+#    print r.shape
+    no = sqrt(np.dot(r,r.conj()))
+    b = np.array([((3*r*np.dot(h,r))/(no**5)) - (h/(no**3))])*factor
+#    b = np.array([(((3*r*np.dot(h,r))/(np.linalg.norm(r)**5)) - (h/np.linalg.norm(r)**3))*(1/(4*np.pi))])*factor
+    return b
+
+def angToB(theta,finger,S,off):
     """returns the magnetic field
 
     Parameters
     ----------
     theta : array
             the angles of the finger
+            [MCP,PIP,DIP]
     finger : array
             the length of the phalanges
-    off : array
-        the absolute position of the MCP
+            [proximal-, middle-, distal-phalange]
+    off : float
+        the shift of the joint in y-direction
     S : array
         the position of the sensor
     """
-#    H = 1*(P-S)        # this worked for the example on the flat paper...
-    P = np.array([xPos(theta,finger,off[0]),
-                  yPos(theta,finger,off[1]),
-                  zPos(theta,finger,off[2])])
+    P = angToP(theta,finger,off)
     R = S-P
-#    factorH = np.array([0.75,0.25,0.5])
-    factorH = np.array([1.,1.,1.])
-    H = np.array([np.sin(-np.pi/2+abs(-theta[0]-theta[1]-theta[2])),
-                  0,
-                  np.cos(-np.pi/2+abs(-theta[0]-theta[1]-theta[2]))])*factorH
-
-#    factor = np.array([1, 1, 1])
-    
-    factorB = np.array([1.,1.,1.])
-    no = np.sqrt(R[0]**2+R[1]**2+R[2]**2)
-#    print "evalfuncMagAngle: ", ((3*(np.dot(H,R)*R)/(no**5)) - (H/(no**3))) * factor
-    res = np.array([((3*(np.dot(H,R)*R)/(no**5)) - (H/(no**3)))])*factorB
-#    print "P[0]_py ", P[0]
-#    print "res[0]_py ", res[0][0]
+    H = angToH(theta)
+    res = calcB(R,H)
     return res
 
 def funcMagY_angle(theta,finger,off,S,B):
-    """The function to minimize 
-    
+    """The function to minimize
+
     Parameters
     ----------
     theta : array (concatenated)
@@ -391,25 +406,22 @@ def funcMagY_angle(theta,finger,off,S,B):
         the absolute positions of the MCP
     S : list (of arrays)
         the positions of the sensors
-    B : array (concatenated)    
+    B : array (concatenated)
         the measured B-field
     """
-    cal = np.zeros((len(S)*3,))  
-#    print cal.shape          
+    cal = np.zeros((len(S)*3,))
     for i in range(len(S)):
         for j in range(len(theta)/3):
-#            print "j: ",j
-            tmp = angToB(theta[j*3:j*3+3],finger[j],off[j],S[i]).reshape((3,))           
+            tmp = angToB(theta[j*3:j*3+3],finger[j],S[i],off[j]).reshape((3,))
             cal[i*3:i*3+3] += tmp
-        
-#    cal = evalfuncMagAngle(theta,finger,off,S)     # simple approach for one magnet and one sensor
-#    print "python cal: ",cal
-#    print "B: ", B
-    return np.linalg.norm(B-cal)**2     #take the square of it!
+    dif = B-cal
+    return sqrt(np.dot(dif,dif.conj()))**2     #take the square of it!
 
-def estimate_BtoAng(theta_0, fingerL, offL, sL, measB,bnds):
+
+
+def estimate_BtoAng(theta_0, fingerL, offL, sL, measB,bnds=None):
     """Estimates the angles for a certain (measured) B-field
-    
+
     Parameters
     ----------
     theta_0 : array (concatenated)
@@ -420,27 +432,187 @@ def estimate_BtoAng(theta_0, fingerL, offL, sL, measB,bnds):
         the absolute positions of the MCP
     sL : list (of arrays)
         the positions of the sensors
-    measB : array (concatenated)    
+    measB : array (concatenated)
         the measured B-field
     bnds : tuple
         the static (inequality) bounds for the angles
     """
-
     # python version
-    res = minimize(funcMagY_angle, theta_0, 
-                   args=(fingerL, offL, sL, measB),
-                   method='slsqp', bounds=bnds)
-    
+#     one sensor per finger
+#    if bnds != None:
+#        res = minimize(funcMagY_angle, theta_0,
+#                       args=(fingerL, offL, sL, measB),
+#                       method='slsqp', bounds=bnds)
+#    else:
+#        res = minimize(funcMagY_angle, theta_0,
+#                       args=(fingerL, offL, sL, measB))
+    # multiple sensors per finger
+    if bnds != None:
+        res = minimize(funcMagY_angle_m, theta_0,
+                       args=(fingerL, sL, offL, measB),
+                       method='slsqp', bounds=bnds)
+    else:
+        res = minimize(funcMagY_angle, theta_0,
+                       args=(fingerL, offL, sL, measB))                       
+
     # cython version
-#    res = minimize(fcn.funcMagY_angle_cy, theta_0, 
-#                   args=(np.reshape(fingerL,((12,))), 
-#                         np.reshape(offL,((12,))), 
+#    res = minimize(fcn.funcMagY_angle_cy, theta_0,
+#                   args=(np.reshape(fingerL,((12,))),
+#                         np.reshape(offL,((12,))),
 #                         np.reshape(sL,((12,))), measB),
 #                   method='slsqp', bounds=bnds)
-                      
-    # returning only the angles
-#    return np.array([res[0:3], res[3:6], res[6:9], res[9:12]])    
+#    res = minimize(fcn.funcMagY_angle_cy, theta_0,
+#                   args=(fingerL,
+#                         offL,
+#                         sL, measB),
+#                   method='slsqp', bounds=bnds)
+
+#     returning only the angles
+#    return np.array([res[0:3], res[3:6], res[6:9], res[9:12]])
     return res
+
+
+def angToB_m(theta,finger,S,off):
+    """returns the magnetic field
+
+    Parameters
+    ----------
+    theta : array
+            the angles of the finger
+            [MCP,PIP,DIP]
+    finger : array
+            the length of the phalanges
+            [proximal-, middle-, distal-phalange]
+    off : float
+        the shift of the joint in y-direction
+    S : array
+        the position of the sensor
+    """
+#    print "ANGTOB_M"
+#    print "theta: ",theta
+#    print "finger[0]: ",finger
+#    print "off[0]: ",off
+#    print "S: ",S
+    
+    P = angToP(theta,finger,off)
+    H = angToH(theta)
+    cnt = 0
+    res = np.zeros((len(S)*3,))
+    for i in S:
+        r = i-P
+        res[cnt:cnt+3] = calcB(r,H)
+        cnt += 3
+    return res
+    
+def funcMagY_angle_m(theta,finger,S,off,B):
+    """The function to minimize
+
+    Parameters
+    ----------
+    theta : array (concatenated)
+            the angles of the finger
+    finger : list (of arrays)
+            the length of the phalanges
+    off : list (of arrays)
+        the y-shift of the joint
+    S : list (of arrays)
+        the positions of the sensors
+    B : array (concatenated)
+        the measured B-field
+    """
+    if len(S)*3 != len(B):
+        print "wrong number of sensors, to corresponding B-fields!"
+        return 0
+    elif len(finger) != len(off):
+        print "wrong number of fingerlength, to finger offsets!"
+        return 0
+    else:    
+        cal = np.zeros((len(S)*3,))
+        # for one magnet/finger and an arbitrary number of sensors
+#        cal = angToB_m(theta,finger[0],S,off[0])
+        # for arbitrary magnets/fingers and arbitrary sensors
+        for j in range(len(finger)):        
+#            for i in range(len(theta)/3):            
+            tmp = angToB_m(theta[j*3:j*3+3],finger[j],S,off[j])
+            cal += tmp
+        dif = B-cal
+        return sqrt(np.dot(dif,dif.conj()))**2     #take the square of it!   
+
+
+"""
+fitting the data to the model
+"""
+def fitMeasurements(ref, meas, valOffset):
+    """returns the measurement data fitted to the reference data
+
+    Parameters
+    ----------
+    ref : array
+        the reference values
+    meas : array
+        the measured values
+    valOffset : tuple
+        the values for defining the initial offset (meas[valOffset[0]:valOffset[1]])
+
+    Returns
+    -------
+    fitted : array
+        the fitted measurement data
+
+    """
+    scaled = scaleMeasurements(ref, meas)
+    fitted = shiftMeasurements(ref, scaled, valOffset)
+    return fitted
+
+def scaleMeasurements(real, meas):
+    i=0
+    raReal=0
+    raMeas=0
+    scale = np.array([0.,0.,0.])
+    resMat = meas.copy()
+
+    for i in range(3):
+        raReal = max(real[:,i]) - min(real[:,i])
+        raMeas = max(meas[:,i]) - min(meas[:,i])
+#        print "raMeas ", raMeas
+#        print "raReal ", raReal
+        scale[i] = raReal/raMeas
+        i+=1
+    print "scale " + str(scale)
+
+    i=0
+    for i in range(resMat.shape[0]):
+        resMat[i][0] *= scale[0]
+        resMat[i][1] *= scale[1]
+        resMat[i][2] *= scale[2]
+        i+=1
+
+    return resMat
+
+
+def shiftMeasurements(real, meas, valOffset):
+#    offset = real[0] - meas[0]
+    resMat = meas.copy()
+
+    startMat = meas[valOffset[0]:valOffset[1]]
+    meanMeas = np.array([np.mean(startMat[:,0]),
+                         np.mean(startMat[:,1]),
+                         np.mean(startMat[:,2])])
+    offset = real[0] - meanMeas
+
+    i=0
+    for i in range (resMat.shape[0]):
+        resMat[i][0] += offset[0]
+        resMat[i][1] += offset[1]
+        resMat[i][2] += offset[2]
+    #    yShiftArr[i][0] += offset[0]*scale[0]
+    #    yShiftArr[i][1] += offset[1]*scale[1]
+    #    yShiftArr[i][2] += offset[2]*scale[2]
+        i+=1
+    print "offset: " + str(offset)
+    return resMat
+
+
 
 """
 calculating the jacobi
@@ -519,77 +691,3 @@ def jaco(P,S,B):
 #    funSubst = np.append(funSubst,[0.,0.,0.])
     print "res ", res
     return funSubst
-
-"""
-fitting the data to the model
-"""
-def fitMeasurements(ref, meas, valOffset):
-    """returns the measurement data fitted to the reference data
-
-    Parameters
-    ----------
-    ref : array
-        the reference values
-    meas : array
-        the measured values
-    valOffset : tuple
-        the values for defining the initial offset (meas[valOffset[0]:valOffset[1]])
-
-    Returns
-    -------
-    fitted : array
-        the fitted measurement data
-
-    """
-    scaled = scaleMeasurements(ref, meas)
-    fitted = shiftMeasurements(ref, scaled, valOffset)
-    return fitted
-
-def scaleMeasurements(real, meas):
-    i=0
-    raReal=0
-    raMeas=0
-    scale = np.array([0.,0.,0.])
-    resMat = meas.copy()
-
-    for i in range(3):
-        raReal = max(real[:,i]) - min(real[:,i])
-        raMeas = max(meas[:,i]) - min(meas[:,i])
-        print "raMeas ", raMeas
-        print "raReal ", raReal
-        scale[i] = raReal/raMeas
-        i+=1
-    print "scale " + str(scale)
-
-    i=0
-    for i in range(resMat.shape[0]):
-        resMat[i][0] *= scale[0]
-        resMat[i][1] *= scale[1]
-        resMat[i][2] *= scale[2]
-        i+=1
-
-    return resMat
-
-
-def shiftMeasurements(real, meas, valOffset):
-#    offset = real[0] - meas[0]
-    resMat = meas.copy()
-
-    startMat = meas[valOffset[0]:valOffset[1]]
-    meanMeas = np.array([np.mean(startMat[:,0]),
-                         np.mean(startMat[:,1]),
-                         np.mean(startMat[:,2])])
-    offset = real[0] - meanMeas
-
-    i=0
-    for i in range (resMat.shape[0]):
-        resMat[i][0] += offset[0]
-        resMat[i][1] += offset[1]
-        resMat[i][2] += offset[2]
-    #    yShiftArr[i][0] += offset[0]*scale[0]
-    #    yShiftArr[i][1] += offset[1]*scale[1]
-    #    yShiftArr[i][2] += offset[2]*scale[2]
-        i+=1
-    print "offset: " + str(offset)
-    return resMat
-
