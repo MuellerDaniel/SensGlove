@@ -61,14 +61,14 @@ float softBias[4][3] = {{1, 1, 1},
                         {1, 1, 1},
                         {1, 1, 1}};                         
 
-float conversionFactorMag = 0.080;  //for range +-2gauss
-//float conversionFactorMag = 0.160;  //for range +-4gauss
+//float conversionFactorMag = 0.080;  //for range +-2gauss
+float conversionFactorMag = 0.160;  //for range +-4gauss
 //float conversionFactorMag = 0.320;  //for range +-8gauss
 //float conversionFactorMag = 0.479;  //for range +-12gauss
 
 char data[16];
 float fData[4][4];
-int sensCnt = 2;    //Number of sensors
+int sensCnt = 4;    //Number of sensors
 int a = 0;
 
 //pins
@@ -98,8 +98,8 @@ void setup() {
       compass.init();
       compass.enableDefault();
       compass.writeReg(compass.CTRL5, 0x74);    // put magnetic data rate to 100 Hz
-      compass.writeReg(compass.CTRL6, 0x00);    // put magnetic scale to +-2 gauss
-      //compass.writeReg(compass.CTRL6, 0x20);    // put magnetic scale to +-4 gauss
+      //compass.writeReg(compass.CTRL6, 0x00);    // put magnetic scale to +-2 gauss
+      compass.writeReg(compass.CTRL6, 0x20);    // put magnetic scale to +-4 gauss
       //compass.writeReg(compass.CTRL6, 0x40);    // put magnetic scale to +-8 gauss
       //compass.writeReg(compass.CTRL6, 0x60);    // put magnetic scale to +-12 gauss
     }
@@ -112,11 +112,11 @@ void setup() {
 void loop() {   
     //int a = cnt%sensCnt;
     //float startTime = millis();
-    for(int a = 1; a<sensCnt; a++){
+    for(int a = 0; a<sensCnt; a++){
       setChannel(a);
       getMagnetCali(a);
       
-      fData[a][0] = 0;
+      fData[a][0] = a;
       fData[a][1] = magX;
       fData[a][2] = magY;
       fData[a][3] = magZ;   
@@ -124,7 +124,7 @@ void loop() {
     //float endTime = millis();    
     //RFduinoBLE.sendFloat(endTime-startTime);
     
-    for(int i = 1; i<sensCnt; i++){
+    for(int i = 0; i<sensCnt; i++){
       for(int j = 0; j<4; j++){
         memcpy(&data[j*sizeof(float)], &fData[i][j], sizeof(float));
       }      

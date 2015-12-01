@@ -69,7 +69,7 @@ for i in angles:
     cnt += 1
 
 # adding some noise...
-calcBMid += np.random.normal(0,1,calcBMid.shape)
+#calcBMid += np.random.normal(0,1,calcBMid.shape)
 
 
 ''' trimming the data '''
@@ -87,39 +87,39 @@ calcBMid += np.random.normal(0,1,calcBMid.shape)
 
 
 ''' estimating the angles '''
-bnds = ((0.0,np.pi/2),      # MCP
-        (0.0,np.pi/(180/110)),      # PIP  
-        (0.0,np.pi/2))
-#        (0.0,np.pi/2),      # MCP
+#bnds = ((0.0,np.pi/2),      # MCP
 #        (0.0,np.pi/(180/110)),      # PIP  
-#        (0.0,np.pi/2))      # DIP
-#        
-estAngCalcMid = np.zeros((len(calcBMid),3))
-#estAngCalcRin = np.zeros((len(calcBRin),3))
-errCnt = 0
-#cnt = 0
-print "estimating calculated"
-#
-##fileName = "tst.txt"
-##f = open(fileName,'w')
-##cmd = "./../visualization/riggedAni/HandGame.blend " + fileName
-##subPro = subprocess.Popen(cmd.split())
-func = np.zeros((len(angles),))
-startTime = time.time()
-for i in range(len(calcBMid[1:])):    
-    # for one magnet and one sensor...
-    res = modE.estimate_BtoAng(estAngCalcMid[i],
-                               [phalMid],
-                               [yMid],
-                               [sMid],
-                               calcBMid[i+1],bnds[:3])                                
-    if not res.success:
-        errCnt += 1
-        print "error!", cnt                  
-    estAngCalcMid[i+1] = res.x[:3]
-    func[i] = res.fun        
-    cnt += 1
-print "time needed for estimation: ",time.time()-startTime    
+#        (0.0,np.pi/2))
+##        (0.0,np.pi/2),      # MCP
+##        (0.0,np.pi/(180/110)),      # PIP  
+##        (0.0,np.pi/2))      # DIP
+##        
+#estAngCalcMid = np.zeros((len(calcBMid),3))
+##estAngCalcRin = np.zeros((len(calcBRin),3))
+#errCnt = 0
+##cnt = 0
+#print "estimating calculated"
+##
+###fileName = "tst.txt"
+###f = open(fileName,'w')
+###cmd = "./../visualization/riggedAni/HandGame.blend " + fileName
+###subPro = subprocess.Popen(cmd.split())
+#func = np.zeros((len(angles),))
+#startTime = time.time()
+#for i in range(len(calcBMid[1:])):    
+#    # for one magnet and one sensor...
+#    res = modE.estimate_BtoAng(estAngCalcMid[i],
+#                               [phalMid],
+#                               [yMid],
+#                               [sMid],
+#                               calcBMid[i+1],bnds[:3])                                
+#    if not res.success:
+#        errCnt += 1
+#        print "error!", cnt                  
+#    estAngCalcMid[i+1] = res.x[:3]
+#    func[i] = res.fun        
+#    cnt += 1
+#print "time needed for estimation: ",time.time()-startTime    
     
     #     sending the estimated values to the visualization
 #    toSend = ("0.0000 0.0000 0.0000 " +
@@ -193,12 +193,13 @@ print "time needed for estimation: ",time.time()-startTime
 #subPro.kill()    
 #print "time needed: ", time.time()-startTime    
 
-plt.close('all')
+#plt.close('all')
 #plo.plotter2d((data[0],calcBMid,estAngCalcMid),("data","B(all in one)","angles"),shareAxis=False)
 #plo.plotter2d((calcBMid,estAngCalcMid,estAngMeasMid),("B","anglesMid","anglesMeas"),shareAxis=False)
-plo.plotter2d((calcBMid,estAngCalcMid),("calcB","angles"),shareAxis=False)
 plt.figure()
-plt.plot(func)
+plo.plotter2d((calcBMid,),("calcB",),shareAxis=False)
+#plt.figure()
+#plt.plot(func)
 #plo.plotter2d((pos,orien),("Pos","orien"),shareAxis=False)
 #plo.plotter2d((meas_index,calcBMid),("avg meas Mid","calc Index"),shareAxis=False)
 #plo.plotter2d((estAngMeasMid,estAngCalcMid,estAngMeasRin,estAngCalcRin),("measMid","estAngCalcMid","measRin","estAngCalcRin"),shareAxis=True)

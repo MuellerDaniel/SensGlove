@@ -9,7 +9,7 @@ import plotting as plo
 #data = datAc.pipeAcquisition("gatttool -t random -b E3:C0:07:76:53:70 --char-write-req --handle=0x000f --value=0300 --listen",
 #                             measNr=100)
 data = datAc.collectForTime("gatttool -t random -b E3:C0:07:76:53:70 --char-write-req --handle=0x000f --value=0300 --listen",
-                            20)
+                            40)
 
 plo.visMagData(data)                
 
@@ -41,3 +41,10 @@ for i in data:
     cnt += 1
     print "\n"
  
+cnt = 0 
+for i in data:
+    print "sensor ",cnt
+    for j in range(3):
+        print "min in "+str(j)+" "+str(min(i[:,j]))
+        print "max in "+str(j)+" "+str(max(i[:,j])) 
+    cnt += 1        
