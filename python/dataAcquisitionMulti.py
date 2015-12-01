@@ -299,7 +299,7 @@ def pipeAcquisition(arg, nrSens, fileName=None, measNr=None, offset=0):
     if measNr == None: 
         measNr = np.inf
     try:
-        while i<measNr+offset:     
+        while i<measNr*nrSens+offset:     
             
             output = proc.stdout.readline()
             # read the input file only till the end!            
@@ -319,12 +319,12 @@ def pipeAcquisition(arg, nrSens, fileName=None, measNr=None, offset=0):
 #                else: print "below offset ", i
 #                print "data: ",data
                 #if data[0] != mat[-1][0] :   #
-#                if data[0] == (mat[-1][0]+1)%nrSens:    
-                mat = np.append(mat, [data], axis=0)
-#                else:   #
-#                    print "!!!!!!!!!!!!!!!!!!!!!!!!!oh no!!!!!!!!!!!!!!!!!!!!!!!!!"   #
-#                    i -= 1  #
-    #                print "writing...", data
+                if data[0] == (mat[-1][0]+1)%nrSens:    
+                    mat = np.append(mat, [data], axis=0)
+                else:   #
+                    print "!!!!!!!!!!!!!!!!!!!!!!!!!oh no!!!!!!!!!!!!!!!!!!!!!!!!!"   #
+                    i -= 1  #
+                    print "writing...", data
 #                if i%10 == 0: print "measurement nr ", i
                 
             else :                
@@ -390,6 +390,16 @@ def RTdata(data,proc):
         
     return data    
   
+
+def movAvgRT(data,n):
+    if len(data) < n:
+        print "below!"
+        return data
+    else:
+        for i in range(3):
+            data[-1][i] = np.sum(data[:,i][-n:])/n
+        return data[-1]
+        
 
 
 def moving_average(data, n) :
