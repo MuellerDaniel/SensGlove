@@ -333,16 +333,15 @@ describing the whole estimation as angle-estimation
 def angToP(theta,finger,off):
     finger_0 = 0.
     theta_k = 0.0
-    dk = off
     P = np.array([(1*(finger_0*np.sin(np.pi/2) + finger[0]*np.sin(np.pi/2-theta[0]) +              # x
                 finger[1]*np.sin(np.pi/2-theta[0]-theta[1]) +
-                finger[2]*np.sin(np.pi/2-theta[0]-theta[1]-theta[2]))),
+                finger[2]*np.sin(np.pi/2-theta[0]-theta[1]-theta[2]))+off[0]),
                 ((finger[0]*np.cos(np.pi/2-theta[0]) +                  # y
                 finger[1]*np.cos(np.pi/2-theta[0]-theta[1]) +
-                finger[2]*np.cos(np.pi/2-theta[0]-theta[1]-theta[2]))*np.sin(theta_k)+dk),
+                finger[2]*np.cos(np.pi/2-theta[0]-theta[1]-theta[2]))*np.sin(theta_k)+off[1]),
                 (-1*(finger[0]*np.cos(np.pi/2-theta[0]) +               # z (*-1 because you move in neg. z-direction)
                 finger[1]*np.cos(np.pi/2-theta[0]-theta[1]) +
-                finger[2]*np.cos(np.pi/2-theta[0]-theta[1]-theta[2]))*np.cos(theta_k))])
+                finger[2]*np.cos(np.pi/2-theta[0]-theta[1]-theta[2]))*np.cos(theta_k)+off[2])])
     return P
 
 def angToH(theta):
@@ -361,14 +360,10 @@ def angToH_dia(theta):
     return H
 
 def calcB(r,h):
-#    factor = np.array([1, 1, 1])
-    factor = (1/(4*np.pi))
-#    factor = 0.0001
-#    no = sqrt(r[0]**2+r[1]**2+r[2]**2)
-#    print r.shape
+#    factor = np.array([1/(4*np.pi), 0., 1/(4*np.pi)])
+    factor = 1/(4*np.pi)
     no = sqrt(np.dot(r,r.conj()))
     b = np.array([((3*r*np.dot(h,r))/(no**5)) - (h/(no**3))])*factor
-#    b = np.array([(((3*r*np.dot(h,r))/(np.linalg.norm(r)**5)) - (h/np.linalg.norm(r)**3))*(1/(4*np.pi))])*factor
     return b
 
 def angToB(theta,finger,S,off):
@@ -412,7 +407,9 @@ def funcMagY_angle(theta,finger,off,S,B):
     cal = np.zeros((len(S)*3,))
     for i in range(len(S)):
         for j in range(len(theta)/3):
+#            th = np.array([theta[j*3], theta[j*3+1], theta[j*3+1]*(2/3)])
             tmp = angToB(theta[j*3:j*3+3],finger[j],S[i],off[j]).reshape((3,))
+#            tmp = angToB(th,finger[j],S[i],off[j]).reshape((3,))
             cal[i*3:i*3+3] += tmp
     dif = B-cal
     return sqrt(np.dot(dif,dif.conj()))**2     #take the square of it!
@@ -448,12 +445,13 @@ def estimate_BtoAng(theta_0, fingerL, offL, sL, measB,bnds=None):
 #                       args=(fingerL, offL, sL, measB))
     # multiple sensors per finger
     if bnds != None:
+#        res = minimize(fcn.funcMagY_angle_m_cy, theta_0,
         res = minimize(funcMagY_angle_m, theta_0,
                        args=(fingerL, sL, offL, measB),
                        method='slsqp', bounds=bnds)
-    else:
-        res = minimize(funcMagY_angle, theta_0,
-                       args=(fingerL, offL, sL, measB))                       
+#    else:
+#        res = minimize(funcMagY_angle, theta_0,
+#                       args=(fingerL, offL, sL, measB))
 
     # cython version
 #    res = minimize(fcn.funcMagY_angle_cy, theta_0,
@@ -493,7 +491,7 @@ def angToB_m(theta,finger,S,off):
 #    print "finger[0]: ",finger
 #    print "off[0]: ",off
 #    print "S: ",S
-    
+
     P = angToP(theta,finger,off)
     H = angToH(theta)
     cnt = 0
@@ -503,7 +501,7 @@ def angToB_m(theta,finger,S,off):
         res[cnt:cnt+3] = calcB(r,H)
         cnt += 3
     return res
-    
+
 def funcMagY_angle_m(theta,finger,S,off,B):
     """The function to minimize
 
@@ -526,17 +524,15 @@ def funcMagY_angle_m(theta,finger,S,off,B):
     elif len(finger) != len(off):
         print "wrong number of fingerlength, to finger offsets!"
         return 0
-    else:    
+    else:
         cal = np.zeros((len(S)*3,))
-        # for one magnet/finger and an arbitrary number of sensors
-#        cal = angToB_m(theta,finger[0],S,off[0])
-        # for arbitrary magnets/fingers and arbitrary sensors
-        for j in range(len(finger)):        
-#            for i in range(len(theta)/3):            
-            tmp = angToB_m(theta[j*3:j*3+3],finger[j],S,off[j])
+        for j in range(len(finger)):
+            th = np.array([theta[j*3], theta[j*3+1], theta[j*3+1]*(2/3)])
+            tmp = angToB_m(th,finger[j],S,off[j])
+#            tmp = angToB_m(theta[j*3:j*3+3],finger[j],S,off[j])
             cal += tmp
         dif = B-cal
-        return sqrt(np.dot(dif,dif.conj()))**2     #take the square of it!   
+        return sqrt(np.dot(dif,dif.conj()))**2     #take the square of it!
 
 
 """

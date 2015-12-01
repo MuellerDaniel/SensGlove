@@ -13,9 +13,9 @@ from libc.stdlib cimport malloc,free
 ###############################################################################
 '''
 
-cdef double cal_norm_cy(long double *val, len):
+cdef double cal_norm_cy(double *val, len):
 # for calculating the norm of an array
-# return a C long double
+# return a C double
     cdef double sum = 0
     cdef double result = 0
     cdef int i = 0
@@ -29,9 +29,9 @@ def cal_norm_py(val):
 # for calculating the norm of an array
 # returning a python object
     cdef int i = 0
-    cdef long double sum = 0
+    cdef double sum = 0
     cdef int length = len(val)
-    #cdef long double result = 0
+    #cdef double result = 0
     for i in range(length):
         sum += pow(val[i],2)
     result = sqrt(sum)
@@ -48,10 +48,10 @@ cdef double dot_product(double *a, double *b, int len):
     #free(b)
     return sum
 
-cdef long double * sub(long double *a, long double *b, int len):
+cdef double * sub(double *a, double *b, int len):
 # function to subtract two c-arrays elementwise
-    cdef long double *res
-    res = <long double*>malloc(len*sizeof(long double))
+    cdef double *res
+    res = <double*>malloc(len*sizeof(double))
 
     cdef int i = 0
     for i in range(len):
@@ -60,20 +60,20 @@ cdef long double * sub(long double *a, long double *b, int len):
     #free(b)
     return res
 
-cdef sub_py(long double *a, b, int len):
+cdef sub_py(double *a, b, int len):
 # function to subtract a c-array and a python array elementwise
     res = [0] * len
-    #res = <long double*>malloc(len*sizeof(long double))
+    #res = <double*>malloc(len*sizeof(double))
     cdef int i = 0
     for i in range(len):
         res[i] = a[i]-b[i]
     #free(a)
     return res
 
-cdef add_py(a, long double *b, int len):
+cdef add_py(a, double *b, int len):
 # function to subtract two arrays elementwise
     res = [0] * len
-    #res = <long double*>malloc(len*sizeof(long double))
+    #res = <double*>malloc(len*sizeof(double))
     cdef int i = 0
     for i in range(len):
         res[i] = a[i]+b[i]
@@ -88,15 +88,15 @@ cdef double * add_cy(double *a, double *b, int lenA):
     return a
 
 
-
-cdef long double * evalfuncMagDot_cy(long double *P, long double *S, int lenP, int lenS):
-#cdef long double * evalfuncMagDot_cy(P, long double *S, int lenP, int lenS):
-    cdef long double *result
-    result = <long double*>malloc(3*sizeof(long double))
-    cdef long double *H
-    H = <long double*>malloc(3*sizeof(long double))
-    cdef long double *R
-    R = <long double*>malloc(3*sizeof(long double))
+'''
+cdef double * evalfuncMagDot_cy(double *P, double *S, int lenP, int lenS):
+#cdef double * evalfuncMagDot_cy(P, double *S, int lenP, int lenS):
+    cdef double *result
+    result = <double*>malloc(3*sizeof(double))
+    cdef double *H
+    H = <double*>malloc(3*sizeof(double))
+    cdef double *R
+    R = <double*>malloc(3*sizeof(double))
 
     H = sub(P,S,lenP)
     R = sub(S,P,lenP)
@@ -115,7 +115,7 @@ cdef long double * evalfuncMagDot_cy(long double *P, long double *S, int lenP, i
 
     H = sub(P,S,len(P))        # this worked for the example on the flat paper...
     R = sub(S,P,len(P))
-    cdef long double result[3]
+    cdef double result[3]
     # calculate the result-values one by one...
     cdef int i = 0
     for i in range(3):
@@ -140,24 +140,24 @@ def funcMagY_cy(P,S,B):
     lenS = len(S)
     lenB = len(B)
     # declaring the arrays...
-    cdef long double *pArr
-    pArr = <long double*> malloc(lenP*sizeof(long double))
+    cdef double *pArr
+    pArr = <double*> malloc(lenP*sizeof(double))
     i = 0
     for i in range(lenP):
         pArr[i] = P[i]
-    cdef long double *sArr = <long double*>malloc(lenS*sizeof(long double))
+    cdef double *sArr = <double*>malloc(lenS*sizeof(double))
     i = 0
     for i in range(lenS):
         sArr[i] = S[i]
-    cdef long double *bArr = <long double*>malloc(lenB*sizeof(long double))
+    cdef double *bArr = <double*>malloc(lenB*sizeof(double))
     i = 0
     for i in range(lenB):
         bArr[i] = B[i]
 
-    cdef long double *sAct    # the actual S-Array
-    sAct = <long double*> malloc(3*sizeof(long double))
-    cdef long double *pAct    # the actual P-Array
-    pAct = <long double*> malloc(3*sizeof(long double))
+    cdef double *sAct    # the actual S-Array
+    sAct = <double*> malloc(3*sizeof(double))
+    cdef double *pAct    # the actual P-Array
+    pAct = <double*> malloc(3*sizeof(double))
 
     #bArr = evalfuncMagDot_cy(pArr, sArr, lenP, lenS)
     #the calculations...
@@ -187,31 +187,9 @@ def funcMagY_cy(P,S,B):
 
 
 def estimatePos(P,S,B,cnt,bnds=None,jacobian=None):
-    """returns the estimated position
-
-    Parameters
-    ----------
-    P : array
-        the initial guess of the position
-    S : array
-        the position of the sensor
-    B : array
-        the magnetic field
-    bnds : tuple
-            the lower and upper bounds for the position coordinates
-            ((lbx,ubx),(lby,uby),(lbz,ubz))
-
-    Returns
-    -------
-    res.x : array
-        the result of the minimize function, i.e. the estimated position
-
-    """
     opt = ({'maxiter':50})
-    '''   advanced approach (pseudo-inverse thing)  '''
 #    val = minimize(funcMagYmulti, P, args=(S,B), method='slsqp',
 #                   tol=1e-5, bounds=bnds, jac=jacobian)
-    '''    straight forward approach norm(B(estPos)-B(measured))    '''
     #val = minimize(funcMagY, P, args=(S,B), method='slsqp',
     #               tol=1e-4, bounds=bnds, jac=jacobian, options=opt)
 
@@ -225,12 +203,12 @@ def estimatePos(P,S,B,cnt,bnds=None,jacobian=None):
         print val.message
 #        return np.zeros(shape=(2,1,3))
         return val
-
+'''
 
 #'''
 #  angle estimation
 #'''
-
+'''
 def xPos_py(angle,phal,off):
     return (phal[0]*np.cos(angle[0])+
             phal[1]*np.cos((angle[0])+(angle[1]))+
@@ -268,54 +246,42 @@ def estimateAngle_mCy(pos,guess,off,phal,bnds):
 #    fcn.test(pos)
 #    res = 0
   return res
-
+'''
 #'''
 #  describing the whole estimation as angle-estimation
 #'''
-cdef long double xPos_cy(long double *angle,long double *phal,long double off):
+'''
+cdef double xPos_cy(double *angle,double *phal,double off):
     return (phal[0]*np.cos(angle[0])+
             phal[1]*np.cos((angle[0])+(angle[1]))+
             phal[2]*np.cos((angle[0])+(angle[1])+(angle[2]))+off)
 
-cdef long double yPos_cy(long double *angle,long double *phal,long double off):
+cdef double yPos_cy(double *angle,double *phal,double off):
     return off
 
-cdef long double zPos_cy(long double *angle,long double *phal,long double off):
+cdef double zPos_cy(double *angle,double *phal,double off):
     return (phal[0]*np.sin((angle[0]))+
             phal[1]*np.sin((angle[0])+(angle[1]))+
             phal[2]*np.sin((angle[0])+(angle[1])+(angle[2])))*-1+off
 
-cdef long double * angToB_cy(long double *theta,long double *finger,long double *off,long double *S):
-    """returns the magnetic field
-
-    Parameters
-    ----------
-    theta : array
-            the angles of the finger
-    finger : array
-            the length of the phalanges
-    off : array
-        the absolute position of the MCP
-    S : array
-        the position of the sensor
-    """
-    cdef long double *P
-    P = <long double*> malloc(3*sizeof(long double))
+cdef double * angToB_cy(double *theta,double *finger,double *off,double *S):
+    cdef double *P
+    P = <double*> malloc(3*sizeof(double))
     P[0] = xPos_cy(theta,finger,off[0])
     P[1] = yPos_cy(theta,finger,off[1])
     P[2] = zPos_cy(theta,finger,off[2])
 
-    cdef long double *R = sub(S,P,3)
+    cdef double *R = sub(S,P,3)
 
-    cdef long double *H
-    H = <long double*> malloc(3*sizeof(long double))
+    cdef double *H
+    H = <double*> malloc(3*sizeof(double))
     H[0] = np.sin(-np.pi/2+abs(-theta[0]-theta[1]-theta[2]))
     H[1] = 0
     H[2] = np.cos(-np.pi/2+abs(-theta[0]-theta[1]-theta[2]))
-    #cdef long double normR = cal_norm_cy(R,3)
+    #cdef double normR = cal_norm_cy(R,3)
 
-    cdef long double *res
-    res = <long double*> malloc(3*sizeof(long double))
+    cdef double *res
+    res = <double*> malloc(3*sizeof(double))
     res[0] = ((3*(dot_product(H,R,3)*R[0])/pow(cal_norm_cy(R,3),5)) -
                   (H[0]/pow(cal_norm_cy(R,3),3)))
     res[1] = ((3*(dot_product(H,R,3)*R[1])/pow(cal_norm_cy(R,3),5)) -
@@ -331,6 +297,7 @@ cdef long double * angToB_cy(long double *theta,long double *finger,long double 
     #print "res[0]_cy ", res[0]
     return res
 
+
 def funcMagY_angle_cy(theta,finger,off,S,B):
     # converting the input arrays to c arrays
     cdef int lenB = len(B)
@@ -343,20 +310,20 @@ def funcMagY_angle_cy(theta,finger,off,S,B):
     cdef int l = 0
 
     # value arrays...
-    cdef long double *arrCal
-    arrCal = <long double*> malloc(lenB*sizeof(long double))
+    cdef double *arrCal
+    arrCal = <double*> malloc(lenB*sizeof(double))
 
-    cdef long double *tmp
-    tmp = <long double*> malloc(3*sizeof(long double))
+    cdef double *tmp
+    tmp = <double*> malloc(3*sizeof(double))
 
-    cdef long double *actS
-    actS = <long double*> malloc(3*sizeof(long double))
-    cdef long double *actTheta
-    actTheta = <long double*> malloc(3*sizeof(long double))
-    cdef long double *actFinger
-    actFinger = <long double*> malloc(3*sizeof(long double))
-    cdef long double *actOff
-    actOff = <long double*> malloc(3*sizeof(long double))
+    cdef double *actS
+    actS = <double*> malloc(3*sizeof(double))
+    cdef double *actTheta
+    actTheta = <double*> malloc(3*sizeof(double))
+    cdef double *actFinger
+    actFinger = <double*> malloc(3*sizeof(double))
+    cdef double *actOff
+    actOff = <double*> malloc(3*sizeof(double))
 
     cal = [0] * lenB
 
@@ -379,7 +346,7 @@ def funcMagY_angle_cy(theta,finger,off,S,B):
             b = add_py(b,angToB_cy(actTheta,actFinger,actOff,actS),3)
         cal[i*3:i*3+3] = b
 
-    #cdef long double res_cy = cal_norm_cy(sub(arrB,arrCal,lenB),lenB)
+    #cdef double res_cy = cal_norm_cy(sub(arrB,arrCal,lenB),lenB)
     #print "cython cal: ", cal
 
     res_py = cal_norm_py(B-cal)
@@ -393,11 +360,11 @@ def funcMagY_angle_cy(theta,finger,off,S,B):
     free(actOff)
 
     return res_py     #take the square of it!
+'''
 
 
 
-
-cdef double * angToP_cy(double *theta, double *finger, int off):
+cdef double * angToP_cy(double *theta, double *finger, double off):
     cdef double PI = 3.14159265358979323846
     cdef double *res = <double*> malloc(3*sizeof(double))
     cdef double finger_0 = 0.
@@ -414,7 +381,7 @@ cdef double * angToP_cy(double *theta, double *finger, int off):
               finger[2]*cos(PI/2-theta[0]-theta[1]-theta[2]))*cos(theta_k))
     return res
 
-cdef double * angToH(double *theta):
+cdef double * angToH_cy(double *theta):
     cdef double *res = <double*> malloc(3*sizeof(double))
     res[0] = cos(-theta[0]-theta[1]-theta[2])
     res[1] = 0.0
@@ -431,7 +398,7 @@ cdef double * calcB_cy(double *r, double *h):
     b[2] = ((3*r[2]*dot_product(h,r,3))/pow(no,5)) - (h[2]/pow(no,3))*factor
     return b
 
-cdef double * angToB_m_cy(double *theta, double *finger, double *S, int off, int lenS):
+cdef double * angToB_m_cy(double *theta, double *finger, double *S, double off, int lenS):
     cdef double *res = <double*> malloc(lenS*3*sizeof(double))
     cdef double *sAct = <double*> malloc(3*sizeof(double))
     cdef double *r = <double*> malloc(3*sizeof(double))
