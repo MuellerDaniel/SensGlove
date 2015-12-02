@@ -360,8 +360,8 @@ def angToH_dia(theta):
     return H
 
 def calcB(r,h):
-#    factor = np.array([1/(4*np.pi), 0., 1/(4*np.pi)])
-    factor = 1/(4*np.pi)
+    factor = np.array([1/(4*np.pi), 0., 1/(4*np.pi)])
+#    factor = 1/(4*np.pi)
     no = sqrt(np.dot(r,r.conj()))
     b = np.array([((3*r*np.dot(h,r))/(no**5)) - (h/(no**3))])*factor
     return b
@@ -446,7 +446,8 @@ def estimate_BtoAng(theta_0, fingerL, offL, sL, measB,bnds=None):
     # multiple sensors per finger
     if bnds != None:
 #        res = minimize(fcn.funcMagY_angle_m_cy, theta_0,
-        res = minimize(funcMagY_angle_m, theta_0,
+#        res = minimize(funcMagY_angle_m, theta_0,
+        res = minimize(funcMagY_angle_m2, theta_0,
                        args=(fingerL, sL, offL, measB),
                        method='slsqp', bounds=bnds)
 #    else:
@@ -486,12 +487,8 @@ def angToB_m(theta,finger,S,off):
     S : array
         the position of the sensor
     """
-#    print "ANGTOB_M"
-#    print "theta: ",theta
-#    print "finger[0]: ",finger
-#    print "off[0]: ",off
-#    print "S: ",S
-
+#    theta = np.array([th[0],th[1],th[1]*(2/3)])
+    
     P = angToP(theta,finger,off)
     H = angToH(theta)
     cnt = 0
@@ -534,10 +531,104 @@ def funcMagY_angle_m(theta,finger,S,off,B):
         dif = B-cal
         return sqrt(np.dot(dif,dif.conj()))**2     #take the square of it!
 
+def angToP_2(theta,finger,off):
+    finger_0 = 0.
+    theta_k = 0.0
+    P = np.array([(1*(finger_0*np.sin(np.pi/2) + finger[0]*np.sin(np.pi/2-theta[0]) +              # x
+                finger[1]*np.sin(np.pi/2-theta[0]-theta[1]) +
+                finger[2]*np.sin(np.pi/2-theta[0]-theta[1]-theta[1]*(2/3)))+off[0]),                
+                (-1*(finger[0]*np.cos(np.pi/2-theta[0]) +               # z (*-1 because you move in neg. z-direction)
+                finger[1]*np.cos(np.pi/2-theta[0]-theta[1]) +
+                finger[2]*np.cos(np.pi/2-theta[0]-theta[1]-theta[1]*(2/3)))*np.cos(theta_k)+off[1])])
+    return P    
+    
+def angToH_2(theta):
+    H = np.array([np.cos(-theta[0]-theta[1]-theta[1]*(2/3)),
+                     0,
+                     1*np.sin(-theta[0]-theta[1]-theta[1]*(2/3))])
+    return H
+    
+
+def angToB_m2(theta,finger,S,off):
+    """returns the magnetic field
+
+    Parameters
+    ----------
+    theta : array
+            the angles of the finger
+            [MCP,PIP,DIP]
+    finger : array
+            the length of the phalanges
+            [proximal-, middle-, distal-phalange]
+    off : float
+        the shift of the joint in y-direction
+    S : array
+        the position of the sensor
+    """    
+    P = angToP_2(theta,finger,off)
+    H = angToH_2(theta)
+    
+    res = np.zeros((len(S)*2,))
+    for i in S:
+        r = i-P
+        res[i:i*2+2] = calcB_2(r,H)
+        
+    return res
+
+def funcMagY_angle_m2(theta,finger,S,off,B):
+    """The function to minimize
+
+    Parameters
+    ----------
+    theta : array (concatenated)
+            the angles of the finger
+    finger : list (of arrays)
+            the length of the phalanges
+    off : list (of arrays)
+        the y-shift of the joint
+    S : list (of arrays)
+        the positions of the sensors
+    B : array (concatenated)
+        the measured B-field
+    """
+    if len(S)*2 != len(B):
+        print "wrong number of sensors, to corresponding B-fields!"
+        return 0
+    elif len(finger) != len(off):
+        print "wrong number of fingerlength, to finger offsets!"
+        return 0
+    else:
+        cal = np.zeros((len(S)*2,))
+        for j in range(len(finger)):            
+            tmp = angToB_m2(theta,finger[j],S,off[j])
+#            tmp = angToB_m(theta[j*3:j*3+3],finger[j],S,off[j])
+            cal += tmp
+        dif = B-cal
+        return sqrt(np.dot(dif,dif.conj()))**2     #take the square of it!
+
 
 """
 fitting the data to the model
 """
+def getScaleOff(ref,meas):
+    scale = np.array([0.,0.,0.])
+    for i in range(3):
+        raReal = max(ref[:,i]) - min(ref[:,i])
+        raMeas = max(meas[:,i]) - min(meas[:,i])
+        scale[i] = raReal/raMeas
+
+    offMat = meas[:10]
+    offMat *= scale
+    offset = np.array([0.,0.,0.])
+    for i in range(3):    
+        m = np.mean(offMat[:,i])
+        offset[i] = ref[0][i]-m
+        
+    print "scale: ",scale
+    print "offset: ",offset        
+    return (scale,offset)        
+    
+
 def fitMeasurements(ref, meas, valOffset):
     """returns the measurement data fitted to the reference data
 
@@ -570,8 +661,6 @@ def scaleMeasurements(real, meas):
     for i in range(3):
         raReal = max(real[:,i]) - min(real[:,i])
         raMeas = max(meas[:,i]) - min(meas[:,i])
-#        print "raMeas ", raMeas
-#        print "raReal ", raReal
         scale[i] = raReal/raMeas
         i+=1
     print "scale " + str(scale)
