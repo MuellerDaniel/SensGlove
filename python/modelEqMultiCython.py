@@ -534,20 +534,43 @@ def funcMagY_angle_m(theta,finger,S,off,B):
 def angToP_2(theta,finger,off):
     finger_0 = 0.
     theta_k = 0.0
-    P = np.array([(1*(finger_0*np.sin(np.pi/2) + finger[0]*np.sin(np.pi/2-theta[0]) +              # x
+    if len(theta) == 2:
+        P = np.array([(1*(finger_0*np.sin(np.pi/2) + finger[0]*np.sin(np.pi/2-theta[0]) +              # x
+                    finger[1]*np.sin(np.pi/2-theta[0]-theta[1]) +
+                    finger[2]*np.sin(np.pi/2-theta[0]-theta[1]-theta[1]*(2/3)))+off[0]),                
+                    (-1*(finger[0]*np.cos(np.pi/2-theta[0]) +               # z (*-1 because you move in neg. z-direction)
+                    finger[1]*np.cos(np.pi/2-theta[0]-theta[1]) +
+                    finger[2]*np.cos(np.pi/2-theta[0]-theta[1]-theta[1]*(2/3)))*np.cos(theta_k)+off[1])])
+        return P    
+    else:
+        P = np.array([(1*(finger_0*np.sin(np.pi/2) + finger[0]*np.sin(np.pi/2-theta[0]) +              # x
                 finger[1]*np.sin(np.pi/2-theta[0]-theta[1]) +
-                finger[2]*np.sin(np.pi/2-theta[0]-theta[1]-theta[1]*(2/3)))+off[0]),                
+                finger[2]*np.sin(np.pi/2-theta[0]-theta[1]-theta[2]))+off[0]),
+                ((finger[0]*np.cos(np.pi/2-theta[0]) +                  # y
+                finger[1]*np.cos(np.pi/2-theta[0]-theta[1]) +
+                finger[2]*np.cos(np.pi/2-theta[0]-theta[1]-theta[2]))*np.sin(theta_k)+off[1]),
                 (-1*(finger[0]*np.cos(np.pi/2-theta[0]) +               # z (*-1 because you move in neg. z-direction)
                 finger[1]*np.cos(np.pi/2-theta[0]-theta[1]) +
-                finger[2]*np.cos(np.pi/2-theta[0]-theta[1]-theta[1]*(2/3)))*np.cos(theta_k)+off[1])])
-    return P    
+                finger[2]*np.cos(np.pi/2-theta[0]-theta[1]-theta[2]))*np.cos(theta_k)+off[2])])
+    return P
     
 def angToH_2(theta):
-    H = np.array([np.cos(-theta[0]-theta[1]-theta[1]*(2/3)),
-                     0,
-                     1*np.sin(-theta[0]-theta[1]-theta[1]*(2/3))])
-    return H
+    if len(theta) == 2:
+        H = np.array([np.cos(-theta[0]-theta[1]-theta[1]*(2/3)),                     
+                      1*np.sin(-theta[0]-theta[1]-theta[1]*(2/3))])
+        return H
+    else:
+          H = np.array([np.cos(-theta[0]-theta[1]-theta[1]*(2/3)),
+                        0,
+                        1*np.sin(-theta[0]-theta[1]-theta[1]*(2/3))])
+          return H
     
+def calcB_2(r,h):
+    factor = np.array([1/(4*np.pi),0. , 1/(4*np.pi)])
+#    factor = 1/(4*np.pi)
+    no = sqrt(np.dot(r,r.conj()))  
+    b = np.array([((3*r*np.dot(h,r))/(no**5)) - (h/(no**3))])*factor    
+    return b
 
 def angToB_m2(theta,finger,S,off):
     """returns the magnetic field
@@ -567,11 +590,14 @@ def angToB_m2(theta,finger,S,off):
     """    
     P = angToP_2(theta,finger,off)
     H = angToH_2(theta)
-    
-    res = np.zeros((len(S)*2,))
-    for i in S:
+    size = len(S[0])
+    cnt = 0
+    res = np.zeros((len(S)*size,))
+    for i in S:        
         r = i-P
-        res[i:i*2+2] = calcB_2(r,H)
+        a = calcB_2(r,H)
+        res[cnt*size:cnt*size+size] = a
+        cnt += 1
         
     return res
 
@@ -591,14 +617,20 @@ def funcMagY_angle_m2(theta,finger,S,off,B):
     B : array (concatenated)
         the measured B-field
     """
-    if len(S)*2 != len(B):
+    size = len(S[0])
+    if size == 3:
+#        print "here"
+        th = np.array([theta[0],theta[1],theta[1]*(2/3)])
+        theta = None
+        theta = th
+    if len(S)*size != len(B):
         print "wrong number of sensors, to corresponding B-fields!"
         return 0
     elif len(finger) != len(off):
         print "wrong number of fingerlength, to finger offsets!"
         return 0
     else:
-        cal = np.zeros((len(S)*2,))
+        cal = np.zeros((len(S)*size,))
         for j in range(len(finger)):            
             tmp = angToB_m2(theta,finger[j],S,off[j])
 #            tmp = angToB_m(theta[j*3:j*3+3],finger[j],S,off[j])

@@ -63,16 +63,14 @@ def plotIt2d(data, title, sizeData, shareAxis):
         for i in range(sizeData):
             cnt = 0            
             for j in data:
-                linCol = colorList[cnt%4]
-            # 151027 code, that was working...
-#                lst[i].plot(j[:,0], color=linCol, ls='-', label='x')
-#                lst[i].plot(j[:,1], color=linCol, ls='--', label='y')
-#                lst[i].plot(j[:,2], color=linCol, ls=':', label='z')
-#                lst[i].set_title(title[i])                
+                linCol = colorList[cnt%4]                     
                 # line plot representation
                 lst[cnt].plot(j[:,0], color=linCol, ls='-', label='x')
                 lst[cnt].plot(j[:,1], color=linCol, ls='--', label='y')
-                lst[cnt].plot(j[:,2], color=linCol, ls=':', label='z')
+                try:
+                    lst[cnt].plot(j[:,2], color=linCol, ls=':', label='z')
+                except:
+                    print "only 2d..."
                 # scatter plot representation
 #                lst[cnt].scatter(np.arange(len(j[:,0])),j[:,0], color=linCol, label='x')
 #                lst[cnt].scatter(np.arange(len(j[:,1])),j[:,1], color=linCol, label='y')
@@ -84,9 +82,7 @@ def plotIt2d(data, title, sizeData, shareAxis):
 #                    lst[cnt].plot(j[:,2], color=linCol, ls=':')
                     
                 lst[cnt].set_title(title[cnt])
-#                if cnt==0: plt.legend()
                 cnt+=1        
-#            else:
     
 
 

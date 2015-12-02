@@ -22,20 +22,28 @@ middle = datAc.moving_average3d(d[1],10)
 ring = datAc.moving_average3d(d[2],10)
 pinky = datAc.moving_average3d(d[3],10)
 
+#index = np.delete(index,np.s_[1],1)
+#middle = np.delete(middle,np.s_[1],1)
+#ring = np.delete(ring,np.s_[1],1)
+#pinky = np.delete(pinky,np.s_[1],1)
+
 sInd = [-0.03, -0.0, 0.024]
 sMid = [-0.03, -0.022, 0.024]
 sRin = [-0.03, -0.044, 0.024]
 sPin = [-0.03, -0.066, 0.024]
-
-#sInd_2 = [-0.03, 0.024]
-#sMid_2 = [-0.03, 0.024]
-#sRin_2 = [-0.03, 0.024]
-#sPin_2 = [-0.03, 0.024]
+sInd_2 = [-0.03, 0.024]
+sMid_2 = [-0.03, 0.024]
+sRin_2 = [-0.03, 0.024]
+sPin_2 = [-0.03, 0.024]
 
 yInd = [0.0, 0.0, -0.0]
 yMid = [0.0, -0.022, -0.0]
 yRin = [0.0, -0.044, -0.0]
 yPin = [0.0, -0.066, -0.0]
+yInd_2 = [0.0, -0.0]
+yMid_2 = [0.0, -0.0]
+yRin_2 = [0.0, -0.0]
+yPin_2 = [0.0, -0.0]
 
 # lengths of phalanges
 phalInd = [0.03080, 0.02581, 0.01678]
@@ -45,10 +53,10 @@ phalPin = [0.02892, 0.02493, 0.01601]
 
 t = np.arange(0,1/2.*np.pi,0.01)
 #angles = np.zeros((len(t)*2,2))
-angles = np.zeros((len(t),2))
+angles = np.zeros((len(t),3))
 cnt = 0
 for i in t:
-    angles[cnt] = np.array([i, 0])
+    angles[cnt] = np.array([i, 0, 0])
     cnt += 1
 
 #for i in t[::-1]:
@@ -57,17 +65,18 @@ for i in t:
 
 ''' calculating the B-field '''
 sensList = [sInd,sMid,sRin,sPin]
-fingerList = [phalMid,phalRin,phalPin]
-yOffList = [yMid,yRin,yPin]
+#sensList = [sInd_2]
+fingerList = [phalMid]
+yOffList = [yMid]
 
 calcBInd_m = np.zeros((len(angles),len(sensList)*3))
 #calcBInd =  np.zeros((len(angles),3))
 cnt = 0
 for i in angles:
 #     multiple magnets and multiple sensors (just add the b-fields)
-    calcBInd_m[cnt] = (modE.angToB_m2(i,phalMid,sensList,yMid)+
-                         modE.angToB_m2(i,phalRin,sensList,yRin)+
-                         modE.angToB_m2(i,phalPin,sensList,yPin))#+
+    calcBInd_m[cnt] = (modE.angToB_m2(i,phalMid,sensList,yMid))#+
+#                         modE.angToB_m2(i,phalRin,sensList,yRin)+
+#                         modE.angToB_m2(i,phalPin,sensList,yPin))#+
 #                         modE.angToB_m2(np.array([0.,0.,0.]),phalPin,sensList,yPin))
     cnt += 1
 
@@ -79,17 +88,17 @@ for i in angles:
 #middle = d_mid[10:100]
 #ring = d_rin[10:100]
 #pinky = d_pin[10:100]
-#
-#index = modE.fitMeasurements(calcBInd_m[:,:3],index,(0,10))[10:]
-#middle = modE.fitMeasurements(calcBInd_m[:,3:6],middle,(0,10))[10:]
-#ring = modE.fitMeasurements(calcBInd_m[:,6:9],ring,(0,10))[10:]
-#pinky = modE.fitMeasurements(calcBInd_m[:,9:],pinky,(0,10))[10:]
-#
-#measB = np.zeros((len(index),3*len(sensList)))
-#measB[:,0:3] = index
-#measB[:,3:6] = middle
-#measB[:,6:9] = ring
-#measB[:,9:] = pinky
+
+index = modE.fitMeasurements(calcBInd_m[:,:3],index,(0,10))[10:]
+middle = modE.fitMeasurements(calcBInd_m[:,3:6],middle,(0,10))[10:]
+ring = modE.fitMeasurements(calcBInd_m[:,6:9],ring,(0,10))[10:]
+pinky = modE.fitMeasurements(calcBInd_m[:,9:],pinky,(0,10))[10:]
+
+measB = np.zeros((len(index),3*len(sensList)))
+measB[:,0:3] = index
+measB[:,3:6] = middle
+measB[:,6:9] = ring
+measB[:,9:] = pinky
 
 #index = d_ind[10:40]
 #middle = d_mid[10:100]
@@ -100,25 +109,6 @@ for i in angles:
 #middle = modE.fitMeasurements(calcBInd_m[:,3:6],middle,(0,10))[10:]
 #ring = modE.fitMeasurements(calcBInd_m[:,6:9],ring,(0,10))[10:]
 #pinky = modE.fitMeasurements(calcBInd_m[:,9:],pinky,(0,10))[10:]
-
-scaleInd = [0.36462151,  0.,          0.35546784]
-offInd = [101.9832471 ,    0. ,          -6.69879091]
-scaleMid = [0.35913999,  0.   ,       0.39066646]
-offMid = [80.23952749,   0.  ,        12.18912481]
-scaleRin = [0.35825034 , 0.    ,      0.37539817]
-offRin = [111.94372244  ,  0.    ,      -32.14775172]
-scalePin = [0.37584881 , 0.    ,      0.32751091]
-offPin = [ 145.20063789  ,  0.    ,      -75.24422619]
-index = index*scaleInd+offInd
-middle = middle*scaleMid+offMid
-ring = ring*scaleRin+offRin
-pinky = pinky*scalePin+offPin
-
-measB = np.zeros((len(index),3*len(sensList)))
-measB[:,0:3] = index
-measB[:,3:6] = middle
-measB[:,6:9] = ring
-measB[:,9:] = pinky
 
 ''' estimation '''
 bnds = ((0.0,np.pi/2),      # MCP
@@ -160,7 +150,7 @@ startTime = time.time()
 for i in range(len(measB[1:])):
     print "estimating fitted",i
 #    res = modE.estimate_BtoAng(estAngMeas[i],fingerList,yOffList,sensList,measB[i+1][3:6],bnds[:3])
-    res = modE.estimate_BtoAng(estAngMeas[i],fingerList,yOffList,sensList,measB[i+1],bnds[:6])
+    res = modE.estimate_BtoAng(estAngMeas[i],fingerList,yOffList,sensList,measB[i+1],bnds[:2])
     
     if not res.success:
         print "error, iter: ",i
@@ -170,14 +160,14 @@ for i in range(len(measB[1:])):
 print "time needed for estimation: ", time.time()-startTime    
 
 #plt.close('all')
-#plo.plotter2d((calcBInd_m[:,:3],calcBInd_m[:,3:6],calcBInd_m[:,6:9],calcBInd_m[:,9:]),("sInd","sMid","sRin","sPin"))
+plo.plotter2d((calcBInd_m[:,:3],calcBInd_m[:,3:6],calcBInd_m[:,6:9],calcBInd_m[:,9:]),("sInd","sMid","sRin","sPin"))
 #plo.plotter2d((d_ind,d_mid,d_rin,d_pin),("measInd","measMid","measRin","measPin"))
-plo.plotter2d((calcBInd_m[:,:3],index),("ind","measInd"),shareAxis=True)
-plo.plotter2d((calcBInd_m[:,3:6],middle),("mid","measMid"),shareAxis=True)
-plo.plotter2d((calcBInd_m[:,6:9],ring),("rin","measRin"),shareAxis=True)
-plo.plotter2d((calcBInd_m[:,9:],pinky),("pin","measPin"),shareAxis=True)
+#plo.plotter2d((calcBInd_m[:,:3],index),("ind","measInd"),shareAxis=True)
+#plo.plotter2d((calcBInd_m[:,3:6],middle),("mid","measMid"),shareAxis=True)
+#plo.plotter2d((calcBInd_m[:,6:9],ring),("rin","measRin"),shareAxis=True)
+#plo.plotter2d((calcBInd_m[:,9:],pinky),("pin","measPin"),shareAxis=True)
 #plt.figure()
 #plt.plot(estAng[:,0],'r')
 #plt.plot(estAng[:,1],'g')
 #plt.plot(estAng[:,1]*2/3,'b')
-
+plt.show()
