@@ -1,4 +1,4 @@
-#import pyximport; pyximport.install()
+# import pyximport; pyximport.install()
 import numpy as np
 import time
 from scipy.optimize import *
@@ -65,9 +65,10 @@ cdef sub_py(double *a, b, int len):
     res = [0] * len
     #res = <double*>malloc(len*sizeof(double))
     cdef int i = 0
-    for i in range(len):
+    while i < len:
+        print len
         res[i] = a[i]-b[i]
-    #free(a)
+        i += 1
     return res
 
 cdef add_py(a, double *b, int len):
@@ -364,7 +365,7 @@ def funcMagY_angle_cy(theta,finger,off,S,B):
 
 
 
-cdef double * angToP_cy(double *theta, double *finger, double off):
+cdef double * angToP_cy(double *theta, double *finger, double *off):
     cdef double PI = 3.14159265358979323846
     cdef double *res = <double*> malloc(3*sizeof(double))
     cdef double finger_0 = 0.
@@ -372,13 +373,13 @@ cdef double * angToP_cy(double *theta, double *finger, double off):
     #cdef int dk = off
     res[0] = (1*(finger_0*sin(PI/2) + finger[0]*sin(PI/2-theta[0]) +              # x
               finger[1]*sin(PI/2-theta[0]-theta[1]) +
-              finger[2]*sin(PI/2-theta[0]-theta[1]-theta[2]))),
+              finger[2]*sin(PI/2-theta[0]-theta[1]-theta[2]))+off[0])
     res[1] = ((finger[0]*cos(PI/2-theta[0]) +                  # y
               finger[1]*cos(PI/2-theta[0]-theta[1]) +
-              finger[2]*cos(PI/2-theta[0]-theta[1]-theta[2]))*sin(theta_k)+off)
+              finger[2]*cos(PI/2-theta[0]-theta[1]-theta[2]))*sin(theta_k)+off[1])
     res[2] = (-1*(finger[0]*cos(PI/2-theta[0]) +               # z (*-1 because you move in neg. z-direction)
               finger[1]*cos(PI/2-theta[0]-theta[1]) +
-              finger[2]*cos(PI/2-theta[0]-theta[1]-theta[2]))*cos(theta_k))
+              finger[2]*cos(PI/2-theta[0]-theta[1]-theta[2]))*cos(theta_k)+off[2])
     return res
 
 cdef double * angToH_cy(double *theta):
@@ -391,15 +392,16 @@ cdef double * angToH_cy(double *theta):
 cdef double * calcB_cy(double *r, double *h):
     cdef double PI = 3.14159265358979323846
     cdef double *b = <double*> malloc(3*sizeof(double))
-    factor = (1/(4*PI))
+    cdef double factor = (1./(4.*PI))
     cdef double no = cal_norm_cy(r,3)
-    b[0] = ((3*r[0]*dot_product(h,r,3))/pow(no,5)) - (h[0]/pow(no,3))*factor
-    b[1] = ((3*r[1]*dot_product(h,r,3))/pow(no,5)) - (h[1]/pow(no,3))*factor
-    b[2] = ((3*r[2]*dot_product(h,r,3))/pow(no,5)) - (h[2]/pow(no,3))*factor
+    b[0] = (((3*r[0]*dot_product(h,r,3))/pow(no,5)) - (h[0]/pow(no,3)))*factor
+    # b[1] = ((3*r[1]*dot_product(h,r,3))/pow(no,5)) - (h[1]/pow(no,3))*0
+    b[1] = 0
+    b[2] = (((3*r[2]*dot_product(h,r,3))/pow(no,5)) - (h[2]/pow(no,3)))*factor
     return b
 
-cdef double * angToB_m_cy(double *theta, double *finger, double *S, double off, int lenS):
-    cdef double *res = <double*> malloc(lenS*3*sizeof(double))
+cdef double * angToB_m_cy(double *theta, double *finger, double *S, double *off, int lenS):
+    cdef double *res = <double*> malloc(lenS*sizeof(double))
     cdef double *sAct = <double*> malloc(3*sizeof(double))
     cdef double *r = <double*> malloc(3*sizeof(double))
     cdef double *P = <double*> malloc(3*sizeof(double))
@@ -410,8 +412,8 @@ cdef double * angToB_m_cy(double *theta, double *finger, double *S, double off, 
     H = angToH_cy(theta)
 
     cdef int i = 0
-    cdef int j
-    while i < lenS:
+    cdef int j = 0
+    while i < (lenS/3):
         j = 0
         while j < 3:
             sAct[j] = S[i*3+j]
@@ -432,58 +434,80 @@ cdef double * angToB_m_cy(double *theta, double *finger, double *S, double off, 
 
     return res
 
-def funcMagY_angle_m_cy(theta,finger,S,off,B):
-  cdef int j = 0
-  cdef int i = 0
-  cdef int lB = len(B)
-  # allocate all arrays
-  cdef double *cal_c = <double*> malloc(lB*sizeof(double))
-  while i < lB:
-      cal_c[i] = 0
-      i += 1
+def funcMagY_angle_m2_cy(theta,finger,S,off,B):
+    cdef int j = 0
+    cdef int i = 0
 
-  cdef int lTheta = len(theta)
-  cdef double *theta_c = <double*> malloc(3*sizeof(double))
+    # allocate all arrays
+    cdef int lB = len(B)
+    cdef double *cal_c = <double*> malloc(lB*sizeof(double))
+    while i < lB:
+        cal_c[i] = 0
+        i += 1
 
-  cdef int lFinger = len(finger)
-  cdef double *finger_c = <double*> malloc(3*sizeof(double))
+    cdef int lTheta = len(theta)
+    cdef double *theta_c = <double*> malloc(3*sizeof(double))
+    i = 0
+    while i < 3:
+        theta_c[i] = 0
+        i += 1
 
-  cdef int lS = len(S)
-  cdef double *sPos_c = <double*> malloc(lS*3*sizeof(double))
+    cdef int lFinger = len(finger)
+    cdef double *finger_c = <double*> malloc(3*sizeof(double))
+    i = 0
+    while i < 3:
+        finger_c[i] = 0
+        i += 1
 
-  cdef int lenOff = len(off)
-  cdef double off_c = 0.0
+    cdef int lS = len(S)
+    cdef double *sPos_c = <double*> malloc(lS*sizeof(double))
+    i = 0
+    while i < lS:
+        sPos_c[i] = S[i]
+        i += 1
 
-  if len(S)*3 != len(B):
-      print "wrong number of sensors, to corresponding B-fields!"
-      return 0
-  elif len(finger) != len(off):
-      print "wrong number of fingerlength, to finger offsets!"
-      return 0
-  else:
-      i = 0
-      while i < lS:
-          sPos_c[i] = S[i]
-          i += 1
-      while j < lFinger:
-          # assign the actual values to the arrays
-          i = 0
-          while i < 3:
-              theta_c[i] = theta[i+j*3]
-              finger_c[i] = finger[i+j*3]
-              i += 1
-          off_c = off[j]
+    cdef int lOff = len(off)
+    cdef double *off_c = <double*> malloc(lOff*sizeof(double))
+    i = 0
+    while i < lOff:
+        off_c[i] = off[i]
+        i += 1
 
-          cal_c = add_cy(cal_c,angToB_m_cy(theta_c,finger_c,sPos_c,off_c,lS),lB)
-          j += 1
+    if lS != lB:
+        print "wrong number of sensors, to corresponding B-fields!"
+        return 0
+    elif lFinger != lOff:
+        print "wrong number of fingerlength, to finger offsets!"
+        return 0
 
-      res_py = cal_norm_py(sub_py(cal_c,B,lB))
+    else:
+        while j < (lFinger/3):
+            # assign the actual values to the arrays
+            i = 0
+            while i < 3:
+                finger_c[i] = finger[i+j*3]
+                off_c[i] = off[i+j*3]
+                i += 1
+            theta_c[0] = theta[j*2]
+            theta_c[1] = theta[j*2+1]
+            theta_c[2] = theta[j*2+1]*2/3
+            cal_c = add_cy(cal_c,angToB_m_cy(theta_c,finger_c,sPos_c,off_c,lS),lB)
+            j += 1
+        i = 0
+        a = [0]*lB
+        while i < lB:
+            a[i] = cal_c[i]
+            i += 1
+        # t = sub_py(cal_c,B,lB)
+        t = a-B
+        res_py = cal_norm_py(t)
 
-      free(cal_c)
-      free(theta_c)
-      free(finger_c)
-      free(sPos_c)
-      return res_py**2     #take the square of it!
+        free(cal_c)
+        free(theta_c)
+        free(finger_c)
+        free(sPos_c)
+        free(off_c)
+        return res_py**2     #take the square of it!
 
 '''
 ###############################################################################
