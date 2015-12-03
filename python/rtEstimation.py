@@ -30,6 +30,11 @@ data = np.array([[0,0.,0.,0.],
                  [2,0.,0.,0.],
                  [3,0.,0.,0.]])
                  
+collected = np.array([[0.,0.,0.],
+                     [0.,0.,0.],
+                     [0.,0.,0.],
+                     [0.,0.,0.]])                 
+                 
                  
 t = np.zeros((4,4))  
 
@@ -37,10 +42,10 @@ t = np.zeros((4,4))
 calDat = datAc.pipeAcquisition(cmd,4)
 
 t = np.arange(0,1/2.*np.pi,0.01)
-angles = np.zeros((len(t),2))
+angles = np.zeros((len(t),3))
 cnt = 0
 for i in t:
-    angles[cnt] = np.array([i, 0])
+    angles[cnt] = np.array([i, 0, 0])
     cnt += 1
 
 # calculating the B-field
@@ -49,9 +54,9 @@ sensList = [sInd,sMid,sRin,sPin]
 calcBInd_m = np.zeros((len(angles),len(sensList)*3))
 cnt = 0
 for i in angles:
-    calcBInd_m[cnt] = (modE.angToB_m2(i,phalMid,sensList,yMid))#+
-#                         modE.angToB_m2(i,phalRin,sensList,yRin)+
-#                         modE.angToB_m2(i,phalPin,sensList,yPin))#+
+    calcBInd_m[cnt] = (modE.angToB_m2(i,phalMid,sensList,yMid)+
+                        modE.angToB_m2(i,phalRin,sensList,yRin)+
+                         modE.angToB_m2(i,phalPin,sensList,yPin))#+
 #                         modE.angToB_m2(np.array([0.,0.,0.]),phalPin,sensList,yPin))
     cnt += 1
 
@@ -60,26 +65,19 @@ filMid = datAc.moving_average3d(calDat[1],1)
 filRin = datAc.moving_average3d(calDat[2],1)
 filPin = datAc.moving_average3d(calDat[3],1)
 
-#(scaleInd,offInd) = modE.getScaleOff(calcBInd_m[:,0:3],calDat[0][10:])
-#(scaleMid,offMid) = modE.getScaleOff(calcBInd_m[:,3:6],calDat[1][10:])
-#(scaleRin,offRin) = modE.getScaleOff(calcBInd_m[:,6:9],calDat[2][10:])
-#(scalePin,offPin) = modE.getScaleOff(calcBInd_m[:,9:12],calDat[3][10:])
+(scaleInd,offInd) = modE.getScaleOff(calcBInd_m[:,0:3],filInd[20:])
+(scaleMid,offMid) = modE.getScaleOff(calcBInd_m[:,3:6],filMid[20:])
+(scaleRin,offRin) = modE.getScaleOff(calcBInd_m[:,6:9],filRin[20:])
+(scalePin,offPin) = modE.getScaleOff(calcBInd_m[:,9:12],filPin[20:])
 
-(scaleInd,offInd) = modE.getScaleOff(calcBInd_m[:,0:3],filInd[10:])
-(scaleMid,offMid) = modE.getScaleOff(calcBInd_m[:,3:6],filMid[10:])
-(scaleRin,offRin) = modE.getScaleOff(calcBInd_m[:,6:9],filRin[10:])
-(scalePin,offPin) = modE.getScaleOff(calcBInd_m[:,9:12],filPin[10:])
-
-#index = calDat[0]*scaleInd+offInd
-#middle = calDat[1]*scaleMid+offMid
-#ring = calDat[2]*scaleRin+offRin
-#pinky = calDat[3]*scalePin+offPin
-
-#plo.plotter2d((calcBInd_m[:,:3],index,calDat[0]),("index","index","measInd"))
-#plo.plotter2d((calcBInd_m[:,3:6],middle,calDat[1]),("index","middle","measMid"))
-#plo.plotter2d((calcBInd_m[:,6:9],ring,calDat[2]),("index","ring","measRin"))
-#plo.plotter2d((calcBInd_m[:,9:],pinky,calDat[3]),("index","Pinky","measPin"))
-
+#scaleInd = [ 0.27411365 , 0.        ,  0.3475002 ]
+#offInd = [ 102.08140103  ,  0.        ,   -4.4541138 ]
+#scaleMid = [ 0.27202594  ,0.         , 0.37690844]
+#offMid = [ 100.09260316  ,  0.      ,     -2.63168125]
+#scaleRin = [ 0.28069745 , 0.       ,   0.35377253]
+#offRin = [ 127.56886782 ,   0.    ,      -16.67340924]
+#scalePin = [ 0.31165901 , 0.     ,     0.32485459]
+#offPin = [ 142.79841089 ,   0.  ,        -61.90143651]
 
 ''' RT estimation '''
 procBle = subprocess.Popen("gatttool -t random -b E3:C0:07:76:53:70 --char-write-req --handle=0x000f --value=0300 --listen".split(), 
@@ -95,7 +93,7 @@ bnds = ((0.0,np.pi/2),      # MCP
         (0.0,np.pi/(180/110)),)      # PIP  
         #(0.0,np.pi/2))      # DIP
         
-estAngMeas = np.array([[0.,0.]])  
+estAngMeas = np.array([[0.,0.,0.,0.,0.,0.]])  
 fval = np.array([0.])        
 cnt = 0
 errCnt = 0
@@ -128,14 +126,16 @@ try:
         ring = np.append(ring,[data[2][1:]*scaleRin+offRin],axis=0)
         pinky = np.append(pinky,[data[3][1:]*scalePin+offPin],axis=0)
         
+#        collected = np.append(collected,[index,middle,ring,pinky],axis=0)
+        
         if len(index) > 10:
             print "here"
             res = modE.estimate_BtoAng(estAngMeas[-1],
-                                       [phalMid],
-                                        [yMid],
+                                       [phalMid,phalRin,phalPin],
+                                        [yMid,yRin,yPin],
                                         [sInd,sMid,sRin,sPin],
                                         np.concatenate((index[-1],middle[-1],ring[-1],pinky[-1])),
-                                        bnds[:2])        
+                                        bnds[:6],method='cy')        
 #        
 ##        time.sleep(0.05) 
             if not res.success:
@@ -151,8 +151,8 @@ try:
             toSend = ("0.0000 0.0000 0.0000 " +
                         "0.0000 0.0000 0.0000 " +
                         "{0:.4f} ".format(res.x[0])+"{0:.4f} ".format(res.x[1])+"{0:.4f} ".format(res.x[1]*(2/3))+
-                        "0.0000 0.0000 0.0000 " +
-                        "0.0000 0.0000 0.0000")
+                        "{0:.4f} ".format(res.x[2])+"{0:.4f} ".format(res.x[3])+"{0:.4f} ".format(res.x[3]*(2/3))+ 
+                        "{0:.4f} ".format(res.x[4])+"{0:.4f} ".format(res.x[5])+"{0:.4f} ".format(res.x[5]*(2/3)))
                         
             f = open(fileName,'a')  
             f.write(toSend+'\n')     
@@ -163,11 +163,17 @@ try:
         
 except KeyboardInterrupt:
     print "ended, cnt: ", cnt
+    print "errorCnt: ", errCnt
     subProBlend.kill()    
     procBle.kill()          
-    plo.plotter2d((index[10:],middle[10:],ring[10:],pinky[10:]),("ind","mid","rin","pinky"))
-    plt.figure()
-    plt.plot(estAngMeas[:,0],'r')
-    plt.plot(estAngMeas[:,1],'g')
+#    plo.plotter2d((index[10:],middle[10:],ring[10:],pinky[10:]),("ind","mid","rin","pinky"))
+    plo.plotter2d((calcBInd_m[:,:3],index[10:]),("INDEX perfect","meas"))
+    plo.plotter2d((calcBInd_m[:,3:6],middle[10:]),("MIDDLEperfect","meas"))
+    plo.plotter2d((calcBInd_m[:,6:9],ring[10:]),("RINGperfect","meas"))
+    plo.plotter2d((calcBInd_m[:,9:],pinky[10:]),("PINKYperfect","meas"))
+#    plt.figure()
+#    plt.plot(estAngMeas[:,0],'r')
+#    plt.plot(estAngMeas[:,1],'g')
+    plt.show()
     
     

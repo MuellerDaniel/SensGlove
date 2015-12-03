@@ -360,7 +360,7 @@ def angToH_dia(theta):
     return H
 
 def calcB(r,h):
-    factor = np.array([1/(4*np.pi), 0., 1/(4*np.pi)])
+    factor = np.array([1./(4.*np.pi), 0., 1./(4.*np.pi)])
 #    factor = 1/(4*np.pi)
     no = sqrt(np.dot(r,r.conj()))
     b = np.array([((3*r*np.dot(h,r))/(no**5)) - (h/(no**3))])*factor
@@ -416,7 +416,7 @@ def funcMagY_angle(theta,finger,off,S,B):
 
 
 
-def estimate_BtoAng(theta_0, fingerL, offL, sL, measB,bnds=None):
+def estimate_BtoAng(theta_0, fingerL, offL, sL, measB,bnds=None,method='py'):
     """Estimates the angles for a certain (measured) B-field
 
     Parameters
@@ -435,36 +435,21 @@ def estimate_BtoAng(theta_0, fingerL, offL, sL, measB,bnds=None):
         the static (inequality) bounds for the angles
     """
     # python version
-#     one sensor per finger
-#    if bnds != None:
-#        res = minimize(funcMagY_angle, theta_0,
-#                       args=(fingerL, offL, sL, measB),
-#                       method='slsqp', bounds=bnds)
-#    else:
-#        res = minimize(funcMagY_angle, theta_0,
-#                       args=(fingerL, offL, sL, measB))
-    # multiple sensors per finger
-    if bnds != None:
-#        res = minimize(fcn.funcMagY_angle_m_cy, theta_0,
-#        res = minimize(funcMagY_angle_m, theta_0,
-        res = minimize(funcMagY_angle_m2, theta_0,
-                       args=(fingerL, sL, offL, measB),
-                       method='slsqp', bounds=bnds)
-#    else:
-#        res = minimize(funcMagY_angle, theta_0,
-#                       args=(fingerL, offL, sL, measB))
 
-    # cython version
-#    res = minimize(fcn.funcMagY_angle_cy, theta_0,
-#                   args=(np.reshape(fingerL,((12,))),
-#                         np.reshape(offL,((12,))),
-#                         np.reshape(sL,((12,))), measB),
-#                   method='slsqp', bounds=bnds)
-#    res = minimize(fcn.funcMagY_angle_cy, theta_0,
-#                   args=(fingerL,
-#                         offL,
-#                         sL, measB),
-#                   method='slsqp', bounds=bnds)
+    # multiple sensors per finger
+    if method == 'py':
+        res = minimize(funcMagY_angle_m2, theta_0,
+                        args=(fingerL, sL, offL, measB),
+                        method='slsqp', bounds=bnds)
+
+
+   # cython version   
+    if method == 'cy':    
+        res = minimize(fcn.funcMagY_angle_m2_cy, theta_0,
+                        args=(np.reshape(fingerL,((len(fingerL)*3,))),
+                        np.reshape(sL,((len(sL)*3,))),
+                        np.reshape(offL,((len(offL)*3,))), measB),
+                        method='slsqp', bounds=bnds,tol=1e-7)
 
 #     returning only the angles
 #    return np.array([res[0:3], res[3:6], res[6:9], res[9:12]])
@@ -488,14 +473,15 @@ def angToB_m(theta,finger,S,off):
         the position of the sensor
     """
 #    theta = np.array([th[0],th[1],th[1]*(2/3)])
-    
+
     P = angToP(theta,finger,off)
     H = angToH(theta)
     cnt = 0
     res = np.zeros((len(S)*3,))
     for i in S:
         r = i-P
-        res[cnt:cnt+3] = calcB(r,H)
+        tmp = calcB(r,H)
+        res[cnt:cnt+3] = tmp
         cnt += 3
     return res
 
@@ -524,7 +510,7 @@ def funcMagY_angle_m(theta,finger,S,off,B):
     else:
         cal = np.zeros((len(S)*3,))
         for j in range(len(finger)):
-            th = np.array([theta[j*3], theta[j*3+1], theta[j*3+1]*(2/3)])
+            #th = np.array([theta[j*3], theta[j*3+1], theta[j*3+1]*(2/3)])
             tmp = angToB_m(th,finger[j],S,off[j])
 #            tmp = angToB_m(theta[j*3:j*3+3],finger[j],S,off[j])
             cal += tmp
@@ -537,11 +523,11 @@ def angToP_2(theta,finger,off):
     if len(theta) == 2:
         P = np.array([(1*(finger_0*np.sin(np.pi/2) + finger[0]*np.sin(np.pi/2-theta[0]) +              # x
                     finger[1]*np.sin(np.pi/2-theta[0]-theta[1]) +
-                    finger[2]*np.sin(np.pi/2-theta[0]-theta[1]-theta[1]*(2/3)))+off[0]),                
+                    finger[2]*np.sin(np.pi/2-theta[0]-theta[1]-theta[1]*(2/3)))+off[0]),
                     (-1*(finger[0]*np.cos(np.pi/2-theta[0]) +               # z (*-1 because you move in neg. z-direction)
                     finger[1]*np.cos(np.pi/2-theta[0]-theta[1]) +
                     finger[2]*np.cos(np.pi/2-theta[0]-theta[1]-theta[1]*(2/3)))*np.cos(theta_k)+off[1])])
-        return P    
+        return P
     else:
         P = np.array([(1*(finger_0*np.sin(np.pi/2) + finger[0]*np.sin(np.pi/2-theta[0]) +              # x
                 finger[1]*np.sin(np.pi/2-theta[0]-theta[1]) +
@@ -553,10 +539,10 @@ def angToP_2(theta,finger,off):
                 finger[1]*np.cos(np.pi/2-theta[0]-theta[1]) +
                 finger[2]*np.cos(np.pi/2-theta[0]-theta[1]-theta[2]))*np.cos(theta_k)+off[2])])
     return P
-    
+
 def angToH_2(theta):
     if len(theta) == 2:
-        H = np.array([np.cos(-theta[0]-theta[1]-theta[1]*(2/3)),                     
+        H = np.array([np.cos(-theta[0]-theta[1]-theta[1]*(2/3)),
                       1*np.sin(-theta[0]-theta[1]-theta[1]*(2/3))])
         return H
     else:
@@ -564,12 +550,12 @@ def angToH_2(theta):
                         0,
                         1*np.sin(-theta[0]-theta[1]-theta[1]*(2/3))])
           return H
-    
+
 def calcB_2(r,h):
     factor = np.array([1/(4*np.pi),0. , 1/(4*np.pi)])
 #    factor = 1/(4*np.pi)
-    no = sqrt(np.dot(r,r.conj()))  
-    b = np.array([((3*r*np.dot(h,r))/(no**5)) - (h/(no**3))])*factor    
+    no = sqrt(np.dot(r,r.conj()))
+    b = np.array([((3*r*np.dot(h,r))/(no**5)) - (h/(no**3))])*factor
     return b
 
 def angToB_m2(theta,finger,S,off):
@@ -587,18 +573,20 @@ def angToB_m2(theta,finger,S,off):
         the shift of the joint in y-direction
     S : array
         the position of the sensor
-    """    
-    P = angToP_2(theta,finger,off)
-    H = angToH_2(theta)
+    """
+#    if len(theta) == 2:
+    theta = np.array([theta[0], theta[1], theta[1]*(2/3)])
+    P = angToP(theta,finger,off)
+    H = angToH(theta)
     size = len(S[0])
     cnt = 0
     res = np.zeros((len(S)*size,))
-    for i in S:        
+    for i in S:
         r = i-P
         a = calcB_2(r,H)
         res[cnt*size:cnt*size+size] = a
         cnt += 1
-        
+
     return res
 
 def funcMagY_angle_m2(theta,finger,S,off,B):
@@ -617,22 +605,17 @@ def funcMagY_angle_m2(theta,finger,S,off,B):
     B : array (concatenated)
         the measured B-field
     """
-    size = len(S[0])
-    if size == 3:
-#        print "here"
-        th = np.array([theta[0],theta[1],theta[1]*(2/3)])
-        theta = None
-        theta = th
-    if len(S)*size != len(B):
+    if len(S)*3 != len(B):
         print "wrong number of sensors, to corresponding B-fields!"
         return 0
     elif len(finger) != len(off):
         print "wrong number of fingerlength, to finger offsets!"
         return 0
     else:
-        cal = np.zeros((len(S)*size,))
-        for j in range(len(finger)):            
-            tmp = angToB_m2(theta,finger[j],S,off[j])
+        cal = np.zeros((len(S)*3,))
+        for j in range(len(finger)):
+            th = np.array([theta[j*2], theta[j*2+1], theta[j*2+1]*2/3])
+            tmp = angToB_m(th,finger[j],S,off[j])
 #            tmp = angToB_m(theta[j*3:j*3+3],finger[j],S,off[j])
             cal += tmp
         dif = B-cal
@@ -652,14 +635,14 @@ def getScaleOff(ref,meas):
     offMat = meas[:10]
     offMat *= scale
     offset = np.array([0.,0.,0.])
-    for i in range(3):    
+    for i in range(3):
         m = np.mean(offMat[:,i])
         offset[i] = ref[0][i]-m
-        
+
     print "scale: ",scale
-    print "offset: ",offset        
-    return (scale,offset)        
-    
+    print "offset: ",offset
+    return (scale,offset)
+
 
 def fitMeasurements(ref, meas, valOffset):
     """returns the measurement data fitted to the reference data
