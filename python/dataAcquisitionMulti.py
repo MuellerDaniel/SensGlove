@@ -84,7 +84,20 @@ def serialAcquisition(serPort, fileName, offset, measNr, timeStamp = True):
     ser.close()
     
     return magMat
-    
+ 
+
+def saveToFile(data,fileName):
+    try:
+        fl = open(fileName,'w')
+    except IOError:
+        print "sth went wrong..."           
+    for i in data:
+            fl.write(str(i[0]) + "\t" +
+                    str(i[1]) + "\t" + 
+                    str(i[2]) + "\t" +
+                    str(i[3]) + "\n")
+    fl.close()     
+   
 
 def textAcquisition(fileName, timeStamp = False):
     """function for acquiring data from a text file
@@ -291,9 +304,7 @@ def pipeAcquisition(arg, nrSens, fileName=None, measNr=None, offset=0):
                                 close_fds=True, shell=True)
     if "gatttool" in arg:
         proc = subprocess.Popen(arg.split(), 
-                                stdout=subprocess.PIPE, close_fds=True)
-    if fileName != None:
-        fl = open(fileName, 'w')   
+                                stdout=subprocess.PIPE, close_fds=True)      
     i=0               
     data = np.array([0.,0.,0.,0.])
     if measNr == None: 
@@ -345,20 +356,35 @@ def pipeAcquisition(arg, nrSens, fileName=None, measNr=None, offset=0):
     
     mat = mat[offset+2:]
     if fileName != None:
-        for i in mat:
-            fl.write(str(i[0]) + "\t" +
-                    str(i[1]) + "\t" + 
-                    str(i[2]) + "\t" +
-                    str(i[3]) + "\n")
-        fl.close()     
+        saveToFile(mat,fileName)
+#        for i in mat:
+#            fl.write(str(i[0]) + "\t" +
+#                    str(i[1]) + "\t" + 
+#                    str(i[2]) + "\t" +
+#                    str(i[3]) + "\n")
+#        fl.close()     
     mat = sortData(mat)
 #    print "blabla"
     return mat
     
     
+def RTdata_blocking(proc):
+    mat = np.zeros((4,4))
+    cnt = 0
+    while cnt != 4:
+        data = structDataBLE(proc.stdout.readline())
+#        print data
+        if data[0] == cnt:
+            mat[cnt] = data
+            cnt += 1
+        
+    
+    return mat    
+    
 def RTdata(data,proc):     
     """function for acquiring sensor data of mux
         you only update the measurement, that you actually get
+        NONBLOCKING version
     
     Parameters
     ----------
@@ -392,9 +418,9 @@ def RTdata(data,proc):
   
 
 def movAvgRT(data,n):
-    if len(data) < n:
-        print "below!"
-        return data
+    if len(data) < n+1:     # '+1' because you have to neglect the initial 0-line!
+        print "movAvgRT below!"
+        return data[-1]
     else:
         for i in range(3):
             data[-1][i] = np.sum(data[:,i][-n:])/n
@@ -515,7 +541,8 @@ def collectForTime(arg,sec,wait=0.01, fileName=None, avgFil=False, avgN=10):
         print "interrupted..."
         
     subpro.terminate()                     
-    out = splitData(eraseZeros(collected)) 
+    out = splitData(eraseZeros(collected))      # split the data in fingers and erase the misstaken measurements
+#    out = splitData(collected)
     
     # applying the moving average filter
     if avgFil:        
