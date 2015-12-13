@@ -81,10 +81,10 @@ void setup()
 
 void loop()
 {  
-  //getMagnetCali();
+  //getMagnetCali(0);
 
   //output is in [mgauss]
-  for(int i=0; i<4; i++){
+  for(int i=0; i<1; i++){
     RFduinoBLE.sendInt(i);
     for(int j=0; j<3; j++){
       memcpy(&dataHard[j*sizeof(float)], &hardBias[i][j], sizeof(float));
@@ -143,12 +143,12 @@ void getRawMagnet(){
 
     rawX = compass.m.x * conversionFactorMag;
     rawY = compass.m.y * conversionFactorMag;
-    rawZ = compass.m.z * conversionFactorMag;
+    rawZ = compass.m.z * conversionFactorMag;   
 }
 
 void getMinMaxData(){ 
  for(int i = 0; i < sampleNum; i++){
-  for(int s = 0; s<4; s++){
+  for(int s = 0; s<1; s++){
     setChannel(s);
     delay(50);
     getRawMagnet();
@@ -161,7 +161,7 @@ void getMinMaxData(){
     maxData[s][1] = max(maxData[s][1], rawY);
     maxData[s][2] = max(maxData[s][2], rawZ);     
   } 
-  if(!(i%20)) RFduinoBLE.sendInt(i); 
+  //if(!(i%20)) RFduinoBLE.sendInt(i); 
  }
 }
 
@@ -198,8 +198,9 @@ void calibrateCompass(){
   while(digitalRead(s4) == HIGH){    // wait till user initiates the data collection
     RFduinoBLE.sendInt(99);
   }
+  RFduinoBLE.sendInt(01);
   getMinMaxData();
-  for(int i = 0; i<4; i++){    
+  for(int i = 0; i<1; i++){    
     delay(50);    
     calcHardBias(i);
     calcSoftBias(i);

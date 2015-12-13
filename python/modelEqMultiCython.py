@@ -12,6 +12,13 @@ import time
 import fcnCyPy as fcn
 
 
+def barMagnet(x,l_mag):
+    r_mag = 0.0025;
+    Br = 1.26e4;    
+    b = (Br/2)*((l_mag+x)/np.sqrt(r_mag**2+(l_mag+x)**2) - (x/np.sqrt(r_mag**2+x**2)))
+    return b
+    
+
 
 """
 estimating the positions
@@ -333,15 +340,15 @@ describing the whole estimation as angle-estimation
 def angToP(theta,finger,off):
     finger_0 = 0.
     theta_k = 0.0
-    P = np.array([(1*(finger_0*np.sin(np.pi/2) + finger[0]*np.sin(np.pi/2-theta[0]) +              # x
-                finger[1]*np.sin(np.pi/2-theta[0]-theta[1]) +
-                finger[2]*np.sin(np.pi/2-theta[0]-theta[1]-theta[2]))+off[0]),
-                ((finger[0]*np.cos(np.pi/2-theta[0]) +                  # y
-                finger[1]*np.cos(np.pi/2-theta[0]-theta[1]) +
-                finger[2]*np.cos(np.pi/2-theta[0]-theta[1]-theta[2]))*np.sin(theta_k)+off[1]),
-                (-1*(finger[0]*np.cos(np.pi/2-theta[0]) +               # z (*-1 because you move in neg. z-direction)
-                finger[1]*np.cos(np.pi/2-theta[0]-theta[1]) +
-                finger[2]*np.cos(np.pi/2-theta[0]-theta[1]-theta[2]))*np.cos(theta_k)+off[2])])
+    P = np.array([(1*(finger_0*np.sin(np.pi/2.) + finger[0]*np.sin(np.pi/2-theta[0]) +              # x
+                finger[1]*np.sin(np.pi/2.-theta[0]-theta[1]) +
+                finger[2]*np.sin(np.pi/2.-theta[0]-theta[1]-theta[2]))+off[0]),
+                ((finger[0]*np.cos(np.pi/2.-theta[0]) +                  # y
+                finger[1]*np.cos(np.pi/2.-theta[0]-theta[1]) +
+                finger[2]*np.cos(np.pi/2.-theta[0]-theta[1]-theta[2]))*np.sin(theta_k)+off[1]),
+                (-1*(finger[0]*np.cos(np.pi/2.-theta[0]) +               # z (*-1 because you move in neg. z-direction)
+                finger[1]*np.cos(np.pi/2.-theta[0]-theta[1]) +
+                finger[2]*np.cos(np.pi/2.-theta[0]-theta[1]-theta[2]))*np.cos(theta_k)+off[2])])
     return P
 
 def angToH(theta):
@@ -361,10 +368,38 @@ def angToH_dia(theta):
 
 def calcB(r,h):
     factor = np.array([1./(4.*np.pi), 0., 1./(4.*np.pi)])
+#    factor = np.array([3.0593e-04, 1., 1.])
+#    factor = 1.
 #    factor = 1/(4*np.pi)
     no = sqrt(np.dot(r,r.conj()))
+#    no = np.linalg.norm(r)
     b = np.array([((3*r*np.dot(h,r))/(no**5)) - (h/(no**3))])*factor
     return b
+    
+def calcB_P(p,s,h):
+    Br = 12.6e+03;
+    mu_0 = 4*pi*1e-07;
+    mu_r = 1.05;
+    factor = (Br*mu_0*mu_r)/(4*np.pi)
+#    factor = 1
+    r = s-p
+#    no = sqrt(np.dot(r,r.conj()))
+    no = np.sqrt(r[0]**2+r[1]**2+r[2]**2)
+    b = (((3*r*np.dot(h,r))/(no**5)) - (h/(no**3)))*factor
+    return b    
+    
+def estB(p,s,h,b):
+    dif = b-calcB_P(p,s,h)
+    no = sqrt(dif[0]**2+dif[1]**2+dif[2]**2)
+#    res = res**2
+#    print "estB: ",res
+    return no**2
+    
+def mini_estB(p,s,h,b,bnds):
+    res = fmin_l_bfgs_b(estB,p,args=(s,h,b),bounds=bnds,approx_grad=1)
+#    res = minimize(estB,r,args=(p,h,b),method='slsqp',bounds=bnds)
+#    res = minimize(estB,r,args=(p,h,b),method='bfgs')
+    return res    
 
 def angToB(theta,finger,S,off):
     """returns the magnetic field
@@ -414,7 +449,15 @@ def funcMagY_angle(theta,finger,off,S,B):
     dif = B-cal
     return sqrt(np.dot(dif,dif.conj()))**2     #take the square of it!
 
+def cobyla_cons(x):
+    return np.array([x[0]-np.pi/2, x[1]-np.pi/(110/180),
+                     x[2]-np.pi/2, x[3]-np.pi/(110/180),
+                     x[4]-np.pi/2, x[5]-np.pi/(110/180),
+                     x[6]-np.pi/2, x[7]-np.pi/(110/180)])
 
+#def estimateR(r0,fingerL, theta, measB,bnds=None,method='py'):
+    
+    
 
 def estimate_BtoAng(theta_0, fingerL, offL, sL, measB,bnds=None,method='py'):
     """Estimates the angles for a certain (measured) B-field
@@ -438,18 +481,52 @@ def estimate_BtoAng(theta_0, fingerL, offL, sL, measB,bnds=None,method='py'):
 
     # multiple sensors per finger
     if method == 'py':
-        res = minimize(funcMagY_angle_m2, theta_0,
-                        args=(fingerL, sL, offL, measB),
-                        method='slsqp', bounds=bnds)
+        if bnds != None:
+            res = minimize(funcMagY_angle_m2, theta_0,
+                            args=(fingerL, sL, offL, measB),
+                            method='slsqp', bounds=bnds)
+        else:
+            res = minimize(funcMagY_angle_m2, theta_0,
+                            args=(fingerL, sL, offL, measB))
 
 
-   # cython version   
-    if method == 'cy':    
-        res = minimize(fcn.funcMagY_angle_m2_cy, theta_0,
-                        args=(np.reshape(fingerL,((len(fingerL)*3,))),
-                        np.reshape(sL,((len(sL)*3,))),
-                        np.reshape(offL,((len(offL)*3,))), measB),
-                        method='slsqp', bounds=bnds,tol=1e-7)
+   # cython version
+    if method == 'cy':
+    #    res = minimize(fcn.funcMagY_angle_m2_cy, theta_0,
+    #                    args=(np.reshape(fingerL,((len(fingerL)*3,))),
+    #                    np.reshape(sL,((len(sL)*3,))),
+    #                    np.reshape(offL,((len(offL)*3,))), measB),
+    #                    method='slsqp', bounds=bnds,tol=1e-7)
+
+#        res = fmin(fcn.funcMagY_angle_m2_cy, theta_0,
+#                        args=(np.reshape(fingerL,((len(fingerL)*3,))),
+#                        np.reshape(sL,((len(sL)*3,))),
+#                        np.reshape(offL,((len(offL)*3,))), measB),
+#                        ftol=1e-10,full_output=True, maxiter=10000, maxfun=10000)
+
+        # res = fmin_powell(fcn.funcMagY_angle_m2_cy, theta_0,
+        #                         args=(np.reshape(fingerL,((len(fingerL)*3,))),
+        #                         np.reshape(sL,((len(sL)*3,))),
+        #                         np.reshape(offL,((len(offL)*3,))), measB),
+        #                         ftol=1e-10,full_output=True, maxiter=10000, maxfun=10000)
+
+        #    res = minimize(fcn.funcMagY_angle_m2_cy, theta_0,
+        #                    args=(np.reshape(fingerL,((len(fingerL)*3,))),
+        #                    np.reshape(sL,((len(sL)*3,))),
+        #                    np.reshape(offL,((len(offL)*3,))), measB),
+        #                    method='bfgs',tol=1e-7)
+
+        #    res = minimize(fcn.funcMagY_angle_m2_cy, theta_0,
+        #                    args=(np.reshape(fingerL,((len(fingerL)*3,))),
+        #                    np.reshape(sL,((len(sL)*3,))),
+        #                    np.reshape(offL,((len(offL)*3,))),measB),
+        #                     method='COBYLA',bounds=bnds)
+
+        res = fmin_l_bfgs_b(fcn.funcMagY_angle_m2_cy, theta_0,
+                           args=(np.reshape(fingerL,((len(fingerL)*3,))),
+                           np.reshape(sL,((len(sL)*3,))),
+                           np.reshape(offL,((len(offL)*3,))),measB),
+                           bounds=bnds, approx_grad=1)
 
 #     returning only the angles
 #    return np.array([res[0:3], res[3:6], res[6:9], res[9:12]])
@@ -575,7 +652,7 @@ def angToB_m2(theta,finger,S,off):
         the position of the sensor
     """
 #    if len(theta) == 2:
-    theta = np.array([theta[0], theta[1], theta[1]*(2/3)])
+    theta = np.array([theta[0], theta[1], theta[1]*(2./3.)])
     P = angToP(theta,finger,off)
     H = angToH(theta)
     size = len(S[0])
@@ -632,12 +709,15 @@ def getScaleOff(ref,meas):
         raMeas = max(meas[:,i]) - min(meas[:,i])
         scale[i] = raReal/raMeas
 
-    offMat = meas[:10]
-    offMat *= scale
+#    offMat = meas[:10]
+#    offMat *= scale
     offset = np.array([0.,0.,0.])
+#    for i in range(3):
+#        m = np.mean(offMat[:,i])
+#        offset[i] = ref[0][i]-m
+    
     for i in range(3):
-        m = np.mean(offMat[:,i])
-        offset[i] = ref[0][i]-m
+        offset[i] = ref[0][i]-meas[0][i]*scale[i]
 
     print "scale: ",scale
     print "offset: ",offset

@@ -6,6 +6,19 @@ from scipy.optimize import *
 import plotting as plo
 import time,subprocess
 
+
+def inStretchPos(ref,meas):
+       # number of measurements to take into account
+    mMeas = np.zeros((len(meas[0],)))
+    for i in range(len(meas[0])):
+        mMeas[i] = np.mean(meas[:,i])
+    print "summed dif: ",sum((mMeas-ref))    
+    if abs(sum((mMeas-ref))) < 80:
+        return True
+    else:
+        return False
+
+
 cmd = "gatttool -t random -b E3:C0:07:76:53:70 --char-write-req --handle=0x000f --value=0300 --listen"
 
 
@@ -15,8 +28,8 @@ sRin = [-0.03, -0.044, 0.024]
 sPin = [-0.03, -0.066, 0.024]
 
 yInd = [0.0, 0.0, -0.0]
-yMid = [0.0, -0.022, -0.0]
-yRin = [0.0, -0.044, -0.0]
+yMid = [0.0, -0.022, 0.002]
+yRin = [0.0, -0.044, 0.002]
 yPin = [0.0, -0.066, -0.0]
 
 # lengths of phalanges
@@ -49,6 +62,8 @@ for i in t:
     cnt += 1
 
 # calculating the B-field
+fingerList = [phalInd,phalMid,phalRin,phalPin]
+yOffList = [yInd,yMid,yRin,yPin]
 sensList = [sInd,sMid,sRin,sPin]
 
 calcBInd_m = np.zeros((len(angles),len(sensList)*3))
@@ -56,9 +71,11 @@ cnt = 0
 for i in angles:
     calcBInd_m[cnt] = (modE.angToB_m2(i,phalMid,sensList,yMid)+
                         modE.angToB_m2(i,phalRin,sensList,yRin)+
-                         modE.angToB_m2(i,phalPin,sensList,yPin))#+
-#                         modE.angToB_m2(np.array([0.,0.,0.]),phalPin,sensList,yPin))
+                         modE.angToB_m2(i,phalPin,sensList,yPin)+
+                         modE.angToB_m2(i,phalInd,sensList,yInd))
     cnt += 1
+
+caliPos = calcBInd_m[0]
 
 filInd = datAc.moving_average3d(calDat[0],10)
 filMid = datAc.moving_average3d(calDat[1],10)
@@ -79,8 +96,8 @@ filPin = datAc.moving_average3d(calDat[3],10)
 #(scalePin,offPin) = ([1.,1.,1.],
 #                    [ calcBInd_m[0][9]-np.mean(filPin[:,0]), calcBInd_m[0][10]-np.mean(filPin[:,1]),calcBInd_m[0][11]-np.mean(filPin[:,2])])
 
-#(scaleInd,offInd) = ([ 0.35219555 , 0.    ,      0.35851165], [ 82.95921848   ,0.,           5.20395797])
-#(scaleMid,offMid) = ([ 0.34465345  ,0.   ,       0.39870058] ,[ 67.2749295    ,0. ,         11.69784835])
+#(scaleInd,offInd) = ([ 0.32109206  ,0.,          0.38416407] ,[ 91.2577668,    0.       ,    7.53530872])
+#(scaleMid,offMid) = ([ 0.33155661  ,0. ,         0.41174773] ,[ 79.19175527,   0.      ,    14.85343632])
 #(scaleRin,offRin) = ([ 0.33834944  ,0.  ,        0.40100347] ,[ 97.30206833   ,0.  ,         1.31727868])
 #(scalePin,offPin) = ([ 0.35126895  ,0. ,         0.39166963] ,[ 118.12913948  ,  0. ,         -60.0863787 ])
 
@@ -95,10 +112,13 @@ bnds = ((0.0,np.pi/2),      # MCP
         (0.0,np.pi/(180/110)),      # PIP  
         #(0.0,np.pi/2))      # DIP
         (0.0,np.pi/2),      # MCP
-        (0.0,np.pi/(180/110)),)      # PIP  
+        (0.0,np.pi/(180/110)),      # PIP  
+        #(0.0,np.pi/2))      # DIP
+        (0.0,np.pi/2),      # MCP
+        (0.0,np.pi/(180/110)))      # PIP  
         #(0.0,np.pi/2))      # DIP
         
-estAngMeas = np.array([[0.,0.,0.,0.,0.,0.]])  
+estAngMeas = np.zeros((1,2*len(fingerList)))
 fval = np.array([0.])        
 cnt = 0
 errCnt = 0
@@ -107,14 +127,6 @@ index = np.array([[0.,0.,0.]])
 middle = np.array([[0.,0.,0.]])
 ring = np.array([[0.,0.,0.]])
 pinky = np.array([[0.,0.,0.]])
-indexEst = np.array([[0.,0.,0.]])
-middleEst = np.array([[0.,0.,0.]])
-ringEst = np.array([[0.,0.,0.]])
-pinkyEst = np.array([[0.,0.,0.]])
-
-fingerList = [phalMid,phalRin,phalPin]
-yOffList = [yMid,yRin,yPin]
-sensList = [sInd,sMid,sRin,sPin]
      
 fileName = "tst.txt"
 f = open(fileName,'w')
@@ -127,13 +139,9 @@ f.write(toSend+'\n')
 f.close()
 blendCmd = "./../visualization/riggedAni/HandGame.blend " + fileName
 subProBlend = subprocess.Popen(blendCmd.split())
-#upT = 0
-#startT = time.time()                 
 try:    
     time.sleep(0.5)
     while True:
-#    while upT < 30:
-#        upT = time.time()-startT
         print "cnt: ",cnt
         cnt += 1                   
         
@@ -155,26 +163,45 @@ try:
             pinky[-1] = datAc.movAvgRT(pinky,5)
         
         if cnt > 20:
-            
-            res = modE.estimate_BtoAng(estAngMeas[-1],
-                                       fingerList,
-                                        yOffList,
-                                        sensList,
-                                        np.concatenate((index[-1],middle[-1],ring[-1],pinky[-1])),
-                                        bnds[:6],method='cy')        
-
-            if not res.success:
-                print "no solution..."  
-                errCnt += 1
-            estAngMeas = np.append(estAngMeas,[res.x],axis=0)
-            fval = np.append(fval,res.fun)
-##                 sending the estimated values to the visualization
-            toSend = ("0.0000 0.0000 0.0000 " +
-                        "0.0000 0.0000 0.0000 " +
-                        "{0:.4f} ".format(res.x[0])+"{0:.4f} ".format(res.x[1])+"{0:.4f} ".format(res.x[1]*(2/3))+
-                        "{0:.4f} ".format(res.x[2])+"{0:.4f} ".format(res.x[3])+"{0:.4f} ".format(res.x[3]*(2/3))+ 
-                        "{0:.4f} ".format(res.x[4])+"{0:.4f} ".format(res.x[5])+"{0:.4f} ".format(res.x[5]*(2/3)))
-                        
+#            a = inStretchPos(caliPos,np.concatenate((index[-10:],middle[-10:],ring[-10:],pinky[-10:]),1)) 
+            a = False
+            if a:
+                print "!!!!!!!!ZERO!!!!!!!!!!!"
+                estAngMeas = np.append(estAngMeas,[estAngMeas[0]],axis=0)
+                
+            else:
+                res = modE.estimate_BtoAng(estAngMeas[-1],
+                                           fingerList,
+                                            yOffList,
+                                            sensList,
+                                            np.concatenate((index[-1],middle[-1],ring[-1],pinky[-1])),
+                                            bnds[:2*len(fingerList)],method='cy')        
+    
+#                if not res.success:
+#                    print "no solution..."  
+#                    errCnt += 1
+#                estAngMeas = np.append(estAngMeas,[res.x],axis=0)
+#                fval = np.append(fval,res.fun)
+                if res[2]['warnflag']:
+                    print "no solution..."  
+                    errCnt += 1
+                    print res
+                estAngMeas = np.append(estAngMeas,[res[0]],axis=0)
+                fval = np.append(fval,res[1])
+    ###                 sending the estimated values to the visualization
+#            toSend = ("0.0000 0.0000 0.0000 " +                        
+#                        "{0:.4f} ".format(estAngMeas[-1][0])+"{0:.4f} ".format(estAngMeas[-1][1])+"{0:.4f} ".format(estAngMeas[-1][1]*(2/3))+
+#                        "{0:.4f} ".format(estAngMeas[-1][2])+"{0:.4f} ".format(estAngMeas[-1][3])+"{0:.4f} ".format(estAngMeas[-1][3]*(2/3))+ 
+#                        "{0:.4f} ".format(estAngMeas[-1][4])+"{0:.4f} ".format(estAngMeas[-1][5])+"{0:.4f} ".format(estAngMeas[-1][5]*(2/3))+
+#                         "{0:.4f} ".format(estAngMeas[-1][6])+"{0:.4f} ".format(estAngMeas[-1][7])+"{0:.4f} ".format(estAngMeas[-1][7]*(2/3)))
+            toSend = ("0.0000 0.0000 0.0000 " +     # thumb                     
+                        "{0:.4f} ".format(estAngMeas[-1][0])+"{0:.4f} ".format(estAngMeas[-1][1])+"{0:.4f} ".format(estAngMeas[-1][1]*(2/3))+                        
+                        "{0:.4f} ".format(estAngMeas[-1][2])+"{0:.4f} ".format(estAngMeas[-1][3])+"{0:.4f} ".format(estAngMeas[-1][3]*(2/3))+                        
+#                        "0.0000 0.0000 0.0000 " + 
+                        "{0:.4f} ".format(estAngMeas[-1][4])+"{0:.4f} ".format(estAngMeas[-1][5])+"{0:.4f} ".format(estAngMeas[-1][5]*(2/3))+                        
+                        "{0:.4f} ".format(estAngMeas[-1][6])+"{0:.4f} ".format(estAngMeas[-1][7])+"{0:.4f} ".format(estAngMeas[-1][7]*(2/3)))                       
+#                        "0.0000 0.0000 0.0000 " +                         
+#                         "0.0000 0.0000 0.0000 " )                        
             f = open(fileName,'a')  
             f.write(toSend+'\n')     
             print toSend
@@ -199,9 +226,10 @@ plo.plotter2d((calcBInd_m[:,6:9],ring[10:]),("RINGperfect","meas"))
 plo.plotter2d((calcBInd_m[:,9:],pinky[10:]),("PINKYperfect","meas"))
 plt.figure()
 plt.plot(estAngMeas[:,0],'r')
-plt.plot(estAngMeas[:,2],'g')
-plt.plot(estAngMeas[:,4])
+plt.plot(estAngMeas[:,1],'g')
+plt.plot(estAngMeas[:,1]*(2./3.),'b')
 plt.title("RT")
+plt.show()
 
 print scaleInd,offInd
 print scaleMid,offMid

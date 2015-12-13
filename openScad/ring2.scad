@@ -24,7 +24,7 @@ module ring(heigth,radius){
 	// for radius = 7.5
 	translate([radius,-(rMag*2+2)/2,0])		
 	linear_extrude(height = heigth, center = true, convexity = 10, twist = 0)
-	polygon(points=[[0,0],[-4,-4],[(rMag*2+1)/2,0]], paths=[[0,1,2]]);
+	polygon(points=[[0,0],[-3,-4],[(rMag*2+1)/2,0]], paths=[[0,1,2]]);
 	mirror([0,1,0])
 	translate([radius,-(rMag*2+2)/2,0])
 	linear_extrude(height = heigth, center = true, convexity = 10, twist = 0)
