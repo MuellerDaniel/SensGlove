@@ -12,11 +12,116 @@
 
 \chapter{Related Work}
 \label{cha:relatedWork}
-\lipsum*[1-1]
 
-\section{sec one}
-\lipsum*[1-10]
+%\section{Abstracts of papers}
+%\begin{itemize}
+%\item \cite{huang2008pianotouch}
+%\item \cite{huang2010mobile}
+%\item \cite{metcalf2013markerless}
+%\end{itemize}
 
-\section{two}
-\lipsum[1-2]
+\section{Approaches for hand motion reconstruction}
+
+\cite{sturman1994survey}, \cite{dipietro2008survey}
+
+\subsection{Vision/Camera based}
+\begin{itemize}
+\item IR camera: Leap motion
+\item \cite{Digits}
+\item marker detection \cite{Wang:2009:RTH}, \cite{metcalf2008validation}
+\item Markerless motion capture and measurement for rehab \cite{metcalf2013markerless}
+\item feature extraction \cite{ionescu2005dynamic}
+\item \cite{john2006advanced}
+\item \cite{yun2013accurate}
+\item http://research.microsoft.com/en-us/projects/handpose/
+\item \cite{hasan2014human}
+\item general purpose devices: Vicon, Optotrak \cite{supuk2008evaluation}
+\item \cite{sharp2015accurate}
+\end{itemize}
+
+General remarks about vision based:\\
+\begin{itemize}
+\item limited to light conditions\\
+$\rightarrow$ need good/fixed artificial light or must provide it on their own
+\item occlusion!
+\item camera system usually quite big and unhandy/bulky
+\end{itemize}
+
+\subsection{IMU based}
+\begin{itemize}
+\item \cite{kortier2014assessment}
+\item \cite{kortier2012ambulatory}
+\item \cite{fang2014novel}
+\end{itemize}
+
+\subsection{Flexion based}
+Another approach of measuring the finger movements is to monitor the flexion. There are different kinds of flexion sensors out there and many researchers used them for finger tracking. For example in 1977 Thomas de Fanti and Daniel Sandin developed one of the first data glove prototypes at the Massachusetts Institute of Technology (MIT). The Sayre Glove  \cite{sturman1994survey}. They equipped a glove with flexible tubes for each finger. At one end of each tube, they put a LED as light source and at the other end a photocell. The amount of light, arriving at the sensor varies with the flexion and extension of the finger. The more the finger is bent, the less light comes to the sensor.\\
+Ten years later, in 1987 Visual Programming Language Research, Inc. rolled out some kind of successor to the Sayre Glove. Their device is equipped with five to ten flexion sensors, based on optical fibre \cite{zimmerman1985optical}. For more accuracy they place a flex sensor on each joint, to measure its angle. They even proposed a system with more sensors, to measure abduction and adduction between adjacent fingers.\\
+Another way to measure the flexion are resistive or capacitive bend sensors. These devices can be printed with resistive ink and are therefore highly customizable in shape and size. Resistive bend sensors are used for example by \cite{o2013novel}, \cite{zecca2007development} or \cite{FifthDimension}. The Didjiglove \cite{sturman1994survey} in contrast is based on capacitive bend sensors.\\
+The Italian company Gloreha \cite{Gloreha} follows a more application specific approach. Their rehabilitative glove system consists of mechanical cables for each finger. You can measure how much a finger is bended by the amount of wire extended. On the other hand you also can support the patient by extending or contracting the wire mechanically. This system is big, unhandy and looks more like an exoskeleton, than an unimpressive wearable. Of course it is constructed for rehabilitation and aimed to support specific motions of a patient and not for general purpose measuring of flexion and extension in every day life. But it still shows a mentionable approach.
+
+In the end, one can say that flexion based hand tracking have the following characteristics:\\
+\begin{itemize}
+\item The sensors are mounted on the joints. In the majority of use cases, this is done with a textile glove. 
+\item The output of the system is dependent on the positions of the sensors. Ideally this should not change with the user. However each human hand is slightly different and there is not a universal glove size and sensor positioning, which would fit for all.
+\item One way to improve this is to calibrate the glove system for each user.
+\item The accuracy of the reconstructed finger positions or gestures is limited to the number and the measurement range of the used sensors. With one bend sensor per finger, one could at most only reconstruct the intention of the user's gesture or distinguish between several postures. However by introducing multiple sensors per finger, ideally more than one per joing, one could get an acceptable result. \cite{zecca2007development} used 15 bend sensors on a flexible PCB and reached an averaged error 7.1 deg \todo{unit} compared to a camera system.
+\item One measures only the bending of a joint or finger. In order to reconstruct a relative or absolute position of the finger several calculations have to be made.
+\item It is a simple and highly customizable system.
+\item Easy applications can be realized with only a few sensors \todo{(see section applications for it)}
+\end{itemize}
+
+
+\subsection{Magnet based}
+\begin{itemize}
+\item \cite{ma2011magnetic}
+\item \cite{ma2010magnetic}
+\item \cite{hashi2006wireless}
+\item \cite{ekvall2005grasp}
+\end{itemize}
+
+\subsection{Other approaches}
+\begin{itemize}
+\item Fiber optic \cite{dipietro2003evaluation}
+\item contact based (StrinGlove)
+\item mixing different approaches
+\item eRing \cite{wilhelm2015ering}
+\end{itemize}
+
+\subsection{??? Comparison/Conclusion ???}
+
+
+
+\section{Possible fields for applications}
+
+\subsection{Human-Computer-Interface (HCI)}
+\begin{itemize}
+\item as input device
+\item Leap motion
+\item games, arts, entertainment, augmented reality
+\item robotics \cite{zecca2007development}
+\end{itemize}
+
+\subsection{Therapeutic/Rehabilitation}
+\begin{itemize}
+\item Piano/Mobile Music touch things \cite{huang2010mobile}, \cite{huang2008pianotouch}
+\item Arthritis \cite{o2013novel}
+
+\end{itemize}
+
+\subsection{Passive learning}
+\begin{itemize}
+\item Piano/Mobile Music touch
+\end{itemize}
+
+\subsection{Activity/Gesture recognition}
+
+\begin{itemize}
+\item grasp detection \cite{supuk2008evaluation}
+\item sign language
+\item \cite{zhang2011framework}
+
+\end{itemize}
+
+
 
