@@ -13,13 +13,14 @@
 \setcounter{secnumdepth}{3}
 \setlength{\parskip}{\medskipamount}
 \setlength{\parindent}{0pt}
-\usepackage[german,english]{babel}
+\usepackage[english]{babel}
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{graphicx}
 \usepackage{nomencl}
 \usepackage{rotating} 
 \usepackage[nohyperlinks, printonlyused]{acronym}
+%\usepackage[numbers]{alphanat}
 %\usepackage{hyperref}
 
 \usepackage{lipsum}
@@ -109,6 +110,7 @@
 \renewcommand{\nomname}{Nomenklatur}
 
 \newcommand\todo[1]{\textcolor{red}{#1}}
+\newcommand*{\rom}[1]{\expandafter\@slowromancap\romannumeral #1@}
 
 \makeatother
 
@@ -146,7 +148,7 @@ of Science (M.\,Sc.) Embedded Systems Engineering vom 3.\,6.\,2014.}
 
 \lowertitleback{\textbf{Bearbeitungszeitraum}\smallskip{}
 \\
-aa.\,bb.\,20zz -- 30.\,11.\,2015 \bigskip{}
+aa.\,bb.\,20zz -- aa.\,bb.\,20cc \bigskip{}
 \\
 \textbf{Gutachter}\smallskip{}
 \\
@@ -199,7 +201,6 @@ bereits für eine andere Prüfung angefertigt wurde.
 
 \include{texfiles/summary}
 
-
 \include{texfiles/summary_ger}
 
 
@@ -214,8 +215,8 @@ bereits für eine andere Prüfung angefertigt wurde.
 
 \cleardoublepage{}
 
-\listoftables
-\addcontentsline{toc}{chapter}{List of Tables} 
+%\listoftables
+%\addcontentsline{toc}{chapter}{List of Tables} 
 
 \cleardoublepage{}
 
@@ -236,20 +237,34 @@ bereits für eine andere Prüfung angefertigt wurde.
 
 \include{texfiles/foundations}
 
+%\include{texfiles/modelAssumptions}
+
+%\include{texfiles/verification}
+
+%\include{texfiles/implementation}
+
+%\include{texfiles/results}
+
+%\include{texfiles/comparison}
+
+%\include{texfiles/discussion}
+
+%\include{texfiles/conclusion}
+
 %the other chapters go here...
 
 \cleardoublepage{}
 
 
-\lhead[]{Acknowledgment}
+%\lhead[]{Acknowledgment}
 
 
-\rhead[Acknowledgment]{}
+%\rhead[Acknowledgment]{}
 
-\include{texfiles/acknowledgment}
+%\include{texfiles/acknowledgment}
 
 \appendix
-\include{texfiles/appendix}
+%\include{texfiles/appendix}
 
 \cleardoublepage{}
 
