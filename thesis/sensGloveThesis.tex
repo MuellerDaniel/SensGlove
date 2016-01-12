@@ -17,26 +17,33 @@
 \usepackage{amsmath}
 \usepackage{amssymb}
 \usepackage{graphicx}
+\usepackage{subfig}
 \usepackage{nomencl}
 \usepackage{rotating} 
 \usepackage[nohyperlinks, printonlyused]{acronym}
 %\usepackage[numbers]{alphanat}
-%\usepackage{hyperref}
+\usepackage{hyperref}
+%\usepackage[square,sort,comma]{natbib}
+%\usepackage{biblatex}
 
 \usepackage{lipsum}
+\usepackage{textcomp}
+\usepackage{gensymb}
+\usepackage{siunitx}
 % the following is useful when we have the old nomencl.sty package
 \providecommand{\printnomenclature}{\printglossary}
 \providecommand{\makenomenclature}{\makeglossary}
 \makenomenclature
-\usepackage[unicode=true,
- bookmarks=true,bookmarksnumbered=true,bookmarksopen=true,bookmarksopenlevel=1,
- breaklinks=false,pdfborder={0 0 0},backref=false,colorlinks=false]
- {hyperref}
-\hypersetup{pdftitle={Ihr Titel},
- pdfauthor={Ihr Name},
- pdfsubject={Arbeit zur Erlangung des Masters der Technischen Fakultät der Albert-Ludwigs-Universität Freiburg im Breisgau},
- pdfkeywords={Masterarbeit},
- pdfpagelayout=OneColumn, pdfnewwindow=true, pdfstartview=XYZ, plainpages=false}
+
+%\usepackage[unicode=true,
+% bookmarks=true,bookmarksnumbered=true,bookmarksopen=true,bookmarksopenlevel=1,
+% breaklinks=false,pdfborder={0 0 0},backref=false,colorlinks=false]
+% {hyperref}
+%\hypersetup{pdftitle={Ihr Titel},
+% pdfauthor={Ihr Name},
+% pdfsubject={Arbeit zur Erlangung des Masters der Technischen Fakultät der Albert-Ludwigs-Universität Freiburg im Breisgau},
+% pdfkeywords={Masterarbeit},
+% pdfpagelayout=OneColumn, pdfnewwindow=true, pdfstartview=XYZ, plainpages=false}
 
 \makeatletter
 
@@ -160,7 +167,7 @@ Prof.~Dr.~Prof. Dr. Bernd Becker\bigskip{}
 \\
 Prof.~Dr.~Kristof Van Laerhoven \smallskip{}
 \\
-M.\,Sc.~Philipp M. Scholl}
+Dipl.\,Inf.~Philipp M. Scholl}
 
 
 %\dedication{Widmung, Zitat, kluger Spruch oder Ähnliches (ist natürlich optional)}
@@ -274,7 +281,7 @@ bereits für eine andere Prüfung angefertigt wurde.
 
 \rhead[\leftmark]{}
 
-\bibliographystyle{alpha}
+\bibliographystyle{alphadin}
 %\bibliography{biblio/Plasma}
 \bibliography{biblio/bibFiles}
 
