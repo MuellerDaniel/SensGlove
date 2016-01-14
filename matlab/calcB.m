@@ -1,14 +1,17 @@
-function b = calcB(r,p,h)
+function b = calcB(p,r,h)
 % function b = calcB(r,h)
 factor = [1 1 1];
 % factor = [3.0593e-04 1 1];
 Br = 12.6e+03;
 mu_0 = 4*pi*1e-07;
 mu_r = 1.05;
-lambda = Br*mu_0*mu_r/(4*pi);
+% addFact = 0.2312;
+addFact = 1;
+lambda = (Br*mu_0*mu_r)/(4*pi)*addFact;
 % lambda = 1;
 off = [0 0 0];
 d = p-r;
+% d = r;
 b = (((3*d.*dot(h,d))/(norm(d)^5)) - (h/norm(d)^3)).*lambda + off;
 % b = (((3*r.*dot(h,r))/(norm(r)^5)) - (h/norm(r)^3)).*factor;
 
