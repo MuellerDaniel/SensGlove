@@ -30,6 +30,8 @@
 \usepackage{textcomp}
 \usepackage{gensymb}
 \usepackage{siunitx}
+\usepackage{acronym}
+
 % the following is useful when we have the old nomencl.sty package
 \providecommand{\printnomenclature}{\printglossary}
 \providecommand{\makenomenclature}{\makeglossary}
@@ -120,7 +122,6 @@
 \newcommand*{\rom}[1]{\expandafter\@slowromancap\romannumeral #1@}
 
 \makeatother
-
 
 \setcounter{tocdepth}{4}
 \setcounter{secnumdepth}{4}
@@ -219,6 +220,25 @@ bereits für eine andere Prüfung angefertigt wurde.
 
 \listoffigures
 \addcontentsline{toc}{chapter}{List of Figures} 
+
+\newpage
+
+\section*{Acronyms}
+\begin{acronym}
+\acro{IMU}{Inertial Measurement Unit}
+\acro{ROI}{Region of Interest}
+\acro{EKF}{Extended Kalman Filter}
+\acro{DOF}{Degree of Freedom}
+\acro{SDK}{Software Development Kit}
+\acro{PCB}{Printed Circuit Board}
+\acro{EMG}{Electromyography}
+\acro{HCI}{Human Computer Interface}
+\acro{CMC}{Carpometacarpal}
+\acro{MCP}{Metacarpophalangeal} 
+\acro{PIP}{proximal Interphalangeal}
+\acro{DIP}{Distal interphalangeal}
+\acro{TM}{Trapeziometacarpal}
+\end{acronym}
 
 \cleardoublepage{}
 
