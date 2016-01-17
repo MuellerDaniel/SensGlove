@@ -128,11 +128,11 @@ def updateMagnet(b):
 #        curvePos[2].setData(dataArrPos[:,2])
         
 # BLE acquisition
-proc = subprocess.Popen("gatttool -t random -b E3:C0:07:76:53:70 --char-write-req --handle=0x000f --value=0300 --listen".split(), 
-                        stdout=subprocess.PIPE, close_fds=True)
+#proc = subprocess.Popen("gatttool -t random -b E3:C0:07:76:53:70 --char-write-req --handle=0x000f --value=0300 --listen".split(), 
+#                        stdout=subprocess.PIPE, close_fds=True)
 # serial acquisition
-#proc = subprocess.Popen("stty -F /dev/ttyUSB0 time 50; cat /dev/ttyUSB0", 
-#                        stdout=subprocess.PIPE, close_fds=True, shell=True) 
+proc = subprocess.Popen("stty -F /dev/ttyACM0 time 50; cat /dev/ttyACM0", 
+                        stdout=subprocess.PIPE, close_fds=True, shell=True) 
 b = np.array([0.,0.,0.,0.]) 
 data = np.array([[0,0.,0.,0.],
                  [1,0.,0.,0.],
@@ -152,20 +152,24 @@ data = np.array([[0,0.,0.,0.],
 bla = 0
 try:
     while True:          
-#        while proc.stdout.readline() == None:
-#            print "waiting..."
+        while proc.stdout.readline() == None:
+            print "waiting..."
+            
+        # bluetooth...
 #        output = proc.stdout.readline()
 #        b = datAc.structDataBLE(output)
-#        print "here"
-        data = datAc.RTdata(data,proc)
-#        if data[0][1:].any() != 0:
-#            print "waiting..."
-        for d in data:
-            updateMagnet(d)        
-#            print bla
-            bla += 1
-#        else:
-#            print "else..."                
+#        data = datAc.RTdata(data,proc)
+#        for d in data:
+#            updateMagnet(d)        
+#            bla += 1
+            
+        # serial...
+        output = proc.stdout.readline()
+        if output[0] == 'q':
+            print output
+        else:
+            b = datAc.structDataSer(output)
+            updateMagnet(b)            
         
 
 # to catch a ctrl-c

@@ -41,8 +41,11 @@ def plotIt2d(data, title, sizeData, shareAxis):
         for i in data:
             print i.shape
             plt.plot(i[:,0], ls='-',color='r', label='x')
-            plt.plot(i[:,1], ls='--',color='r', label='y')
-            plt.plot(i[:,2], ls=':',color='r', label='z')
+            try:
+                plt.plot(i[:,1], ls='--',color='r', label='y')
+                plt.plot(i[:,2], ls=':',color='r', label='z')
+            except:
+                print "doesn't have it..."
             plt.title(title[0])
             plt.legend()
 #            cnt = 0

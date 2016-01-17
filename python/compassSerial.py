@@ -18,26 +18,27 @@ import numpy as np
 
 
 def drawCoordinates(len):
-    curve(pos = [(0,0,0), (-len,0,0)], radius = 0.5, color = color.red)
-    label(text = 'x', pos = (-len,0,0))
+    curve(pos = [(0,0,0), (len,0,0)], radius = 0.5, color = color.red)
+    label(text = 'x', pos = (len,0,0))
+    curve(pos = [(0,0,0), (0,len,0)], radius = 0.5, color = color.blue)
+    label(text = 'y', pos = (0,len,0))
     curve(pos = [(0,0,0), (0,0,-len)], radius = 0.5, color = color.green)
-    label(text = 'y', pos = (0,0,-len))
-    curve(pos = [(0,0,0), (0,-len,0)], radius = 0.5, color = color.blue)
-    label(text = 'z', pos = (0,-len,0))
+    label(text = 'z', pos = (0,0,-len))
+    
     
     
 
 # make the window and draw the coordinate system
-scene=display(title="Compass", x=0, y=0, width=500, height=500)
+scene=display(title="Compass", x=0, y=0, center=(0,0,-700), width=700, height=700)
 drawCoordinates(100)
 
 # serial configuration
 ser = serial.Serial(port='/dev/ttyUSB0',baudrate=9600, timeout=1)
 
 # for displaying an arrow
-pointer = arrow(pos = (0,0,0), axis = (100,0,0), shaftwidth = 0.5, color = color.yellow)
-b = np.array([0.,0.,0.])
+pointer = arrow(pos = (0,0,0), axis = (50,0,0), shaftwidth = 0.5, color = color.yellow)
 
+cnt = 0
 try:
     while True:
         message = ser.readline()
@@ -55,11 +56,12 @@ try:
                 pass
         else: 
             pass        
-        
+#         
         pointer.axis = 30 * norm(b)
+#        b = np.array([1.,1.,0.])
+#        pointer.axis = b*cnt
+#        cnt += 0.001
         
-        
-       
 
 
 # to catch a ctrl-c
@@ -68,8 +70,8 @@ except KeyboardInterrupt:
     
   
 
-print str(cnt) + " measurements taken"
-magMat = np.reshape(magMat, (magMat.size/3, 3))
+#print str(cnt) + " measurements taken"
+#magMat = np.reshape(magMat, (magMat.size/3, 3))
 
 ser.close()
 

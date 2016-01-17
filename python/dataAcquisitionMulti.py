@@ -5,7 +5,7 @@ Created on Wed Jul 15 08:52:55 2015
 @author: daniel
 """
 import numpy as np
-import serial,string,time,subprocess,struct,select
+import serial,string,time,subprocess,struct,select,sys
 
 def serialAcquisition(serPort, fileName, offset, measNr, timeStamp = True):
     """function for acquiring data from the serial port
@@ -177,20 +177,21 @@ def structDataBLE(inp):
 
 
 def structDataSer(data):
-    b = np.array([0.,0.,0.])
+    b = np.array([0.,0.,0.,0.])
     data = data.split('\t')
-    if len(data) > 2:  
+    if len(data) == 3:  
             try: 
-                b[0] = 1*float(data[0])
-                b[1] = 1*float(data[1])
-                b[2] = 1*float(data[2])
+                b[1] = 1*float(data[0])
+                b[2] = 1*float(data[1])
+                b[3] = 1*float(data[2])
                 return b
                 #print "value: ", b
             except ValueError:
                 print 'float conversion not possible ', data
                 return np.array([0.,0.,0.])
     else: 
-        return np.array([0.,0.,0.])
+        print data
+        return np.array([0.,0.,0.,0.])
 
 
 
@@ -226,8 +227,8 @@ def sortData(data):
         data = datadel
     # matrix for results
     s=np.zeros((nrSens, (len(data)/nrSens), 3))
-    print s.shape
-    #cnt = np.zeros(shape=(nrSens,1), dtype=np.int)
+#    print s.shape
+#    cnt = np.zeros(shape=(nrSens,1), dtype=np.int)
     cnt = np.zeros((nrSens,1))
     for j in data:
         try:
@@ -322,12 +323,12 @@ def pipeAcquisition(arg, nrSens, fileName=None, measNr=None, offset=0):
                     print "data output: ", data
                 if "/dev/tty" in arg:
                     data = structDataSer(output)
+                    print "ser data: ", data
 #                    data = invertX(data)
     #                print data
-                if (i>offset) and not bool((i-offset)%100):                    
-                    print i-offset, "measurements taken"
-                    
-#                else: print "below offset ", i
+                if (i>offset):                    
+                    print i-offset, "measurements taken"                    
+                else: print "BELOW OFFSET ", i
 #                print "data: ",data
                 #if data[0] != mat[-1][0] :   #
                 if data[0] == (mat[-1][0]+1)%nrSens:    
@@ -335,8 +336,7 @@ def pipeAcquisition(arg, nrSens, fileName=None, measNr=None, offset=0):
                 else:   #
                     print "!!!!!!!!!!!!!!!!!!!!!!!!!oh no!!!!!!!!!!!!!!!!!!!!!!!!!"   #
                     i -= 1  #
-                    print "writing...", data
-#                if i%10 == 0: print "measurement nr ", i
+                    print "writing...", data                                
                 
             else :                
                 proc.stdout.close()

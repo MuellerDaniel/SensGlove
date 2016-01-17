@@ -12,10 +12,13 @@ import time
 import fcnCyPy as fcn
 
 
-def barMagnet(x,l_mag):
-    r_mag = 0.0025;
-    Br = 1.26e4;    
-    b = (Br/2)*((l_mag+x)/np.sqrt(r_mag**2+(l_mag+x)**2) - (x/np.sqrt(r_mag**2+x**2)))
+def barMagnet(x):
+    l_mag = 0.015
+    b_mag = l_mag/2
+    r_mag = 0.0025
+    Br = 1.26e4 
+#    b = (Br/2)*((l_mag+x)/np.sqrt(r_mag**2+(l_mag+x)**2) - (x/np.sqrt(r_mag**2+x**2)))
+    b = (Br/2) * ((x+b_mag)/sqrt(r_mag**2+(x+b_mag)**2) - (x-b_mag)/sqrt(r_mag**2+(x-b_mag)**2))
     return b
     
 
@@ -367,18 +370,52 @@ def angToH_dia(theta):
     return H
 
 def calcB(r,h):
-    factor = np.array([1./(4.*np.pi), 0., 1./(4.*np.pi)])
-#    factor = np.array([3.0593e-04, 1., 1.])
-#    factor = 1.
-#    factor = 1/(4*np.pi)
-    no = sqrt(np.dot(r,r.conj()))
-#    no = np.linalg.norm(r)
+#    factor = np.array([1./(4.*np.pi), 0., 1./(4.*np.pi)])
+    Br = 12.6e+03;
+    mu_0 = 4*np.pi*1e-07;
+    mu_r = 1.05;
+#    addFact = 0.2312
+    addFact = 1
+    lamb = (Br*mu_0*mu_r)/(4*np.pi)*addFact
+    factor = np.array([lamb, lamb, lamb])
+#    print "r: ", r
+    no = sqrt(float(r[0]**2+r[1]**2+r[2]**2))
+#    b = np.array([((3*r*np.dot(h,r))/(no**5)) - (h/(no**3))])*factor
     b = np.array([((3*r*np.dot(h,r))/(no**5)) - (h/(no**3))])*factor
-    return b
+#    b = np.array([((3*r*np.dot(h,r))/(no**5)) - (h/(no**3))])*factor
+    return b[0]
+
+def estR_simple(r,h,measB):
+    dif = measB-calcB(r,h)
+    no = sqrt(float(dif[0]**2+dif[1]**2+dif[2]**2))
+    return no**2
     
+def mini_estR_simple(r0,h,measB,bnds):    
+#     res = fmin_l_bfgs_b(estR_simple,r0,args=(h,measB),bounds=bnds,approx_grad=1)
+     res = minimize(estR_simple,r0,args=(h,measB),method='slsqp',bounds=bnds)
+#     res = minimize(estR_simple,r0,args=(h,measB))
+     return res
+
+def estR(r,theta,measB):
+    h = angToH(theta)
+#    print "h: ",h
+#    print "calcB: ", calcB(r,h)
+    dif = measB-calcB(r,h)
+#    print "dif: ", type(dif[0]**2+dif[1]**2+dif[2]**2)
+    no = sqrt(float(dif[0]**2+dif[1]**2+dif[2]**2))
+    return no**2
+
+def estimateR(r0,fingerL, theta, measB,bnds=None,method='py'):
+    res = fmin_l_bfgs_b(estR,r0,args=(theta,measB),bounds=bnds,approx_grad=1,pgtol=1e-10)
+#    res = minimize(estR,r0,args=(theta,measB),method='slsqp',bounds=bnds)
+#    res = minimize(estR,r0,args=(theta,measB))
+    return res   
+   
+   
+   
 def calcB_P(p,s,h):
     Br = 12.6e+03;
-    mu_0 = 4*pi*1e-07;
+    mu_0 = 4*np.pi*1e-07;
     mu_r = 1.05;
     factor = (Br*mu_0*mu_r)/(4*np.pi)
 #    factor = 1
@@ -389,8 +426,10 @@ def calcB_P(p,s,h):
     return b    
     
 def estB(p,s,h,b):
-    dif = b-calcB_P(p,s,h)
-    no = sqrt(dif[0]**2+dif[1]**2+dif[2]**2)
+#    dif = b-calcB_P(p,s,h)
+    r = s-p
+    dif = b-calcB(r,h)
+    no = np.sqrt(float(dif[0]**2+dif[1]**2+dif[2]**2))
 #    res = res**2
 #    print "estB: ",res
     return no**2
@@ -417,6 +456,7 @@ def angToB(theta,finger,S,off):
     S : array
         the position of the sensor
     """
+#    print "arguments: ", theta, " ", finger, " ", S, " ", off 
     P = angToP(theta,finger,off)
     R = S-P
     H = angToH(theta)
@@ -454,9 +494,6 @@ def cobyla_cons(x):
                      x[2]-np.pi/2, x[3]-np.pi/(110/180),
                      x[4]-np.pi/2, x[5]-np.pi/(110/180),
                      x[6]-np.pi/2, x[7]-np.pi/(110/180)])
-
-#def estimateR(r0,fingerL, theta, measB,bnds=None,method='py'):
-    
     
 
 def estimate_BtoAng(theta_0, fingerL, offL, sL, measB,bnds=None,method='py'):
@@ -660,7 +697,9 @@ def angToB_m2(theta,finger,S,off):
     res = np.zeros((len(S)*size,))
     for i in S:
         r = i-P
-        a = calcB_2(r,H)
+#        print "R for theta: ",theta," : ", r
+#        a = calcB_2(r,H)
+        a = calcB(r,H)
         res[cnt*size:cnt*size+size] = a
         cnt += 1
 
@@ -703,20 +742,15 @@ def funcMagY_angle_m2(theta,finger,S,off,B):
 fitting the data to the model
 """
 def getScaleOff(ref,meas):
-    scale = np.array([0.,0.,0.])
-    for i in range(3):
+    scale = np.zeros((ref.shape[1],))
+    for i in range(len(scale)):
         raReal = max(ref[:,i]) - min(ref[:,i])
         raMeas = max(meas[:,i]) - min(meas[:,i])
         scale[i] = raReal/raMeas
 
-#    offMat = meas[:10]
-#    offMat *= scale
-    offset = np.array([0.,0.,0.])
-#    for i in range(3):
-#        m = np.mean(offMat[:,i])
-#        offset[i] = ref[0][i]-m
+    offset = np.zeros((ref.shape[1],))
     
-    for i in range(3):
+    for i in range(len(offset)):
         offset[i] = ref[0][i]-meas[0][i]*scale[i]
 
     print "scale: ",scale
