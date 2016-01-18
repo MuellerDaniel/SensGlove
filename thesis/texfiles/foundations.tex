@@ -24,7 +24,7 @@ Bullock et al. \cite{bullock2012assessing} and Lin et al. \cite{lin2000modeling}
 	{\includegraphics[width=0.5\textwidth]{pictures/boneHand.png}\label{fig:boneHand}}
 	\hfill
 	\subfloat[Joints of the right hand.]
-	{\includegraphics[width=0.5\textwidth]{pictures/jointsHand.png}\label{fig:jointsHand}}	
+	{\includegraphics[width=0.5\textwidth]{pictures/jointsHand.png}\label{fig:jointsHand}}
 \caption{Skeletal representation for the bones and joints of the right human hand. Dorsal view \cite{bullock2012assessing}}
 \label{fig:skeletHand}
 \end{figure}
@@ -51,45 +51,96 @@ The application specific restrictions applied to the model are further depicted 
 
 
 
-\section{Magnetic}
-\label{sec:magneticFound}
+\section{Magnetic} \label{sec:magneticFound}
+Permanent magnets are widely used nowadays. Their constant magnetic characteristics are used in electric engines, computer tomography or by interacting with other ferro-, para- or diamagnetic materials, in the simplest case for holding things at a dedicated places. The principle behind it is the excitation of a magnetic field. It is commonly known that there only magnetic dipoles exist, meaning that a magnetic north pole never comes without its dedicated south pole. The shape of the magnetic field lines is commonly known and part of undergraduate physics \todo{Bild mit Magnetfeldlinien! Oder nicht?}. However when it comes to the physical description of the magnetic field lines of a permanent magnet, the subject gets more complex. In the following a mathematical approximation for describing the magnetic field, excited by a permanent cylindrical neodymium bar magnet of length $ 2b $ and radius $ a $ will be presented. The strength of the magnetic field, or in other words the magnetic flux density is denoted by $ \mathrm{B} $ and is given in Tesla or Gauss ($ \SI{1}{\tesla} = 1 \si[per-mode=fraction]{\kilogram \per \ampere \per \second \squared} = 10^{4} \mathrm{G}$).\\
+At first one has to mention that a current carrying loop also excites a magnetic field. This is described among others by the Biot-Savart law. The law is valid for the approximation of static magnetic fields. The representation as magnetic dipole by a single current loop or a pair of contrary poles, and the description of its field lines is the base for the ongoing derivation and a common method \cite{derby2010cylindrical}. So the literature often treats the magnetic field as excited by electric current. The electromagnetic equivalent to a cylindrical bar magnet would be a tightly wound solenoid with a number of turns per unit length $ n $ carrying a current $ I $.\\
+A very easy and rough approximation for describing the magnetic field of a permanent magnet can be done by describing it as a magnet dipole. This approximation is used by Ma et al. \cite{ma2010magnetic}. As briefly mentioned beforehand there are only magnetic dipoles, represented by a pair consisting of a (positive) north pole and a (negative) south pole. The field lines are oriented along the direction of the magnetic dipole moment $ \vec{m} $ and go from north to south (see \ref{fig:magDipole}). %\todo{(see \ref{fig:magDipole)}.
+\begin{figure}
+\centering
+\label{fig:magDipole}
+\includegraphics[width=0.3\textwidth]{pictures/magDipole.jpg}
+\caption{The shape of the magnetic field lines, excited by a magnetic dipole. The magnetic moment is denoted as $ \vec{m} $ and represents the orientation of the magnet.\href{http://cdn1.askiitians.com/Images/201529-161356533-148-download.jpg}{link}}
+\end{figure}
 
-\begin{itemize}
-\item paramagnetic materials have a permanent magnetic moment $ M $
-\item this means that the magnetic moments within the bar magnet are static and aligned in the same direction
-\item good introduction \href{http://www.ece.umd.edu/class/enee380-1.F2005/lectures/lecture24.htm}{lecture}
-\item picture of magnetic dipole field lines
-\item \cite{mladenovic2009magnetic} in fact, you can find sth here! But only numerics... no hand calculations...
-\item only magnetic dipoles exist...
-\end{itemize}
+It can therefore be interpreted as the orientation of the bar magnet. The magnetic field strength $ \mathrm{B} $ of such a dipole source, located at the origin, at distance $ \vec{r} $ is defined as
+\begin{equation} \label{eq:dipole}
+\mathrm{B} = \frac{\mu_{0}}{4 \pi} \, \left (\frac{3 \vec{r} (\vec{r} \cdot \vec{r})\mathrm{R}}{|\vec{r}|^5} -
+		\frac{\vec{m}}{|\vec{r}|^3} \right )
+\end{equation}
+with the constant $ \mu_{0} $, being the vacuum magnetic susceptibility \cite{camacho2013alternative}. This formula is valid independently of the shape and size of the magnetic body (current coil, permanent magnet, atom) if $ |r| $ is big enough. So roughly spoken the field strength $ \mathrm{B} ~ \frac{1}{|r|^ {3}}$.\\
+Since this is a very general description for the behaviour of the magnetic field and does only hold for big vectors of $ \vec{r} $ (also verified in \todo{Reference to section verification, where I prove it!}), Camacho et al. \cite{camacho2013alternative} follow a more detailed way, taking the shape of the permanent cylindrical magnet into account. They assume that for a homogeneous, constantly magnetized body the distribution and orientation of magnetic dipoles inside a volume $ dV $ of this body is constant and have the magnetic dipole moment $ d\vec{m} = \vec{M}dV $. Where $ \vec{M} $ is the volume magnetization of the magnet. Further on it holds for a permanent magnet that the magnetization does not change for any external fields, they are supposed to be hard. Using this for the cylindrical bar magnet, which is assumed to be magnetized along its symmetry axis, the following can be applied: One cylindrical element $ dV $ is defined by the radius $ a $ and the height $ dz $. It is assumed that the bar magnet is aligned, such that the symmetry axis is oriented in $ z $ direction of the Cartesian coordinate system \ref{fig:cylMag}.
+\begin{figure}
+\centering
+\includegraphics[width=0.25\textwidth]{pictures/cylMagCoSys.png}
+\caption{A cylindrical magnet, aligned along its magnetization axis in $ z $ direction. A infinitesimal piece $ dz $ is sketched. The vector R to a dedicated measurement point is visualized \cite{derby2010cylindrical}.}
+\label{fig:cylMag}
+\end{figure}
+The magnetic flux along the symmetry axis of such an infinitesimal element $ dV $ is given by \ref{eq:dipole}. In order to calculate $ \mathrm{B}_{z} $ for the whole magnet, one has to integrate these contributions over the entire volume. In the end one gets the following formula for the magnetic field of a bar magnet along its magnetization axis (for a detailed derivation, please have a look at \cite{camacho2013alternative}, \cite{derby2010cylindrical}):
+\begin{equation} \label{eq:b_z}
+\mathrm{B}_{z}(z) = \frac{\mathrm{B}_r}{2} \left ( \frac{z + b}{\sqrt{(z + b)^2 + a^2}} - \frac{z - b}{\sqrt{(z - b)^2 + a^2}} \right)
+\end{equation}
+The factor $ \mathrm{B}_r $ represents the Remanence field of the magnetic material. For the used neodymium magnet this value is in between 1.26-\SI{1.29}{\tesla}. In order to transform \ref{eq:b_z} into its electromagnetic equivalent, one just has to change the factor by $ \frac{\mu_{0} n I}{2} $.\\
+However there are several ways in deriving the mentioned equation. As shortly depicted, an integral over the whole surface has to be derived. Those integrals with a cylindrical symmetry are usually quite complex. However for the symmetrical case along the $ z $ axis, one can use some mathematical properties to ease and obtain the equation \ref{eq:b_z} in the end. However if one wants not only to describe the magnetic field along the magnetization axis, those properties and therefore the presented equation does not hold any more. Derby et al. propose to overcome this problem, by solving a complete elliptical integral \ac{cel}. The generalized form of this is the following:
+\begin{equation}\label{eq:cel}
+C(k_{c},p,c,s) = \int_{0}^{\frac{\pi}{2}} \frac{c \, \cos^{2}\varphi + s \, \sin^{2}\varphi}
+{(\cos^{2}\varphi + p \, \sin^{2}\varphi)\sqrt{\cos^{2}\varphi + k_{c}^{2} \, \sin^{2}\varphi}} \; d\varphi
+\end{equation}
+A cylindrical coordinate system is introduced, which makes sense, since one tries to describe a cylindrical shape. The corresponding structure and naming of axes is shown in \ref{fig:cylCoSys}. With the help of this cylindrical representation, the general magnetic field components can be expressed by
+\begin{equation} \label{eq:cylB_rho}
+\mathrm{B}_{\rho} = \mathrm{B}_{o}[\alpha_{+} C(k_{+},1,1,-1) \, - \, \alpha{-} C(k_{-},1,1,-1)]
+\end{equation}
+for the radial magnetic component along $ \rho $. And
+\begin{equation} \label{eq:cylB_z}
+\mathrm{B}_{z} = \frac{\mathrm{B}_{o}a}{a+\rho}[\beta_{+} C(k_{+},\gamma^2,1,\gamma) \, - \, \beta_{-} C(k_{-},\gamma^2,1,\gamma)]
+\end{equation}
+for the axial magnetic component along the $ z $ axis. Along with the following introduced variables, which are dependent on the cylindrical position $ (\rho, \varphi, z) $ of the dedicated point in space.
+\begin{equation}
+\mathrm{B}_{o} = \frac{\mu_{0}}{\pi}nI
+\end{equation}
 
-\cite{derby2010cylindrical} describe sth hot!\\
-The magnetic field of a cylindrical bar magnet is equivalent to a tightly wound solenoid
-\begin{itemize}
-\item length of $ 2b $, radius $ a $
-\item origin at the center of the solenoid!
-\item in presence of a cylindrical coordinate system \ref{fig:cylCoSys}! This means:
-\item the height $ z $ along the length of magnet
-\item radial distance $ \rho $ being the euclidean distance from the z axis
-\item and azimuth $ \varphi $ being the angle between the reference direction and the chosen plane
-\end{itemize} 
-\begin{figure}[h]
+\begin{equation}
+z_{\pm} = z_{\pm} b
+\end{equation}
+
+\begin{equation}
+\alpha_{\pm} = \frac{a}{\sqrt{z_{\pm}^2+(\rho+a)^2}}
+\end{equation}
+
+\begin{equation}
+\beta_{\pm} = \frac{z_{\pm}}{\sqrt{z_{\pm}^2+(\rho+a)^2}}
+\end{equation}
+
+\begin{equation}
+\gamma = \frac{a-\rho}{a+\rho}
+\end{equation}
+
+\begin{equation}
+k_{\pm} = \sqrt{\frac{z_{\pm}^2 + (a-\rho)^2}{z_{\pm}^2 + (a+\rho)^2}}
+\end{equation}
+
+The azimuthal component $ \varphi $ can be neglected, since the magnetic field does not change, by moving around a circle which is aligned perpendicular to the $ z $ axis. In order to derive the equation \ref{eq:b_z}, one just has to set the radial component $ \rho $ to 0 and $ z > b $\\
+Those integrals are not easy to solve, therefore numerical methods are used to find a solution. However trying to find an exact solution with software like \textit{Mathematica} or \textit{Maple} failed \cite{camacho2013alternative}. However since \ac{cel} are not only restricted to cylindrical bar magnets, there is some research going on in this field. For the used method, please look at \todo{reference to implementation}, for more about \ac{cel} have a look at the bibliography of \cite{derby2010cylindrical}. Another method consists in using numerics, like \ac{FEM}. This can lead to satisfying results \cite{mladenovic2009magnetic}.
+
+\begin{figure}
 \centering
 \includegraphics[width=0.5\textwidth]{pictures/cylCoSys2.png}
 \label{fig:cylCoSys}
-\caption{Representation of cylindrical coordinate system}
+\caption{Representation of the cylindrical coordinate system frame. The height is denoted by the $ z $ axis, the radial component $ \rho $ is the euclidean distance from the $ z $ axis, the azimuth $ \varphi $ describes the angle between the reference direction and the chosen plane.}
 \end{figure}
 
-One has to solve a complete elliptical integral(cel)
-\begin{equation}
-C(k_{c},p,c,s) = \int_{o}^{\frac{\pi}{2}} \frac{c \, \cos^{2}\varphi + s \, \sin^{2}\varphi}
-{(\cos^{2}\varphi + p \, \sin^{2}\varphi)\sqrt{\cos^{2}\varphi + k_{c}^{2} \, \sin^{2}\varphi}} \; d\varphi
-\end{equation}
 
+\todo{Remarks about model (this goes into the corresponding system design section...):}
 \begin{itemize}
-\item This can be done by a known algorithm...
-\item Deriving the magnetic field for the ideal solenoid with the help of Biot-Savart law
-\item Just slice it in $ dz' $ pieces and see each peace as a current loop 
-\item Calculate the field for this loop with Biot-Savart and then add up the fields for the remaining $ dz' $ current loops
-\end{itemize}
+\item What you get from the cylindrical model is the B field for a sensor which is aligned exactly the same as your magnet, so always facing north. That's why you have to apply the rotation on the calculated B field. You therefore just want to translate it to your sensor coordinate frame.
 
+\item The cylindrical position vector (z,rho) is dependent on the absolute distance vector (x,z) (from sensor to magnet center) in combination with the rotation (theta) of the magnet (in the easy case, just around y axis. And this is also the only rotation!)\\
+$ (z,rho) = (x,z)*rot_{y}(theta) $
+
+\item Apply the rotation of the magnet to your position vector (above) in order to get the right "division/split" into the two cylindric magnetic components(z and rho). Then take this field and apply the rotation of your sensor coordinate frame relative to the magnetic coordinate frame.\\
+$ B_{sensor} = (B_{z},B_{rho})*rot_{y}(theta)^{-1} $\\
+(not sure about the -1 neg.rotation, but I think so, because before applied it normally -> YES IT WORKS!)
+
+\item Rotating the magnet around y axis represents flexion/extension(exactly what I want!).
+A succeeding rotation about the x axis would represent aduction/abduction (what I want to neglect at first).
+A succeeding rotation around z axis would represent rotation of the finger (what is not possible).
+\end{itemize}
