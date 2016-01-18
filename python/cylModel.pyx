@@ -6,27 +6,25 @@ cimport numpy as np
 from libc.math cimport pow, sqrt, cos, sin
 from libc.stdlib cimport malloc,free
 
-DTYPE = np.float
+DTYPE = np.double
 
-ctypedef np.float_t DTYPE_t
+# ctypedef np.double long_double_t DTYPE_t
 
-
-def cel_bul_cy(float kc, float p, float c, float s):
+def cel_bul_cy(long double kc, long double p, long double c, long double s):
     ''' approximate a complete elliptical integral with Bulirsch algorithm '''
 
     if kc == 0:
         c = None    # or nan???
 
     # errtol = 1.0e-6;
-    cdef float errtol = 1.0e-6
-    cdef float k = abs(kc)
-    cdef float em = 1.0
+    cdef long double errtol = 1.0e-6
+    cdef long double k = abs(kc)
+    cdef long double em = 1.0
 
-    cdef float f = 0.0
-    cdef float q = 0.0
-    cdef float g = 0.0
-    cdef float kk = 0.0
-
+    cdef long double f = 0.0
+    cdef long double q = 0.0
+    cdef long double g = 0.0
+    cdef long double kk = 0.0
 
     if p > 0:
         p = sqrt(p)
@@ -67,39 +65,39 @@ def cel_bul_cy(float kc, float p, float c, float s):
     return c
 
 
-def calcB_cyl_cy(np.ndarray pos, float ang):
+def calcB_cyl_cy(np.ndarray pos, long double ang):
     ''' calculate the B-field at a given distance and with a certain rotation of the magnet '''
 
     cdef np.ndarray rotMatPos = np.array([[cos(ang), -sin(ang)],
                           [sin(ang), cos(ang)]])
     cdef np.ndarray cylCo = np.dot(pos,rotMatPos)    # rotated cylindrical coordinates
 
-    cdef float z = cylCo[0]
-    cdef float rho = cylCo[1]
+    cdef long double z = cylCo[0]
+    cdef long double rho = cylCo[1]
 
-    cdef float a = 0.0025     # radius [m]
-    cdef float b = 0.015/2    # half length of magnet [m]
+    cdef long double a = 0.0025     # radius [m]
+    cdef long double b = 0.015/2    # half length of magnet [m]
     # magic value...
-    cdef float Bo = 1.0e+3*4.0107      # magnetic constant
+    cdef long double Bo = 1.0e+3*4.0107      # magnetic constant
 
     # component calculations
-    cdef float z_pos = z+b
-    cdef float z_neg = z-b
+    cdef long double z_pos = z+b
+    cdef long double z_neg = z-b
 
-    cdef float alpha_pos = a/sqrt(z_pos**2+(rho+a)**2)
-    cdef float alpha_neg = a/sqrt(z_neg**2+(rho+a)**2)
+    cdef long double alpha_pos = a/sqrt(z_pos**2+(rho+a)**2)
+    cdef long double alpha_neg = a/sqrt(z_neg**2+(rho+a)**2)
 
-    cdef float beta_pos = z_pos/sqrt(z_pos**2+(rho+a)**2)
-    cdef float beta_neg = z_neg/sqrt(z_neg**2+(rho+a)**2)
+    cdef long double beta_pos = z_pos/sqrt(z_pos**2+(rho+a)**2)
+    cdef long double beta_neg = z_neg/sqrt(z_neg**2+(rho+a)**2)
 
-    cdef float gamma = (a-rho)/(a+rho)
+    cdef long double gamma = (a-rho)/(a+rho)
 
-    cdef float k_pos = sqrt((z_pos**2+(a-rho)**2)/(z_pos**2+(a+rho)**2))
-    cdef float k_neg = sqrt((z_neg**2+(a-rho)**2)/(z_neg**2+(a+rho)**2))
+    cdef long double k_pos = sqrt((z_pos**2+(a-rho)**2)/(z_pos**2+(a+rho)**2))
+    cdef long double k_neg = sqrt((z_neg**2+(a-rho)**2)/(z_neg**2+(a+rho)**2))
 
     # cel calculation with Bulirsch's algorithm
-    cdef float B_rho = Bo*(alpha_pos*cel_bul_cy(k_pos,1.,1.,-1.)-alpha_neg*cel_bul_cy(k_neg,1.,1.,-1.))
-    cdef float B_z   = (Bo*a)/(a+rho)*(beta_pos*cel_bul_cy(k_pos,gamma**2,1.,gamma)-beta_neg*cel_bul_cy(k_neg,gamma**2,1.,gamma))
+    cdef long double B_rho = Bo*(alpha_pos*cel_bul_cy(k_pos,1.,1.,-1.)-alpha_neg*cel_bul_cy(k_neg,1.,1.,-1.))
+    cdef long double B_z   = (Bo*a)/(a+rho)*(beta_pos*cel_bul_cy(k_pos,gamma**2,1.,gamma)-beta_neg*cel_bul_cy(k_neg,gamma**2,1.,gamma))
 
     cdef np.ndarray B = np.dot(np.array([B_z, B_rho]),np.linalg.inv(rotMatPos))
 #    B[1] *= -1
@@ -111,8 +109,8 @@ def calcB_cyl_cy(np.ndarray pos, float ang):
 def angToP_cyl_cy(np.ndarray angles, np.ndarray finger):
     ''' calculate the 2d(cylindrical) position according to joint angles and fingerlengths '''
 
-    cdef float finger_0 = 0.
-    cdef float theta_k = 0.0
+    cdef long double finger_0 = 0.
+    cdef long double theta_k = 0.0
     cdef np.ndarray theta = np.array([angles[0], angles[1], angles[1]*(2./3.)])
     cdef np.ndarray pos = np.array([(1*(finger_0*np.sin(np.pi/2.) + finger[0]*np.sin(np.pi/2-theta[0]) +              # x
                                   finger[1]*np.sin(np.pi/2.-theta[0]-theta[1]) +
@@ -125,32 +123,45 @@ def angToP_cyl_cy(np.ndarray angles, np.ndarray finger):
     return pos
 
 
-def angToB_cyl_cy(np.ndarray angles, np.ndarray fingerL, np.ndarray sPos, np.ndarray jointPos):   # version positions
-# def angToB_cyl_cy(np.ndarray angles, np.ndarray fingerL, np.ndarray radDist):   # version radial distance
-    ''' calculate the B-field for given finger angels. CYLINDRICAL MODEL!!! '''
+def diffRadial(p1,p2):
+    cdef long double tmp = sqrt((p1[1][0]-p2[1][0])**2+(p1[1][1]-p2[1][1])**2)*-1
+    cdef np.ndarray res = np.array([p1[0]-p2[0],tmp])
+    return res
 
-    cdef np.ndarray p = angToP_cyl_cy(angles,fingerL)+jointPos-sPos   #version positions
+
+def angToB_cyl_cy(np.ndarray angles, np.ndarray fingerL, sPos, jointPos):   # version positions
+# def angToB_cyl_cy(np.ndarray angles, np.ndarray fingerL, np.ndarray radDist):   # version radial distance
+    ''' calculate the B-field for given finger angels '''
+
+    cdef np.ndarray p = np.array([0., 0.])
+
+
+    if type(sPos[1]) == type(jointPos[1]) == list:
+        p = angToP_cyl_cy(angles,fingerL)+diffRadial(sPos,jointPos)
+        # print "cy p\n",p
+    else:
+        p = angToP_cyl_cy(angles,fingerL)+np.array(sPos)-np.array(jointPos)
+        # print "cy p else\n",p
+    # cdef np.ndarray p = angToP_cyl_cy(angles,fingerL)+jointPos-sPos   #version positions
     # cdef np.ndarray p = angToP_cyl_cy(angles,fingerL)+radDist   #version radial distance
 
-    cdef float ang = sum(angles)+(2./3.*angles[1])
+    cdef long double ang = sum(angles)+(2./3.*angles[1])
     ang *= -1
 
     cdef np.ndarray B = calcB_cyl_cy(p,ang)
     B[1] *= 1      # really?
-    B = B.astype('float')
-
-
+    # B = B.astype('long double')
     return B
 
 
 # this fcn is the interface to python!
-def minimizeAng_cyl_cy(np.ndarray ang, np.ndarray fingerL, np.ndarray sPos, np.ndarray jointPos, np.ndarray measB): # version positions
+def minimizeAng_cyl_cy(np.ndarray ang, np.ndarray fingerL, sPos, jointPos, np.ndarray measB): # version positions
 # def minimizeAng_cyl_cy(np.ndarray ang, np.ndarray fingerL, np.ndarray radDist, np.ndarray measB): # version radial distance
     ''' objective function to minimize... '''
 
     cdef np.ndarray dif = measB - angToB_cyl_cy(ang, fingerL, sPos, jointPos) # version positions
-    # cdef np.ndarray dif = measB - angToB_cyl_cy(ang, radDist)   # version radial distance
-    dif = dif.astype('float')
-    cdef float res = np.linalg.norm(dif)
+    # cdef np.ndarray dif = measB - angToB_cyl_cy(ang, fingerL, radDist)   # version radial distance
+    # dif = dif.astype('long double')
+    cdef long double res = np.linalg.norm(dif)
 
     return res
