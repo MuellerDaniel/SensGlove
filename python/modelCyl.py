@@ -2,7 +2,7 @@ import numpy as np
 from scipy.optimize import *
 from sympy import *
 import time
-import fcnCyPy as fcn
+import cylModel as cy
 
 
 def cel(kc,p,c,s):
@@ -320,12 +320,13 @@ def calcB_cyl(pos, ang):
     k_neg = sqrt((z_neg**2+(a-rho)**2)/(z_neg**2+(a+rho)**2))
 
     # cel calculation with Bulirsch's algorithm    
-    B_rho = Bo*(alpha_pos*cel_bul(k_pos,1.,1.,-1.)-alpha_neg*cel_bul(k_neg,1.,1.,-1.))
-    B_z   = (Bo*a)/(a+rho)*(beta_pos*cel_bul(k_pos,gamma**2,1.,gamma)-beta_neg*cel_bul(k_neg,gamma**2,1.,gamma))
+#    B_rho = Bo*(alpha_pos*cel_bul(k_pos,1.,1.,-1.)-alpha_neg*cel_bul(k_neg,1.,1.,-1.))
+#    B_z   = (Bo*a)/(a+rho)*(beta_pos*cel_bul(k_pos,gamma**2,1.,gamma)-beta_neg*cel_bul(k_neg,gamma**2,1.,gamma))
+    B_rho = Bo*(alpha_pos*cy.cel_bul_cy(k_pos,1.,1.,-1.)-alpha_neg*cy.cel_bul_cy(k_neg,1.,1.,-1.))
+    B_z   = (Bo*a)/(a+rho)*(beta_pos*cy.cel_bul_cy(k_pos,gamma**2,1.,gamma)-beta_neg*cy.cel_bul_cy(k_neg,gamma**2,1.,gamma))
         
-
-    B = np.dot(np.array([B_z, B_rho]),(rotMatPos))  
-    
+    B = np.dot(np.array([B_z, B_rho]),np.linalg.inv(rotMatPos))  
+#    B[1] *= -1
 #    return (B, cylCo)
     return B
     
@@ -360,9 +361,12 @@ def angToP_cyl(angles, finger):
     return pos                
     
 
+def diffRadial(p1,p2):
+    tmp = np.sqrt((p1[1][0]-p2[1][0])**2+(p1[1][1]-p2[1][1])**2)*-1
+    return np.array([p1[0]-p2[0],tmp])
 
 
-def angToB_cyl(angles, fingerL, sPos, jointPos):
+def angToB_cyl(angles, fingerL, sPos, jointPos,method):
     ''' calculate the B-field for given finger angels. CYLINDRICAL MODEL!!!
     
     Parameters
@@ -380,58 +384,74 @@ def angToB_cyl(angles, fingerL, sPos, jointPos):
     -------
     B : 2darray
         the calculated B-field at the sensor [B_z, B_rho]
-        
-        
     '''
     
-    p = angToP_cyl(angles,fingerL)+jointPos-sPos
-#    p += [1.,-1.]
-#    p = pFinger+jointPos-sPos        
+    if method == 'py':
+        p = angToP_cyl(angles,fingerL)+jointPos-sPos
+    if method == 'cy':        
+        p = cy.angToP_cyl_cy(angles,fingerL)+jointPos-sPos
+#    print "diff old: ", np.array([0.,0.])+jointPos-sPos
+#    p = cy.angToP_cyl_cy(angles,fingerL)+diffRadial(sPos,jointPos)
+#    p = angToP_cyl(angles,fingerL)+diffRadial(sPos,jointPos)
+#    print "diff new: ",diffRadial(sPos,jointPos)
+
     ang = sum(angles)+(2./3.*angles[1])
+    ang *= -1    
     
-    B = calcB_cyl(p,ang)
+    if method == 'py':
+        B = calcB_cyl(p,ang)
+    if method == 'cy':
+        B = cy.calcB_cyl_cy(p,ang)
     B[1] *= 1      # really?
     B = B.astype('float')
-    return (B, p, ang)
-    
+#    return (B, p, ang)
+    return B    
 
 ''' estimation of joint angles '''
-# TODO verify!!!
 
-#def minimizeAng_cyl(ang, fingerL, sPos, jointPos, measB):
-#    ''' objective function to minimize... '''
-#    
-#    dif = measB - angToB_cyl(ang, fingerL, sPos, jointPos)
-#    dif = dif.astype('float')    
-#    res = np.linal.norm(dif)
-#    
-#    return res
-#    
-#    
-#def estimateAng_cyl(ang_0, fingerL, sPos, jointPos, measB):
-#    ''' estimating the joint angles
-#    
-#    Parameters
-#    ----------
-#    ang_0 : 2darray
-#        initial guess of angles [angle_MCP, angle_PIP]
-#    fingerL : 3darray
-#        length of the finger phalanges [length_proximal, length_intermediate, length_distal]
-#    sPos : 2darray
-#        the sensor position, relative to the joint ([x_lateral, x_radial])
-#    jointPos : 2darray
-#        position of the finger joint, relative to the index joint ([x_lateral, x_radial])
-#        the measured B-field ([B_z, B_rho])
-#        
-#    Returns
-#    -------
-#    res : OptimizeResult
-#    
-#    '''
-#    
+def minimizeAng_cyl(ang, fingerL, sPos, jointPos, measB):
+    ''' objective function to minimize... '''
+    
+    dif = measB - angToB_cyl(ang, fingerL, sPos, jointPos)
+#    dif = measB - cy.angToB_cyl_cy(ang, fingerL, sPos, jointPos)
+    
+    dif = dif.astype('float')    
+    res = np.linalg.norm(dif)
+    
+    return res
+    
+    
+def estimateAng_cyl(ang_0, fingerL, sPos, jointPos, measB,bnds):
+    ''' estimating the joint angles
+    
+    Parameters
+    ----------
+    ang_0 : 2darray
+        initial guess of angles [angle_MCP, angle_PIP]
+    fingerL : 3darray
+        length of the finger phalanges [length_proximal, length_intermediate, length_distal]
+    sPos : 2darray
+        the sensor position, relative to the joint ([x_lateral, x_radial])
+    jointPos : 2darray
+        position of the finger joint, relative to the index joint ([x_lateral, x_radial])
+        the measured B-field ([B_z, B_rho])
+        
+    Returns
+    -------
+    res : OptimizeResult
+    
+    '''
+    
 #    res = minimize(minimizeAng_cyl,ang_0,args=(fingerL, sPos, jointPos, measB),method='bfgs', tol=1.e-05)
-#    
-#    return res
+#    res = minimize(minimizeAng_cyl,ang_0,args=(fingerL,sPos,jointPos,measB),method='slsqp',bounds=bnds)    
+    res = fmin_l_bfgs_b(minimizeAng_cyl, ang_0, args=(fingerL,sPos,jointPos,measB),bounds=bnds,approx_grad=1,pgtol=1e-10)
+#    res = fmin_l_bfgs_b(cy.minimizeAng_cyl_cy, ang_0, args=(fingerL,sPos,jointPos,measB),bounds=bnds,approx_grad=1,pgtol=1e-10)
+    
+#    res = minimize(cy.minimizeAng_cyl_cy,ang_0,args=(fingerL, sPos, jointPos, measB),method='bfgs', tol=1.e-05)    
+#    radDist = np.array(diffRadial(sPos,jointPos))
+#    res = minimize(cy.minimizeAng_cyl_cy,ang_0,args=(fingerL, radDist, measB),method='bfgs', tol=1.e-05)
+    
+    return res
     
 
 
@@ -464,14 +484,13 @@ def estimatePos_cyl(pos_0, ang, measB):
     
     '''
     
-##     res = fmin_l_bfgs_b(minimizeB_cyl,pos_0,args=(ang,measB),approx_grad=1)
+#    res = fmin_l_bfgs_b(minimizeB_cyl,pos_0,args=(ang,measB),approx_grad=1)
 #    res = minimize(minimizeB_cyl,pos_0,args=(ang,measB),method='slsqp')
     res = minimize(minimizeB_cyl,pos_0,args=(ang, measB),method='bfgs', tol=1.e-05)
     
     return res
     
 
-#def estimateAng_cyl(measB, angles_0, fingerL, sPos, jointPos):
     
     
     
