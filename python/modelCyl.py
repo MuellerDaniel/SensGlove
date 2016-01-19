@@ -271,6 +271,7 @@ def cel_bul(kc,p,c,s):
        cnt += 1
            
     c = (pi/2)*(s+c*em)/(em*(em+p))
+#    c = float(c)
 #    print "steps needed: ", cnt
     return c    
 
@@ -328,6 +329,7 @@ def calcB_cyl(pos, ang):
     B = np.dot(np.array([B_z, B_rho]),np.linalg.inv(rotMatPos))  
 #    B[1] *= -1
 #    return (B, cylCo)
+#    B = B.astype('float')
     return B
     
 
@@ -363,10 +365,12 @@ def angToP_cyl(angles, finger):
 
 def diffRadial(p1,p2):
     tmp = np.sqrt((p1[1][0]-p2[1][0])**2+(p1[1][1]-p2[1][1])**2)*-1
-    return np.array([p1[0]-p2[0],tmp])
+    res = np.array([p1[0]-p2[0],tmp])    
+#    print "diffRadial:\n", res
+    return res 
 
 
-def angToB_cyl(angles, fingerL, sPos, jointPos,method):
+def angToB_cyl(angles, fingerL, sPos, jointPos):
     ''' calculate the B-field for given finger angels. CYLINDRICAL MODEL!!!
     
     Parameters
@@ -386,24 +390,24 @@ def angToB_cyl(angles, fingerL, sPos, jointPos,method):
         the calculated B-field at the sensor [B_z, B_rho]
     '''
     
-    if method == 'py':
-        p = angToP_cyl(angles,fingerL)+jointPos-sPos
-    if method == 'cy':        
-        p = cy.angToP_cyl_cy(angles,fingerL)+jointPos-sPos
+    if type(sPos[1]) == type(jointPos[1]) == list:
+        p = cy.angToP_cyl_cy(angles,fingerL)+diffRadial(sPos,jointPos)
+#        print "p\n",p
+    else:
+        p = cy.angToP_cyl_cy(angles,fingerL)+sPos-jointPos
+#        print "else p\n",p
 #    print "diff old: ", np.array([0.,0.])+jointPos-sPos
 #    p = cy.angToP_cyl_cy(angles,fingerL)+diffRadial(sPos,jointPos)
 #    p = angToP_cyl(angles,fingerL)+diffRadial(sPos,jointPos)
 #    print "diff new: ",diffRadial(sPos,jointPos)
 
     ang = sum(angles)+(2./3.*angles[1])
-    ang *= -1    
+    ang *= -1        
     
-    if method == 'py':
-        B = calcB_cyl(p,ang)
-    if method == 'cy':
-        B = cy.calcB_cyl_cy(p,ang)
+#    B = calcB_cyl(p,ang)    
+    B = cy.calcB_cyl_cy(p,ang)
     B[1] *= 1      # really?
-    B = B.astype('float')
+#    B = B.astype('float')
 #    return (B, p, ang)
     return B    
 
@@ -421,7 +425,7 @@ def minimizeAng_cyl(ang, fingerL, sPos, jointPos, measB):
     return res
     
     
-def estimateAng_cyl(ang_0, fingerL, sPos, jointPos, measB,bnds):
+def estimateAng_cyl(ang_0, fingerL, sPos, jointPos, measB):
     ''' estimating the joint angles
     
     Parameters
@@ -442,9 +446,9 @@ def estimateAng_cyl(ang_0, fingerL, sPos, jointPos, measB,bnds):
     
     '''
     
-#    res = minimize(minimizeAng_cyl,ang_0,args=(fingerL, sPos, jointPos, measB),method='bfgs', tol=1.e-05)
+    res = minimize(minimizeAng_cyl,ang_0,args=(fingerL, sPos, jointPos, measB),method='bfgs', tol=1.e-05)
 #    res = minimize(minimizeAng_cyl,ang_0,args=(fingerL,sPos,jointPos,measB),method='slsqp',bounds=bnds)    
-    res = fmin_l_bfgs_b(minimizeAng_cyl, ang_0, args=(fingerL,sPos,jointPos,measB),bounds=bnds,approx_grad=1,pgtol=1e-10)
+#    res = fmin_l_bfgs_b(minimizeAng_cyl, ang_0, args=(fingerL,sPos,jointPos,measB),bounds=bnds,approx_grad=1,pgtol=1e-10)
 #    res = fmin_l_bfgs_b(cy.minimizeAng_cyl_cy, ang_0, args=(fingerL,sPos,jointPos,measB),bounds=bnds,approx_grad=1,pgtol=1e-10)
     
 #    res = minimize(cy.minimizeAng_cyl_cy,ang_0,args=(fingerL, sPos, jointPos, measB),method='bfgs', tol=1.e-05)    
