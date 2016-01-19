@@ -130,11 +130,9 @@ def diffRadial(p1,p2):
 
 
 def angToB_cyl_cy(np.ndarray angles, np.ndarray fingerL, sPos, jointPos):   # version positions
-# def angToB_cyl_cy(np.ndarray angles, np.ndarray fingerL, np.ndarray radDist):   # version radial distance
     ''' calculate the B-field for given finger angels '''
 
     cdef np.ndarray p = np.array([0., 0.])
-
 
     if type(sPos[1]) == type(jointPos[1]) == list:
         p = angToP_cyl_cy(angles,fingerL)+diffRadial(sPos,jointPos)
@@ -142,8 +140,6 @@ def angToB_cyl_cy(np.ndarray angles, np.ndarray fingerL, sPos, jointPos):   # ve
     else:
         p = angToP_cyl_cy(angles,fingerL)+np.array(sPos)-np.array(jointPos)
         # print "cy p else\n",p
-    # cdef np.ndarray p = angToP_cyl_cy(angles,fingerL)+jointPos-sPos   #version positions
-    # cdef np.ndarray p = angToP_cyl_cy(angles,fingerL)+radDist   #version radial distance
 
     cdef long double ang = sum(angles)+(2./3.*angles[1])
     ang *= -1
@@ -153,15 +149,40 @@ def angToB_cyl_cy(np.ndarray angles, np.ndarray fingerL, sPos, jointPos):   # ve
     # B = B.astype('long double')
     return B
 
+def angToBm_cyl_cy(angles, fingerL, sPos, jointPos):
+    ''' calculating the cummulative B-field for arbitrary fingers and sensors '''
+    # sensCnt = 0
+    # fingCnt = 0
+    if type(fingerL) == type(jointPos) == type(sPos) == list:   # check whether you have everything as lists!
+        # print "multiple case!"
+        B = np.zeros((1,len(sPos)*2))
+#        B = np.zeros((len(sPos)*2,))
+        sensCnt = 0
+        for sens in sPos:      # iterating over the sensors
+            fingCnt = 0
+            for j in fingerL:
+                # cdef np.ndarray actAngles = angles[fingCnt]
+                # cdef np.ndarray actFingL = fingerL[fingCnt]
+                actAngles = angles[fingCnt*2:fingCnt*2+2]
+                actFingL = fingerL[fingCnt]
+                # B[0][sensCnt*2:sensCnt*2+2] += angToB_cyl_cy(angles[fingCnt],fingerL[fingCnt],sens,jointPos[fingCnt])
+                B[0][sensCnt*2:sensCnt*2+2] += angToB_cyl_cy(actAngles,actFingL,sens,jointPos[fingCnt])
+                fingCnt += 1
+            sensCnt += 1
+
+    else:
+        # print "normal case!"
+        B = angToB_cyl_cy(angles, fingerL, sPos, jointPos)
+
+    return B
+
 
 # this fcn is the interface to python!
-def minimizeAng_cyl_cy(np.ndarray ang, np.ndarray fingerL, sPos, jointPos, np.ndarray measB): # version positions
-# def minimizeAng_cyl_cy(np.ndarray ang, np.ndarray fingerL, np.ndarray radDist, np.ndarray measB): # version radial distance
+def minimizeAng_cyl_cy(np.ndarray ang, fingerL, sPos, jointPos, np.ndarray measB): # version positions
     ''' objective function to minimize... '''
 
-    cdef np.ndarray dif = measB - angToB_cyl_cy(ang, fingerL, sPos, jointPos) # version positions
-    # cdef np.ndarray dif = measB - angToB_cyl_cy(ang, fingerL, radDist)   # version radial distance
-    # dif = dif.astype('long double')
+    # cdef np.ndarray dif = measB - angToB_cyl_cy(ang, fingerL, sPos, jointPos) # version positions
+    cdef np.ndarray dif = measB - angToBm_cyl_cy(ang, fingerL, sPos, jointPos) # version positions
     cdef long double res = np.linalg.norm(dif)
 
     return res
