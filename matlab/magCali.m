@@ -17,21 +17,52 @@ dc = dc(:,2:end);
 
 disp('dataset 160111_calData0');
 [d0_off, d0_soft, d0_radii, d0_git] = calcHardSoft(d0);
-[beta_d0, geo_d0, d0_free] = caliFreescale(d0);
+[beta_d0, off_d0, geo_d0, d0_free] = caliFreescale(d0);
 fprintf('\n\n');
 disp('dataset 160111_calData1');
 [d1_off, d1_soft, d1_radii,d1_git] = calcHardSoft(d1);
-[beta_d1, geo_d1, d1_free] = caliFreescale(d1);
+[beta_d1, off_d1, geo_d1, d1_free] = caliFreescale(d1);
 fprintf('\n\n');
 disp('dataset 160111_calData2');
 [d2_off, d2_soft, d2_radii, d2_git] = calcHardSoft(d2);
-[beta_d2, geo_d2, d2_free] = caliFreescale(d2);
+[beta_d2, off_d2, geo_d2, d2_free] = caliFreescale(d2);
 fprintf('\n\n');
 disp('dataset 160115_caliWaving');
 [dc_off, dc_soft, dc_radii, dc_git] = calcHardSoft(dc);
-[beta_dc, geo_dc, dc_free] = caliFreescale(dc);
+[beta_dc, off_dc, geo_dc, dc_free] = caliFreescale(dc);
 
 
+% setting them into relations...
+maxValues = [max(d0(:,1)) max(d0(:,2)) max(d0(:,3));
+            max(d1(:,1)) max(d1(:,2)) max(d1(:,3));
+            max(d2(:,1)) max(d2(:,2)) max(d2(:,3))];
+        
+rangeMax = [max(maxValues(:,1))-min(maxValues(:,1))
+            max(maxValues(:,2))-min(maxValues(:,2))
+            max(maxValues(:,3))-min(maxValues(:,3))];
+        
+meanMax = [mean(maxValues(:,1)) mean(maxValues(:,2)) mean(maxValues(:,3))];
+
+devMax = (rangeMax./meanMax').*100;
+disp('max deviation from uncalibrated max-values [%]');
+disp(devMax);
+  
+minValues = [min(d0(:,1)) min(d0(:,2)) min(d0(:,3));
+            min(d1(:,1)) min(d1(:,2)) min(d1(:,3));
+            min(d2(:,1)) min(d2(:,2)) min(d2(:,3))];
+
+rangeMin = [max(minValues(:,1))-min(minValues(:,1))
+            max(minValues(:,2))-min(minValues(:,2))
+            max(minValues(:,3))-min(minValues(:,3))];
+
+meanMin = [mean(minValues(:,1)) mean(minValues(:,2)) mean(minValues(:,3))];
+
+devMin = (rangeMin./meanMin').*100;
+disp('max deviation from uncalibrated min-values [%]');
+disp(devMin);
+    
+        
+        
 %% visualizing the results
 
 % % compared with raw data
@@ -65,13 +96,6 @@ alpha(h,0.5);
 
 hold all
 
-% ellipsoid with unscaled radii
-% [ex,ey,ez]= ellipsoid(0,0,0,...                    
-%                         d2_radii(1),d2_radii(2),d2_radii(3),100);   
-% h = surf(ex,ey,ez,'Linestyle','none');
-% colormap([0 1 1 ; 0 1 1])
-% alpha(h,0.5);
-
 % scaled data points...
 plot3(d2_git(:,1),d2_git(:,2),d2_git(:,3),'b.')
 plot3(d2_free(:,1),d2_free(:,2),d2_free(:,3),'r.')
@@ -94,13 +118,6 @@ colormap([1 1 0 ; 1 1 0])
 alpha(h,0.5);
 
 hold all
-
-% ellipsoid with unscaled radii
-% [ex,ey,ez]= ellipsoid(0,0,0,...                    
-%                         d2_radii(1),d2_radii(2),d2_radii(3),100);   
-% h = surf(ex,ey,ez,'Linestyle','none');
-% colormap([0 1 1 ; 0 1 1])
-% alpha(h,0.5);
 
 plot3(d2(:,1),d2(:,2),d2(:,3),'b.')
 legend('centered ellipsoid, avgRadii','raw datapoints');
@@ -153,5 +170,27 @@ plot(delta(:,3));
 grid on
 title('delta');
 
+%%
+
+figure
+r = sum(dc_radii)/3;
+% sphere with same radii
+[s_ex,s_ey,s_ez]= ellipsoid(0,0,0,...
+                    r,r,r,100);
+h = surf(s_ex,s_ey,s_ez,'Linestyle','none');
+colormap([1 1 0 ; 1 1 0])
+alpha(h,0.5);
+
+hold all
+
+% scaled data points...
+plot3(dc(:,1),dc(:,2),dc(:,3),'b.')
+plot3(dc_free(:,1),dc_free(:,2),dc_free(:,3),'r.')
+legend('SCALED DATA centered ellipsoid, radi=geo_dc','un-fit','Freescale fit');
+axis equal
+grid on
+xlabel('x')
+ylabel('y')
+title('centered')
 
 

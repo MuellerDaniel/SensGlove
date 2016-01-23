@@ -30,8 +30,8 @@ disp('soft iron scale factor:');
 disp(soft);
 
 % to show that the impact of the soft iron effects is small...
-disp('impact of soft iron scale [%]:');   
-disp((1.-soft).*100);
+% disp('impact of soft iron scale [%]:');   
+% disp((1.-soft).*100);
 
 tmp = zeros(length(data),3);
 % data_off = zeros(length(data),3);

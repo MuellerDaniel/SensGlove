@@ -1,4 +1,4 @@
-function [beta, geomag, data_scaled] = caliFreescale(data)
+function [beta, offFree, geomag, data_scaled] = caliFreescale(data)
 
 Y = zeros(length(data),1);
 
@@ -17,17 +17,18 @@ X = [data ones(length(data),1)];
 
 beta = ((X'*X)^-1)*X'*Y;
 
-off = [0.5*beta(1) 0.5*beta(2) 0.5*beta(3)];
+offFree = [0.5*beta(1) 0.5*beta(2) 0.5*beta(3)];
 disp('off freescale:');
-disp(off);
+disp(offFree);
 
-geomag = sqrt(beta(4)+beta(1)^2+beta(2)^2+beta(3)^2);
+
+geomag = sqrt(beta(4)+offFree(1)^2+offFree(2)^2+offFree(3)^2);
 disp('geomag B');
 disp(geomag);
 
 tmp = data;
 for i = 1:length(data)
-    tmp(i,:) = tmp(i,:)-off;
+    tmp(i,:) = tmp(i,:)-offFree;
     cnt = cnt+1;
 end
 
