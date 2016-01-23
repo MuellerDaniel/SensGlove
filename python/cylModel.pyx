@@ -186,3 +186,12 @@ def minimizeAng_cyl_cy(np.ndarray ang, fingerL, sPos, jointPos, np.ndarray measB
     cdef long double res = np.linalg.norm(dif)
 
     return res
+
+def minimizeB_cyl_cy(np.ndarray pos, long double ang, np.ndarray measB):
+    ''' objective function to minimize... '''
+
+    cdef np.ndarray dif = measB - calcB_cyl_cy(pos,ang)
+    # dif = dif.astype('float')       # I have to do it, otherwise a numpy.linalg.norm can not be applied...
+    cdef long double res = np.linalg.norm(dif)
+
+    return res
