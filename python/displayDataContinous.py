@@ -46,8 +46,10 @@ def updateMagnet(b):
     global cnt, dataArrRed, dataArrBlue, dataArrGreen, dataArrYellow, maxSize, overcntRed, overcntBlue, overcntGreen, overcntYellow
     
     if b[0] == 0:
+#        print "b0!"
         dataArrRed = np.append(dataArrRed, [b[1:]], axis=0)
     elif b[0] == 1:
+#        print "b1!"
         dataArrBlue = np.append(dataArrBlue, [b[1:]], axis=0)
     elif b[0] == 2:
         dataArrGreen = np.append(dataArrGreen, [b[1:]], axis=0)
@@ -128,11 +130,11 @@ def updateMagnet(b):
 #        curvePos[2].setData(dataArrPos[:,2])
         
 # BLE acquisition
-#proc = subprocess.Popen("gatttool -t random -b E3:C0:07:76:53:70 --char-write-req --handle=0x000f --value=0300 --listen".split(), 
-#                        stdout=subprocess.PIPE, close_fds=True)
+proc = subprocess.Popen("gatttool -t random -b E3:C0:07:76:53:70 --char-write-req --handle=0x000f --value=0300 --listen".split(), 
+                        stdout=subprocess.PIPE, close_fds=True)
 # serial acquisition
-proc = subprocess.Popen("stty -F /dev/ttyACM0 time 50; cat /dev/ttyACM0", 
-                        stdout=subprocess.PIPE, close_fds=True, shell=True) 
+#proc = subprocess.Popen("stty -F /dev/ttyACM1 time 50; cat /dev/ttyACM1", 
+#                        stdout=subprocess.PIPE, close_fds=True, shell=True) 
 b = np.array([0.,0.,0.,0.]) 
 data = np.array([[0,0.,0.,0.],
                  [1,0.,0.,0.],
@@ -150,33 +152,39 @@ data = np.array([[0,0.,0.,0.],
 #scale = [ 0., 0.41656681, 0.28542467]
 #offset = [ 0., 240.46739245, 5.38012971]
 bla = 0
+#earthOff = np.array([-5.4152763819095462, 6.2442713567839112, 12.633065326633162])
+earthOff = np.array([0.,0.,0.])
 try:
     while True:          
         while proc.stdout.readline() == None:
             print "waiting..."
             
         # bluetooth...
-#        output = proc.stdout.readline()
-#        b = datAc.structDataBLE(output)
-#        data = datAc.RTdata(data,proc)
-#        for d in data:
-#            updateMagnet(d)        
-#            bla += 1
+        output = proc.stdout.readline()
+        b = datAc.structDataBLE(output)
+        data = datAc.RTdata(data,proc)
+        for d in data:
+            updateMagnet(d)        
+            bla += 1
             
         # serial...
-        output = proc.stdout.readline()
-        if output[0] == 'q':
-            print output
-        else:
-            b = datAc.structDataSer(output)
-            updateMagnet(b)            
+#        output = proc.stdout.readline()
+#        print "output! ", output
+#        if output[0] == 'q':
+#            print output
+#        else:
+#            b = datAc.structDataSer(output)
+#            b[1:] -= earthOff
+#            b[1:] *= 0.001
+#            print "update with b:", b
+#            updateMagnet(b)            
         
 
 # to catch a ctrl-c
 except KeyboardInterrupt:    
     proc.stdout.close()
     proc.kill()
-    print "Killed ble listener!"
+    print "Killed listener!"
     pass
 
 #app.closeAllWindows()

@@ -34,7 +34,7 @@ def plotter2d(inputlist, titlelist, shareAxis = True):
 
 
 def plotIt2d(data, title, sizeData, shareAxis):
-    colorList = ('b','g','r','y')
+    colorList = ('r','b','g','y')
     #fingerList = ('index', 'middle', 'ring', 'pinky')
     cnt = 0
     if sizeData == 1:

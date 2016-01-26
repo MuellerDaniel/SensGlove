@@ -57,7 +57,11 @@ def calcFreescale(data):
         cnt += 1
     
     beta = np.dot(np.dot(np.linalg.inv(np.dot(X.T,X)),X.T),Y)
-    return beta
+#    return beta
+    off = [0.5*beta[0], 0.5*beta[1], 0.5*beta[2]]
+    mag = np.sqrt(beta[3]+off[0]**2+off[1]**2+off[2]**2)
+    
+    return (off,mag)
             
 
 ''' checking the calibration values '''
@@ -133,8 +137,8 @@ def deviation(values):
     
     
 ''' data acquisition '''
-#data = datAc.pipeAcquisition("gatttool -t random -b E3:C0:07:76:53:70 --char-write-req --handle=0x000f --value=0300 --listen",
-#                             4,measNr=500)
+d = datAc.pipeAcquisition("gatttool -t random -b E3:C0:07:76:53:70 --char-write-req --handle=0x000f --value=0300 --listen",
+                             4,measNr=1000)
 
 #d = datAc.pipeAcquisition('stty -F /dev/ttyACM0 time 50; cat /dev/ttyACM0',nrSens=1,fileName="160123_calDat0",measNr=3000)
 #d = datAc.textAcquisition("160123_calDat1")
@@ -145,7 +149,7 @@ def deviation(values):
 #h[0][len(d[0]):len(d[0])+len(d1[0])] = d1[0]
 #h[0][(len(d[0])+len(d1[0])):] = d2[0]
 #d = h
-d = datAc.textAcquisition("160123_calibrated")
+#d = datAc.textAcquisition("160123_calibrated")
 #d1 = datAc.textAcquisition("160111_calData1")
 #d2 = datAc.textAcquisition("160111_calData2")
 
@@ -159,9 +163,9 @@ d = datAc.textAcquisition("160123_calibrated")
 #plt.plot(data[0][:,2])
 
 ''' calculate and the hard/soft bias values '''
-(hard_old, soft_old) = calcHardSoft(d[0])
-print "hard_old: ", hard_old
-print "soft_old: ", soft_old
+#(hard_old, soft_old) = calcHardSoft(d[0])
+#print "hard_old: ", hard_old
+#print "soft_old: ", soft_old
 
 ''' Freescale '''
 #free0 = calcFreescale(d0[0])
@@ -184,18 +188,32 @@ print "soft_old: ", soft_old
 #print "off2 ", off2
 #print "mag2 ", mag2
 
-free = calcFreescale(d[0])
-off = [0.5*free[0], 0.5*free[1], 0.5*free[2]]
-mag = np.sqrt(free[3]+off[0]**2+off[1]**2+off[2]**2)
+#free = calcFreescale(d[0])
+#off = [0.5*free[0], 0.5*free[1], 0.5*free[2]]
+#mag = np.sqrt(free[3]+off[0]**2+off[1]**2+off[2]**2)
+#
+#print "off0 ", off
+#print "mag0 ", mag
 
-print "off0 ", off
-print "mag0 ", mag
+(off0, b0) = calcFreescale(d[0])
+(off1, b1) = calcFreescale(d[1])
+(off2, b2) = calcFreescale(d[2])
+(off3, b3) = calcFreescale(d[3])
+
+print "off0: ", off0
+print "off1: ", off1
+print "off2: ", off2
+print "off3: ", off3
+print "\nb0: ", b0
+print "b1: ", b1
+print "b2: ", b2
+print "b3: ", b3
 
 
 ''' inet approach... '''
-(offset, scale) = calibrate(d[0])
-print "offset: ", offset
-print "scale: ",scale
+#(offset, scale) = calibrate(d[0])
+#print "offset: ", offset
+#print "scale: ",scale
 
 ''' determine the deviation of the collected min and max values '''
 # values from 160111

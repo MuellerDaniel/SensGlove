@@ -370,19 +370,14 @@ def angToH_dia(theta):
     return H
 
 def calcB(r,h):
-#    factor = np.array([1./(4.*np.pi), 0., 1./(4.*np.pi)])
-    Br = 12.6e+03;
-    mu_0 = 4*np.pi*1e-07;
-    mu_r = 1.05;
-#    addFact = 0.2312
+    Br = 12.6e+03
+    mu_0 = 4*np.pi*1e-07
+    mu_r = 1.05
     addFact = 1
     lamb = (Br*mu_0*mu_r)/(4*np.pi)*addFact
     factor = np.array([lamb, lamb, lamb])
-#    print "r: ", r
     no = sqrt(float(r[0]**2+r[1]**2+r[2]**2))
-#    b = np.array([((3*r*np.dot(h,r))/(no**5)) - (h/(no**3))])*factor
     b = np.array([((3*r*np.dot(h,r))/(no**5)) - (h/(no**3))])*factor
-#    b = np.array([((3*r*np.dot(h,r))/(no**5)) - (h/(no**3))])*factor
     return b[0]
 
 def estR_simple(r,h,measB):
