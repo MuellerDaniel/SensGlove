@@ -18,7 +18,7 @@ def calcB_cy(np.ndarray r, np.ndarray h):
     cdef long double mu_r = 1.05
     cdef long double addFact = 1
     cdef long double lamb = (Br*mu_0*mu_r)/(4*np.pi)*addFact
-    cdef np.ndarray factor = np.array([lamb, lamb, lamb])
+    cdef np.ndarray factor = np.array([lamb, -lamb, lamb])
     cdef long double no = sqrt(float(r[0]**2+r[1]**2+r[2]**2))
     cdef np.ndarray b = np.array([((3*r*np.dot(h,r))/(no**5)) - (h/(no**3))])*factor
     return b[0]
@@ -83,7 +83,7 @@ def angToBm_cy(np.ndarray theta,finger,S,off):
         # print "actS: ", actS
         for i in range(len(finger)):
 #            print "i: ", i
-            actTheta = theta[i*3:i*3+3]
+            actTheta = theta[i*2:i*2+2]
             actFinger = finger[i]
             actOff = off[i]
 
@@ -129,3 +129,10 @@ def minimizeAng_cy(np.ndarray theta,finger,S,off, np.ndarray B):
         res = np.linalg.norm(dif)
 
         return res
+
+
+def minimizePos_cy(np.ndarray p, np.ndarray h, np.ndarray measB)        :
+    cdef np.ndarray dif = measB - calcB_cy(p,h)
+    cdef long double res = np.linalg.norm(dif)
+
+    return res
