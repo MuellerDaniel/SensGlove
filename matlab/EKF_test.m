@@ -97,12 +97,12 @@ for i = b_sim_noise'
     disp(cnt);
     
     [x_pre, P_pre] = EKF_prediction_dip(x(:,cnt-1), P, Q);
-%     disp('x_pre:');
-%     disp(num2str(x_pre));
-%     disp('P_pre');
-%     disp(num2str(double(P_pre)));
+    disp('x_pre:');
+    disp(num2str(x_pre));
+    disp('P_pre');
+    disp(num2str(double(P_pre)));
     
-    [x(:,cnt), P] = EKF_update_dip2(jacSim, i, x_pre, P_pre, R);
+%     [x(:,cnt), P] = EKF_update_dip2(jacSim, i, x_pre, P_pre, R);
 %     disp('x_now');
 %     disp(num2str(x(:,cnt)));
 %     disp('new P:');
