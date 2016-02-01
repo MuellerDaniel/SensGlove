@@ -1,0 +1,84 @@
+\lhead[\chaptername~\thechapter]{\rightmark}
+
+\rhead[\leftmark]{}
+
+\lfoot[\thepage]{}
+
+\cfoot{}
+
+\rfoot[]{\thepage}
+
+\chapter{System Design and Implementation} \label{cha:sysDesign}
+
+\section{System design} \label{cha:design}
+
+\begin{itemize}
+\item general description of the system
+\item four sensors, magnets on fingertips, sensors on rack at back of hand, ...
+\item wooden hand for easy/repeatable measurements (it is not perfect! since the index and pinky finger do not move in x-z plane!)
+\item pictures!
+\end{itemize}
+
+
+\section{Sensor design/Data acquisition...} \label{cha:sensors}
+
+\begin{itemize}
+\item describe arduino system (BLE, ...)
+\item which kind of sensors and why (range is adjustable, how comes the conversion factor in, ...)
+\item hard-soft iron effects
+\item calibration methods for sensors (hard-soft things / Freescale approach)
+\item also calibration/scaling towards the magnetic model equations! \\
+		$ \rightarrow $ scaling/offset termination on flat paper with (almost) exactly known positions
+\item the circumstance of the earth magnetic field and how to overcome it \\
+		$ \rightarrow $ rotation estimation with Madgwick filter! Mention that you take an out of the box code for it
+\end{itemize}
+
+
+\section{Deriving the Human hand model} \label{sec:handModel}
+
+\begin{itemize}
+\item neglecting adduction-abduction
+\item angle of PIP is 2/3 of DIP
+\item bring here the picture of the sketched hand from the equation document!
+\item describe that you can break every position/orientation of a fingertip to a combination of MCP and DIP
+\item assumption, that every pose leads a unique B-field
+\item only right hand
+\end{itemize}
+
+
+\section{Magnetic field interpretation } \label{sec:magmodel}
+
+\begin{itemize}
+\item describe the derivation of the position vector, relative to sensor position, joint angles, ... \\
+		$ \rightarrow $ so the whole $ P_{sensor} - P_{fingertip} - P_{joint} $ thing
+\item the derivation of the orientation vector (dip model) and orientation angle (cyl model)
+\item how to formulate/evaluate/modify the B-field equations, to get the outcome\\
+		$ \rightarrow $ for the dipole model (derivation of the orientation is \grqq a bit tricky \grqq)\\
+		$ \rightarrow $ describe the whole turning and transforming process for the cylindrical model
+		
+\end{itemize}		
+
+
+\section{Hand state estimation} \label{sec:estimation}
+
+\begin{itemize}
+\item general description of minimizing the error
+\item how do I set up my matrices and therefore, how does my optimization problem look like
+\item optional constrains
+\item solving it with the EKF approach
+\end{itemize}
+
+
+\section{Visualization} \label{sec:visual}
+
+\begin{itemize}
+\item the Blender thing...
+\item using a rigged hand model
+\item setting it up as a Blender Game
+\item I only pass the estimated joint angles
+\item briefly describe bpy interface and how I manipulate the rigged hand
+\end{itemize}
+
+
+
+

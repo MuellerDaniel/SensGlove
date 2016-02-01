@@ -1,0 +1,52 @@
+\lhead[\chaptername~\thechapter]{\rightmark}
+
+\rhead[\leftmark]{}
+
+\lfoot[\thepage]{}
+
+\cfoot{}
+
+\rfoot[]{\thepage}
+
+\chapter{Results} \label{cha:results}
+
+\section{Data behaviour / Sensor values} \label{sec:dataRes}
+
+\begin{itemize}
+\item general behaviour of sensor (when you get to near, there is a clipping/oversteering)
+\item timing behaviour with the earth-mag elimination
+
+\item comparing the calibration methods \\
+		$ \rightarrow $ hard-soft as good as Freescale, took Freescale
+		
+\item observations from the earth-mag elimination \\
+		$ \rightarrow $ not to 100 \%  possible, but still better than nothing...
+		
+\item problems with determining the model fit parameters \\
+		$ \rightarrow $ difference in orientation of magnet \\
+		$ \rightarrow $ tried to fit it to wooden hand, but there the error is already in the simulated(fitting) data \\
+		$ \rightarrow $ hard to derive!
+		
+\end{itemize}
+
+
+\section{Pose estimation} \label{sec:estimationRes}
+
+\begin{itemize}
+\item results of minimization for simulated data with and without noise
+\item effect of adding constraints
+\item EKF results
+
+\item results with real data
+\item as described, sensor values are not good scalable to model...
+\item though not so good results...
+\item due to timing behaviour of RT minimization, not such a good way to do have a real time estimation
+\item so I have results for single magnet - one/multiple sensor 
+\item and for multiple magnet - multiple sensor combinations
+\item presentation and comparison between EKF and minimizing approach
+\item claiming that the difficulty in scaling the measurements is critical...
+
+\end{itemize}
+
+
+
