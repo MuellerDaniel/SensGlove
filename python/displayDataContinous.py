@@ -130,7 +130,8 @@ def updateMagnet(b):
 #        curvePos[2].setData(dataArrPos[:,2])
         
 # BLE acquisition
-proc = subprocess.Popen("gatttool -t random -b E3:C0:07:76:53:70 --char-write-req --handle=0x000f --value=0300 --listen".split(), 
+#proc = subprocess.Popen("gatttool -t random -b E3:C0:07:76:53:70 --char-write-req --handle=0x000f --value=0300 --listen".split(), 
+proc = subprocess.Popen("gatttool -t random -b E7:00:30:16:CD:18 --char-write-req --handle=0x000f --value=0300 --listen".split(),                         
                         stdout=subprocess.PIPE, close_fds=True)
 # serial acquisition
 #proc = subprocess.Popen("stty -F /dev/ttyACM1 time 50; cat /dev/ttyACM1", 
