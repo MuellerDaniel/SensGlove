@@ -12,49 +12,255 @@
 
 \section{System design} \label{cha:design}
 
-\begin{itemize}
-\item general description of the system
-\item four sensors, magnets on fingertips, sensors on rack at back of hand, ...
-\item wooden hand for easy/repeatable measurements (it is not perfect! since the index and pinky finger do not move in x-z plane!)
-\item pictures!
-\end{itemize}
+Ma et al. \cite{ma2010magnetic} describe in their work an approach for hand pose estimation, using magnets and sensors. Since this group is the only one using this passive concept, the design in this work relies heavily on theirs. However till now the group only presented results for reconstructing the motion of a single finger with six sensors. An image of their setup is shown in \todo{PICTURE MA SYSTEM}.
 
+The presented system is constructed to estimate the motion of four human fingers, neglecting the thumb (for details about the underlying hand model, see \ref{sec:handModel}). For this, four cylindrical permanent magnets are used.\\
+Their dimensional and magnetic characteristics are shown in \ref{tab:magDimensions}.
+\begin{table}[h]
+\centering
+\begin{tabular}{|c|c|}
+	\hline
+	Length & \SI{15}{\mm} \\ \hline
+	Radius & \SI{2.5}{\mm} \\ \hline 
+	Material & Neodymium \\ \hline
+	Remanence & 1.26-\SI{1.29}{\tesla} \\ \hline
+	Type & axial magnetised \\ \hline
+\end{tabular}
+\caption{Magnetic and dimensional characteristics of the used cylindrical magnets.}
+\label{tab:magDimensions}
+\end{table}
 
-\section{Sensor design/Data acquisition...} \label{cha:sensors}
+Those components have to be mounted onto the fingertips. With a 3D printer ring like supports are designed, to ease the donning and doffing of the magnets and to ensure a variable positioning on the fingers. The bottom of the ring is left open, to make the system flexible for various finger diameters. The socket on top of the ring is constructed to securely hold and align the magnet constantly. The magnetic field is measured with four \acp{IMU} (see \ref{cha:sensors}), placed inside a self designed bracket. This bracket is constructed, to be worn on the back of the hand. It ensures, that the alignment and positioning of the sensors relative to each other is held static, which is important for the pose estimation (see \ref{sec:estimation}). Pictures of the individual parts are shown in figure... \todo{Pictures of everything!}. Since four magnets are used, the sensor array consists also of four measurement units. For an easy and reproducible evaluation of the system, a wooden hand is used. This static setup ensures one to measure the positions and dimensions of the sensors, the joints and the bone lengths relatively accurate. However using the artificial hand is also not optimal, since it violates some of the hand model constraints slightly. To read out the sensor data a RFduino microcontroller \todo{referenc} is used. This device is a clone of the well known Arduino environment \todo{reference}, which eases the use of that system. Since this part of the setup is only used to acquire the sensor data and perform basic signal processing, the computational requirements are not very high. A plus of the RFduino device is, that it can directly send the data via Bluetooth Low Energy to a host PC, where the main processing and estimation steps are realized. A summary of the individual parts and their purpose is given in \ref{tab:systemParts}.
 
-\begin{itemize}
-\item describe arduino system (BLE, ...)
-\item which kind of sensors and why (range is adjustable, how comes the conversion factor in, ...)
-\item hard-soft iron effects
-\item calibration methods for sensors (hard-soft things / Freescale approach)
-\item also calibration/scaling towards the magnetic model equations! \\
-		$ \rightarrow $ scaling/offset termination on flat paper with (almost) exactly known positions
-\item the circumstance of the earth magnetic field and how to overcome it \\
-		$ \rightarrow $ rotation estimation with Madgwick filter! Mention that you take an out of the box code for it
-\end{itemize}
+\begin{table}[h]
+\centering
+\begin{tabular}{|c|l|}
+\hline
+\textbf{Component} & \textbf{Purpose} \\ \hline
+4 Magnets & causing the magnetic field \\ \hline
+4 \acp{IMU} & measuring the magnetic field \\ \hline
+RFduino & data acquisition and forwarding \\ \hline
+PC & sensor data interpretation and state estimation \\ \hline
+\end{tabular}
+\caption{Overview of the relevant system parts}
+\label{tab:systemParts}
+\end{table}
+
 
 
 \section{Deriving the Human hand model} \label{sec:handModel}
 
+As already depicted in \ref{cha:relatedWork} and \ref{sec:anatomy}, the utilization of a proper kinematic model is a very important part, when it comes to pose interpretation and estimation. In this section the kinematic model, used to reconstruct the finger position is described.\\
+The underlying kinematic model tries to simplify the range of motion of the human hand, without loosing too much generality. The complex movement of the thumb is totally neglected. The other four fingers naturally move mainly in one plane (by disregarding adduction-abduction), for the thumb however this does not hold. Trying to track the full five \ac{DOF} for this finger would make the model much more complex. Another point is, that the thumb moves mainly \grqq in front \grqq of the other fingers. This would cause influence on every sensor on the array, such that a distinction between the moving finger is more difficult. So for keeping the model and the pose estimation simple, the thumb will be neglected.\\
+As many other human hand models, the movement of the Metacarpal bones is neglected. Therefore the \ac{MCP} joints are assumed to be always at a static position. Since the presented approach focuses on finger pose estimation and that the sensors are mounted on the back of the hand, the movement of the whole palm does not need to be taken into account. As already stated, the index, middle, ring and pinky finger show four \ac{DOF} each and move mainly in one plane by flexion-extension. For deriving a simpler hand model, the intra finger constraint for the joint angles of the \ac{DIP} and \ac{PIP} of one finger is used, being $ \theta_{DIP} = \frac{2}{3} \theta_{PIP} $. So in the end one finger has 3 \ac{DOF}. As a first step however this model is even more simplified, by neglecting adduction-abduction and resulting in a system with 2 \ac{DOF} per finger. The range of movement of the joints is assumed to be like described in \cite{lin2000modeling}. This means for the range of the flexion-extension angle for the \ac{MCP} being within $ \ang{0} \leq \theta_{MCP} \leq \ang{90} $ and the range of adduction/abduction $ \ang{0} \leq \psi_{MCP} \leq \ang{30} $. The flexion-extension range for the \ac{PIP} lies within $ \ang{0} \leq \theta_{PIP} \leq \ang{110} $\\
+In the end every finger is modelled equally as a kinematic chain with 2 joints, having 3 \ac{DOF} in total. The position and orientation of the fingertip, and therefore of the magnet, is fully determined by the angles of the finger joints, using forward kinematics. For a better visualization, the kinematic chain with the relevant parts is sketched in \ref{fig:handMod} for a single finger. \todo{adjust the picture!}\\
 \begin{itemize}
-\item neglecting adduction-abduction
-\item angle of PIP is 2/3 of DIP
-\item bring here the picture of the sketched hand from the equation document!
-\item describe that you can break every position/orientation of a fingertip to a combination of MCP and DIP
-\item assumption, that every pose leads a unique B-field
-\item only right hand
+\item placement of the MCP/DIP/PIP naming
+\item placement of $ \theta $s
+\item placement of bone lengths
+\item insert $ psi $ for adduction-abduction
 \end{itemize}
 
+\begin{figure}[!h]
+\centering
+\begin{tikzpicture}[x=0.5cm,y=0.5cm,z=0.3cm,>=stealth]
+% coordinate system axes
+\draw[->] (xyz cs:x=-8) -- (xyz cs:x= 8) node[above] {$z$};
+\draw[->] (xyz cs:y=-8) -- (xyz cs:y= 8) node[right] {$x$};
+\draw[->] (xyz cs:z= 8) -- (xyz cs:z=-8) node[above] {$y$};
+% the finger
+\newcommand\offx{-1}
 
-\section{Magnetic field interpretation } \label{sec:magmodel}
+\coordinate (O) at (0,0,\offx);
+\coordinate (S) at (0,-2,\offx);
+\coordinate (O-) at (0,1.5,0);
+\coordinate (off) at (0,0,-2);
+\coordinate (MCP) at (120:4);
+\coordinate (MCP-) at (120:1.5);
+\coordinate (DIP) at (190:3);
+\coordinate (DIP-) at (190:1.5);
+\coordinate (PIP) at (240:2);
+\coordinate (PIP-) at (240:1.5);
+\coordinate (P) at (234:1.8);
+\coordinate (T) at (149.5:5.78);	% not a good solution...
+
+% lines, representing the phalanges
+\draw[dashed] (O) -- ++ (MCP) -- ++(MCP-);
+\draw[dashed] (O) -- ++ (O-);
+\draw[black,very thick] (S) -- node[left] {a} (O) -- node[below,pos=0.75]{$ l_{prox} $} ++ (MCP) -- node[below]{$ l_{mid} $} ++ (DIP) -- node[right]{$ l_{dist} $} ++ (PIP);
+\draw[dashed] (O) -- ++(MCP) -- ++ (DIP) -- ++(DIP-);
+
+% the red dots for the joints
+\fill[red] (O) circle(2pt) node[right] {MCP};
+\fill[red] (O) ++ (MCP) circle(2pt) node[right] {DIP};
+\fill[red] (O) ++ (MCP) ++ (DIP) circle(2pt) node[above] {PIP};
+
+% the angles
+%\draw[<-] ((0,1,0)) arc (-270:-240:1);
+%($(<center>) + (<init angle>:<radius>)$)
+\draw[<-] ($(O)+(-270:1)$) arc (-270:-240:1);
+\path (O)+(90:1.5) node {$\theta_{MCP}$};
+\draw[<-] ($(O)+(MCP)+(-240:1)$) arc (-240:-170:1);
+\path (O)++(MCP)+(-1.4,0.6,0) node {$ \theta_{PIP} $};
+%\draw[<-] ([shift={(-170:0.7)}] T) arc (-170:-120:0.7);
+\draw[<-] ($(O)+(MCP)+(DIP)+(-170:0.7)$) arc (-170:-120:0.7);
+\path (O)++(MCP)++(DIP)+(-0.5,0.5,0) node {$ \theta_{DIP} $};
+
+% the magnet
+\draw[fill=blue,rotate=240+180,shift={($(O) + (MCP) + (DIP) + (P)$)}] (0,0,0) rectangle(0.5,0.3,0);
+\draw[black,thick,->] ($(O) + (MCP) + (DIP) + (P) + (-0.1,0.15,0)$) -- ++ (240+180:0.9);
+\path (O) ++ (MCP) ++ (DIP) ++ (P) + (-0.5,0.6,0) node (H) {H};
+\path (O) ++ (MCP) ++ (DIP) ++ (P) + (-0.2,-0.5,0) node (P) {P};
+
+\draw[fill=yellow,rotate=90,shift={($(S)$)}] (0,-0.3,0) circle(0.3);
+\path (S) + (1.8,-0.2,0) node {Sensor};
+
+% TODO draw the vector for R
+\draw[dashed, red, ->] (S) -- ++ (H);
+
+\end{tikzpicture}
+\caption{Kinematic chain representation of a single finger. The Cartesian coordinate system is aligned like the sensor. The \ac{MCP} joint lies on the y-Axis}
+\label{fig:handMod}
+\end{figure}
+
+The values for the position and orientation of the magnet are required for calculating the magnetic field strength at the sensor on the back of the hand.\\
+The orientation vector $ \mathrm{H} $ is derived in the following way:\\
+\todo{bring in adduction/abduction}
+\begin{equation}\label{eq:orienX}
+\mathrm{H}_{x} = \cos(-\theta_{MCP}-\theta_{PIP}-\theta_{DIP})
+\end{equation}
+
+\begin{equation}\label{eq:orienY}
+\mathrm{H}_{y} = 0
+\end{equation}
+
+\begin{equation}\label{eq:orienZ}
+\mathrm{H}_{z} = \sin(-\theta_{MCP}-\theta_{PIP}-\theta_{DIP})
+\end{equation}
+
+The position $ \mathrm{P} $ of the magnet is determined by applying forward kinematics, using the joint angles and the finger lengths:
+\todo{bring in adduction/abduction}
+\begin{equation}\label{eq:posX}
+\begin{aligned}
+\mathrm{P}_{x} =& l_{Prox}\sin(\frac{\pi}{2}-\theta_{MCP}) +\\
+& l_{Mid}\sin(\frac{\pi}{2}-(\theta_{MCP}+\theta_{PIP})) +\\
+& l_{Dist}\sin(\frac{\pi}{2}-(\theta_{MCP}+\theta_{PIP}+\theta_{DIP})) 
+\end{aligned}
+\end{equation}
+
+\begin{equation}\label{eq:angleY}
+\begin{aligned}
+\mathrm{P}_{y} &= 0
+\end{aligned}
+\end{equation}
+
+\begin{equation}\label{eq:angleZ}
+\begin{aligned}
+\mathrm{P}_{z} =& -l_{Prox}\cos(\frac{\pi}{2}-\theta_{MCP}) +\\
+& l_{Mid}\cos(\frac{\pi}{2}-(\theta_{MCP}+\theta_{PIP})) +\\
+& l_{Dist}\cos(\frac{\pi}{2}-(\theta_{MCP}+\theta_{PIP}+\theta_{DIP})) 
+\end{aligned}
+\end{equation}
+
+For neglecting the adduction-abduction movement, one just has to set the $ \psi $ value to 0. From that it directly follows, that the orientation and position vectors have only contributions on the $ x $- and $ z $-axis. The $ y $-component stays 0.\\
+The presented model shows a basic approach to model the index, middle, ring and pinky fingers of the human hand as ideal revolute joints. The constraints and simplifications introduced are comparable to other groups \cite{lin2000modeling}. The biggest simplification however is the disregard of the thumb movement.
+
+
+
+\section{Sensor design and data acquisition} \label{cha:sensors}
+
+For measuring the magnetic field, four LSM303D sensors \todo{reference datasheet!} from ST are used. This device comprises a 3 axis accelerometer and a 3 axis magnetometer in a single package. This sensor is chosen, because its magnetic full-scale range is selectable. It can be determined to $ \pm 0.2$, $ \pm 0.4 $, $ \pm 0.8 $ or $ \pm 1.2 $ \SI{}{\milli\tesla}. The magnetic values are stored in 2 Bytes in 2's complement. The sensitivity per \ac{LSB} is specified like shown in \ref{tab:magSensitivity}.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|c|l|}
+\hline
+\textbf{Measurement Range [\SI{}{\milli\tesla}]} & \textbf{Sensitivity [\SI{}{\micro\tesla \per LSB}]} \\ \hline
+$ \pm 0.2 $ & 0.080 \\ \hline
+$ \pm 0.4 $ & 0.160 \\ \hline
+$ \pm 0.8 $ & 0.320 \\ \hline
+$ \pm 1.2 $ & 0.479 \\ \hline
+\end{tabular}
+\caption{Magnetic sensitivity for the corresponding measurement range, according to the datasheet}
+\label{tab:magSensitivity}
+\end{table}
+
+The data rate can be set to \SI{100}{\Hz}. The communication is established via a standard I2C bus, which means that a clock frequency of \SI{100}{\kilo \Hz} is used. In the end a breakout version of this device, available at Pololu \todo{reference webpage} is used. It is sold as a full 9 \ac{DOF} IMU, carrying the LSM303D and L3GD20H gyroscope. However since the gyroscope and the accelerometer are not further used, they won't be explained here in detail. A picture of the breakout board is shown in \todo{Picture of LSM!}. The communication is realised with an RFduino microcontroller. This device can be programmed via the Arduino environment, which eases the process. It comes with a built in \ac{BLE} module. This is used to send the data to a host PC, where the state estimation process is programmed. Since the same sensor is used four times on a single I2C bus, a small work around is established, to enable a individual communication to each one of the four sensors. The clock signal is splitted via a multiplexer and therefore only redirected to the desired device. Combining the data lines of the sensors and multiplexing the clock signal to each device individually leads to a single data information on the bus.
+
+
+
+\section{Calibration and preprocessing of sensor data}
+
+\subsection{Calibration of hard and soft-iron coefficients}
+
+Magnetic sensors in general suffer from two main distortion effects, called hard and soft-iron coefficients. Those parameters are caused by manufacturing processes and ferromagnetic materials on the \ac{PCB} and the direct environment of the sensor \cite{ozyagcilar2012calibrating}. If the sensor is moved in a field, free of magnetic distortion, it should only measure the influence due to the earth's magnetic field. An ideal device would measure a constant value for the field strength, no matter in which way it is oriented. In other words, holding the device, such that the full earth field has only influence on the $ z $-axis, should provide the same result on the other axes, when rotating it. So in the end by measuring the earth magnetic field at various positions and plotting them, should result in a perfect sphere, centered at the origin. Due to the hard iron distortions the sphere is not perfectly located at the origin. This effect is produced by materials, exhibiting a constant additive field, like wires or small ferromagnetic components, placed onto the PCB \todo{Cite article!}. Soft iron effects however, cause that the shape of the sphere is deformed to an ellipsoid. This is caused by materials, influencing the magnetic field lines and causing different gains on the axes. An example would be metallic materials like iron or nickel, which influence the direction of magnetic fields. So in the end the shape of the perfectly centered sphere is more like an ellipsoid, shifted from the origin. A visualization can be seen in \ref{fig:hardSoft}.
+
+\begin{figure}
+\centering
+\includegraphics[width=0.7\textwidth]{pictures/hardSoft.png}
+\caption{Combination plot showing perfect and distorted magnetometer measurements \cite{ozyagcilar2012calibrating}}
+\label{fig:hardSoft}
+\end{figure}
+
+The static hard-iron effects can simply be modelled as an offset $ H $, shifting the magnetic values. The soft-iron effects are represented by the $ 3\times3 $ matrix $ W $, transforming the sphere into a ellipsoid. 
+\begin{equation} \label{eq:hardSoftModel}
+\mathrm{B}_{earth} = W^{-1} (\mathrm{B}_{meas} - H)
+\end{equation}
+To determine and overcome these two distortion factors, several methods exist. The offset parameters $ H $ are simple to determine. One takes the average between the maximum and minimum of one axis. \ref{eq:simpleOffset} shows this exemplaryly for the $ x $-axis. 
+\begin{equation} \label{eq:simpleOffset}
+\mathrm{off}_{x} = \frac{x_max + abs(x_min)}{2}
+\end{equation}
+The 6 soft-iron parameters can be specified, by performing an ellipsoid fit. Kok et al. follow a very elaborated approach, by applying an elliptical fit in combination with measurements of inertial sensors. This approach also covers the alignment of the sensor axes of the magnetometer with the ones of the gyroscope and accelerometer. Since only the magnetic sensor is used in the presented approach, this can be neglected. The Application Note 4246 by Freescale \cite{ozyagcilar2012calibrating} presents a good and interesting calibration procedure. They reduce the determination of the three hard- and the nine soft-iron factors to four parameters. They assume that the hard-iron offsets dominate the soft-iron effects. They try to minimize the error between the measured field $ \mathrm{B}_meas $ and the real, surrounding field $ \mathrm{B}_{earth} $. For this, they take a whole series of measurements into account, and not just the minimum and maximum, like in \ref{eq:simpleOffset}. As a result, one gets a vector with the three offset values and $ \mathrm{B}_{earth} $
+Winer \cite{Winer} however uses a simple and straight forward approach. He compensates the hard iron offset, by using \ref{eq:simpleOffset}. For compensating the soft iron effects, the average amount, representing the \grqq radius \grqq of each axis is determined. Those three values are averaged and based on this, the scale factors for each axis can be calculated. \ref{eq:radX} and \ref{eq:scaleX} show how to derive this scaling factor for the $ x $-axis.
+
+\begin{equation} \label{eq:radX}
+\mathrm{rad}_{x} = \frac{x_max - x_min}{2}
+\end{equation}
+
+\begin{equation} \label{eq:scaleX}
+\mathrm{scale}_{x} = \frac{rad_{x}+rad_{y}+rad_{z}}{3 \cdot rad_{x}}
+\end{equation}
+
+
+\subsection{Cancellation of the surrounding earth magnetic field}
+
+The magnetic models, introduced in \ref{sec:magneticFound} describe the influence of the magnet at a certain position and orientation, relative to the sensor. Another observation proven in that chapter is that multiple magnetic fields sum up. On earth we focus a static surrounding magnetic field, going from the north pole to the south pole. Depending on ones position, this value ranges from 25 - \SI{65}{\micro \tesla}. This field also contributes to the measurements, recorded by the sensor. Since this field is a static, natural occurrence of magnetism it cannot easily switched of. However for a proper interpretation of the surrounding field, solely determined by the permanent magnets, the earth field has to be eliminated. For a system with static geological sensor position and orientation, this would be no problem. One would just measure the field without any artificial magnets and subtract this from every measurement. Obviously, the geological position and orientation of the human hand is not static.\\
+However by knowing the orientation of the system and the corresponding earth magnetic field in absence of artificial magnets, this offset can be eliminated.\\
+The cancellation process includes the following steps:\\
+\begin{enumerate}
+\item Place the hand with the sensors attached in a stable and calm position
+\item The magnets for the fingertips are absent
+\item Define the orientation $ R_{i} $ of the sensors and the corresponding surrounding earth magnetic field $ \mathrm{B}_{earth} $
+\item After this calibration phase, one tracks the orientation of the hand $ R_{a} $
+\item Calculate the relative orientation $ R_{d} = R_{i} - R_{a} $
+\item Convert $ R_{d} $ into a rotation matrix $ rot_{d} $ and apply this to $ \mathrm{B}_{earth} $
+\item Subtract the rotated earth magnetic field from your actual measurement
+\end{enumerate}
+As stated in \ref{cha:sensors} the used sensor breakout comes with a full 9 \ac{DOF} \ac{IMU}. With such a system the orientation can be estimated. The Madgwick filter \cite{madgwick2010efficient} is a widely used and pretty standard method to derive the absolute rotation of a body in space, using gyroscope, accelerometer and magnetometer data. However this estimation uses the surrounding magnetic field, to compensate sensor drifts and to align its orientation, relative to the earth magnetic field. So by introducing artificial magnets, which are stronger than the earth magnetic field, the Madgwick filter could break down and therefore the calculated orientation will drift. In \todo{reference results} the evaluation of this approach is shown.
+
+
+\subsection{Fitting the sensor data to the model equations}
+
+\begin{itemize}
+\item calibration/scaling towards the magnetic model equations! \\
+		$ \rightarrow $ should only be a scaling factor (with cancelled earth field)
+		$ \rightarrow $ scaling termination on flat paper with (almost) exactly known positions		
+		$ \rightarrow $ or just by doing a calibration gesture and fitting the values to it...
+\end{itemize}
+		
+
+
+
+
+\section{Magnetic field interpretation towards finger pose reconstruction} \label{sec:magmodel}
 
 \begin{itemize}
 \item describe the derivation of the position vector, relative to sensor position, joint angles, ... \\
 		$ \rightarrow $ so the whole $ P_{sensor} - P_{fingertip} - P_{joint} $ thing
-\item the derivation of the orientation vector (dip model) and orientation angle (cyl model)
+\item the derivation of the orientation vector $ \vec{h} $ (dip model) and orientation angle $ \alpha $ (cyl model)
 \item how to formulate/evaluate/modify the B-field equations, to get the outcome\\
-		$ \rightarrow $ for the dipole model (derivation of the orientation is \grqq a bit tricky \grqq)\\
-		$ \rightarrow $ describe the whole turning and transforming process for the cylindrical model
+		$ \rightarrow $ for the dipole model, almost everything stated, present the formula! \\
+		$ \rightarrow $ describe the whole turning and transforming process for the cylindrical model, present steps
 		
 \end{itemize}		
 
@@ -62,9 +268,11 @@
 \section{Hand state estimation} \label{sec:estimation}
 
 \begin{itemize}
+\item assumption, that every pose leads to a unique combination of B-fields
 \item general description of minimizing the error
 \item how do I set up my matrices and therefore, how does my optimization problem look like
 \item optional constrains
+\item 3 different minimization approaches available by scipy, compared!
 \item solving it with the EKF approach
 \end{itemize}
 

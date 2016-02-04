@@ -18,14 +18,17 @@
 
 \item comparing the calibration methods \\
 		$ \rightarrow $ hard-soft as good as Freescale, took Freescale
+		$ \rightarrow $ comparison/visualization available in Matlab!
 		
 \item observations from the earth-mag elimination \\
-		$ \rightarrow $ not to 100 \%  possible, but still better than nothing...
+		$ \rightarrow $ no good results, due to sensor drifts, ...
+		$ \rightarrow $ took data with and without cancellation, look at cell 287 in Excel sheet 
 		
 \item problems with determining the model fit parameters \\
-		$ \rightarrow $ difference in orientation of magnet \\
+		$ \rightarrow $ tried to find scaling factors on flat surface with known distances (Excel sheet cell 283 ) \\
 		$ \rightarrow $ tried to fit it to wooden hand, but there the error is already in the simulated(fitting) data \\
-		$ \rightarrow $ hard to derive!
+		$ \rightarrow $ tried to derive the position values on the wooden hand, no definite solution found
+		$ \rightarrow $ so the fitting is done by a initialization gesture with the hard coded position values
 		
 \end{itemize}
 
@@ -34,7 +37,9 @@
 
 \begin{itemize}
 \item results of minimization for simulated data with and without noise
-\item effect of adding constraints
+\item results for easy movement (making a fist) with and without noise
+\item results for complex movement with and without noise
+
 \item EKF results
 
 \item results with real data

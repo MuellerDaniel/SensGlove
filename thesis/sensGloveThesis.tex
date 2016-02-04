@@ -26,11 +26,15 @@
 %\usepackage[square,sort,comma]{natbib}
 %\usepackage{biblatex}
 
+
 \usepackage{lipsum}
 \usepackage{textcomp}
 \usepackage{gensymb}
 \usepackage{siunitx}
 \usepackage{acronym}
+\usepackage{subfiles}
+\usepackage{tikzsymbols,xcolor}
+\usetikzlibrary{arrows,shapes,positioning,calc}
 
 % the following is useful when we have the old nomencl.sty package
 \providecommand{\printnomenclature}{\printglossary}
@@ -234,6 +238,7 @@ bereits für eine andere Prüfung angefertigt wurde.
 \acro{PCB}{Printed Circuit Board}
 \acro{EMG}{Electromyography}
 \acro{HCI}{Human Computer Interface}
+\acro{CT}{Computed Tomography}
 \acro{CMC}{Carpometacarpal}
 \acro{MCP}{Metacarpophalangeal} 
 \acro{PIP}{proximal Interphalangeal}
@@ -241,6 +246,8 @@ bereits für eine andere Prüfung angefertigt wurde.
 \acro{TM}{Trapeziometacarpal}
 \acro{CEL}{complete elliptical integral}
 \acro{FEM}{Finite element method}
+\acro{LSB}{Least Significant Bit}
+\acro{BLE}{Bluetooth Low Energy}
 \end{acronym}
 
 \cleardoublepage{}
@@ -261,11 +268,11 @@ bereits für eine andere Prüfung angefertigt wurde.
 
 \lhead[\chaptername~\thechapter]{\rightmark}
 
-\include{texfiles/introduction}
+%\include{texfiles/introduction}
 
-\include{texfiles/relatedWork}
+%\include{texfiles/relatedWork}
 
-\include{texfiles/foundations}
+%\include{texfiles/foundations}
 
 \include{texfiles/systemDesign}
 
