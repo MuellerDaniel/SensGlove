@@ -1,13 +1,14 @@
 % function B = calcB_cyl(z,rho)     % approach for passing the real z and rho values in [m]
 function B = calcB_cyl(p,ang)       % approach for passing the position of the center and the angle between orientation and coSys
 ang = ang/1;
-rotMat = [cos(ang) -sin(ang); sin(ang) cos(ang)];
+rotMat = [cos(ang) -sin(ang);...
+            sin(ang) cos(ang)];
 cylCo = p*rotMat;
 z = cylCo(1);
 rho = cylCo(2);
 
-z
-rho
+% z
+% rho
 
 a = 0.0025;     % radius in m
 b = 0.015/2;    % half length of magnet

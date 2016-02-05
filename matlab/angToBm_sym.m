@@ -11,9 +11,7 @@ for s = 1:3:n_sensors*3     % go through all sensors
     b_temp = formula(symfun(zeros(3,1),x));         % for the temporary/actual sensor specific b-field
     m_cnt = 1;      % indicates the actual magnet number (1=index, 2=middle, ...)    
     for m = 1:2:n_magnets*2     % sum over all the magnets        
-        % m indicates the actual finger angles        
-        s_cnt
-        m_cnt
+        % m indicates the actual finger angles   
         b_temp = b_temp + angToB_sym(theta(m:m+1),s_cnt,m_cnt);
         m_cnt = m_cnt+1;
     end
@@ -22,6 +20,8 @@ for s = 1:3:n_sensors*3     % go through all sensors
 end
 
 bS = b;
+
+
 
 %% idea behind it:
 %
