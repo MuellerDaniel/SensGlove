@@ -3,16 +3,16 @@ from scipy.optimize import *
 import cylModel as cy
 
 def cel_bul(kc,p,c,s):
-    ''' approximate a complete elliptical integral with Bulirsch algorithm '''    
-       
+    ''' approximate a complete elliptical integral with Bulirsch algorithm '''
+
     if kc == 0:
-        c = None    # or nan???    
-    
+        c = None    # or nan???
+
     # errtol = 1.0e-6;
     errtol = 1.0e-6
     k = abs(kc)
     em = 1.0
-    
+
     if p > 0:
         p = np.sqrt(p)
         s /= p
@@ -24,7 +24,7 @@ def cel_bul(kc,p,c,s):
         p = np.sqrt(f/g)
         c = (c-s)/g
         s = -q/((g**2)*p)+c*p
-    
+
     f = c
     c += (s/p)
     s = 2*(s+f*k/p)
@@ -32,8 +32,8 @@ def cel_bul(kc,p,c,s):
     g = em
     em += k
     kk = k
-        
-    cnt = 0        
+
+    cnt = 0
     while (abs(g-k) > (g*errtol)):
        k = 2*np.sqrt(kk)
        kk = k*em
@@ -42,96 +42,98 @@ def cel_bul(kc,p,c,s):
        s = 2*(s+f*kk/p)
        p = kk/p+p
        g = em
-       em = k+em    
-       
+       em = k+em
+
        cnt += 1
-           
+
     c = (np.pi/2)*(s+c*em)/(em*(em+p))
 #    c = float(c)
 #    print "steps needed: ", cnt
-    return c    
+    return c
 
 
 def calcB_cyl(pos, ang):
-    ''' calculate the B-field at a given distance and with a certain rotation of the magnet 
-    
+    ''' calculate the B-field at a given distance and with a certain rotation of the magnet
+
     Parameters
     ----------
     pos : array
         the position in 2d representation [z,rho] or [dist_lateral, dist_radial]
     ang : float
         the angle between magnetization axis and sensor orientation [rad]
-        
+
      Returns
     -------
     B : array
         the magnetic field [B_z, B_rho]
     '''
-             
+
     rotMatPos = np.array([[np.cos(ang) , 0, np.sin(ang)],
                           [0           , 1, 0       ],
                           [-np.sin(ang), 0, np.cos(ang)]])
-                          
+
     posRot = np.dot(pos,rotMatPos)
-    
+
     z = posRot[0]
     rho = np.sqrt(posRot[1]**2+posRot[2]**2)
-    
+
     phi = np.arctan2(posRot[1], posRot[2])  # perhaps +np.pi or *-1, because z is neg???
-    
+
 #    print "phi: ",phi
-    
+
     a = 0.0025     # radius [m]
     b = 0.015/2    # half length of magnet [m]
     # magic value...
-    Bo = 1.0e+3*4.0107      # magnetic constant    
-    
+    Bo = 1.0e+3*4.0107      # magnetic constant
+
     # component calculations
     z_pos = z+b
     z_neg = z-b
-    
+
     alpha_pos = a/np.sqrt(z_pos**2+(rho+a)**2)
     alpha_neg = a/np.sqrt(z_neg**2+(rho+a)**2)
-    
+
     beta_pos = z_pos/np.sqrt(z_pos**2+(rho+a)**2)
     beta_neg = z_neg/np.sqrt(z_neg**2+(rho+a)**2)
-    
+
     gamma = (a-rho)/(a+rho)
-    
+
     k_pos = np.sqrt((z_pos**2+(a-rho)**2)/(z_pos**2+(a+rho)**2))
     k_neg = np.sqrt((z_neg**2+(a-rho)**2)/(z_neg**2+(a+rho)**2))
 
-    # cel calculation with Bulirsch's algorithm    
+    # cel calculation with Bulirsch's algorithm
     B_rho = Bo*(alpha_pos*cel_bul(k_pos,1.,1.,-1.)-alpha_neg*cel_bul(k_neg,1.,1.,-1.))
     B_lat   = (Bo*a)/(a+rho)*(beta_pos*cel_bul(k_pos,gamma**2,1.,gamma)-beta_neg*cel_bul(k_neg,gamma**2,1.,gamma))
-            
 
-    ''' 3D!!! '''            
-    
+
+    ''' 3D!!! '''
+
     B = np.array([B_lat, B_rho*np.sin(phi), B_rho*np.cos(phi)])
 #    B = np.array([B_lat, B_rho*np.cos(phi), B_rho*np.sin(phi)])
     B = np.dot(B,np.linalg.inv(rotMatPos))
-            
+
+    B *= np.array([1., 1., 1.])
+
     return B
-    
-    
-    
+
+
+
 def angToP_cyl(angles, finger):
     ''' calculate the 2d(cylindrical) position according to joint angles and fingerlengths
-    
+
     Parameters
     ----------
     angles : array
         angle of the joints [angle_MCP, angle_PIP]
     finger : array
         length of the finger phalanges [length_proximal, length_intermediate, length_distal]
-    
+
     Returns
     -------
     pos : array
         position in cylindrical coordinates [p_z, p_rho]
     '''
-    
+
     finger_0 = 0.
     theta_k = 0.0
     theta = [angles[0], angles[1], angles[1]*(2./3.)]
@@ -142,16 +144,16 @@ def angToP_cyl(angles, finger):
                 (-1*(finger[0]*np.cos(np.pi/2.-theta[0]) +               # z (*-1 because you move in neg. z-direction)
                 finger[1]*np.cos(np.pi/2.-theta[0]-theta[1]) +
                 finger[2]*np.cos(np.pi/2.-theta[0]-theta[1]-theta[2]))*np.cos(theta_k))])
-                
-    return pos                    
-    
-    
+
+    return pos
+
+
 def angToB_cyl(angles, fingerL, sPos, jointPos):
     ''' calculate the B-field for given finger angels. CYLINDRICAL MODEL!!!
-    
+
     Parameters
-    ----------    
-    angles : 2darray 
+    ----------
+    angles : 2darray
         angle of the joints [angle_MCP, angle_PIP]
     fingerL : 3darray
         length of the finger phalanges [length_proximal, length_intermediate, length_distal]
@@ -159,12 +161,12 @@ def angToB_cyl(angles, fingerL, sPos, jointPos):
         the sensor position, relative to the joint ([x_lateral, x_radial])
     jointPos : 3darray
         position of the finger joint, relative to the index joint ([x_lateral, x_radial])
-        
+
     Returns
     -------
     B : 3darray
-        the calculated B-field at the sensor 
-    '''    
+        the calculated B-field at the sensor
+    '''
     # pass everything as lists!!!!
     if type(sPos) == type(jointPos) == type(fingerL) == list:
 #        print "here!"
@@ -174,37 +176,39 @@ def angToB_cyl(angles, fingerL, sPos, jointPos):
             for i in sPos:
                 for j in range(len(jointPos)):
                     actAngles = angles[j*2:j*2+2]
-                    p = angToP_cyl(actAngles, fingerL[j])+(i-jointPos[j])                         
-                    ang = sum(actAngles)+(2./3.*actAngles[1])                    
+#                    p = i - (angToP_cyl(actAngles,fingerL[j])+jointPos[j])
+                    p = ((angToP_cyl(actAngles,fingerL[j])+jointPos[j]) - i)
+#                    print "cyl: ",p
+                    ang = sum(actAngles)+(2./3.*actAngles[1])
                     B[sCnt*3:sCnt*3+3] += calcB_cyl(p,ang)
                 sCnt += 1
-            return B                
+            return B
         else:
             print "ERROR! wrong combination of lists"
-            return -1                
+            return -1
 
-    # or as a np.ndarray...            
+    # or as a np.ndarray...
     else:
-        p = angToP_cyl(angles, fingerL)+(sPos-jointPos)    
+        p = angToP_cyl(angles, fingerL)+(sPos-jointPos)
         ang = sum(angles)+(2./3.*angles[1])
-        B = calcB_cyl(p,ang)    
-        return B   
-        
-        
+        B = calcB_cyl(p,ang)
+        return B
+
+
 def minimizeAng_cyl(ang, fingerL, sPos, jointPos, measB):
     ''' objective function to minimize... '''
-    
+
     dif = measB - angToB_cyl(ang, fingerL, sPos, jointPos)
-    
-    dif = dif.astype('float')    
+
+    dif = dif.astype('float')
     res = np.linalg.norm(dif)
-    
+
     return res
-    
-    
-def estimateAng_cyl(ang_0, fingerL, sPos, jointPos, measB, bnds=None):
+
+
+def estimateAng_cyl(theta_0, fingerL, sL, offL, measB, bnds=None, method=0):
     ''' estimating the joint angles
-    
+
     Parameters
     ----------
     ang_0 : 2darray
@@ -216,36 +220,52 @@ def estimateAng_cyl(ang_0, fingerL, sPos, jointPos, measB, bnds=None):
     jointPos : 2darray
         position of the finger joint, relative to the index joint ([x_lateral, x_radial])
         the measured B-field ([B_z, B_rho])
-        
+
     Returns
     -------
     res : OptimizeResult
-    
+
     '''
-    
+
 #    res = minimize(minimizeAng_cyl,ang_0,args=(fingerL, sPos, jointPos, measB),method='bfgs', tol=1.e-05)
 #    res = minimize(cy.minimizeAng_cyl,ang_0,args=(fingerL, sPos, jointPos, measB),method='bfgs', tol=1.e-05)
-    res = minimize(cy.minimizeAng_cyl,ang_0,args=(fingerL, sPos, jointPos, measB),method='slsqp', tol=1.e-05, bounds=bnds)
+    # res = minimize(cy.minimizeAng_cyl,ang_0,args=(fingerL, sPos, jointPos, measB),method='slsqp', tol=1.e-05, bounds=bnds)
+
+    if method == 0:
+        res = minimize(cy.minimizeAng_cyl, theta_0,
+                         args=(fingerL, sL, offL, measB),
+                         method='bfgs', tol=1.e-05)
+        return res
+        
+    if method == 1:                         
+        res = minimize(cy.minimizeAng_cyl, theta_0,
+                         args=(fingerL, sL, offL, measB),
+                         method='slsqp', tol=1.e-05, bounds=bnds)
+        return res
     
-    
-    return res       
-    
-    
+    if method == 2:
+        res = minimize(cy.minimizeAng_cyl, theta_0,
+                         args=(fingerL, sL, offL, measB),
+                         method='cobyla', tol=1.e-05)
+        return res
+   
+
+
 
 ''' estimation of position, given angle '''
 
 def minimizeB_cyl(pos, ang, measB):
     ''' objective function to minimize... '''
-    
+
     dif = measB - calcB_cyl(pos,ang)
     dif = dif.astype('float')       # I have to do it, otherwise a numpy.linalg.norm can not be applied...
     res = np.linalg.norm(dif)
-    
+
     return res
-    
+
 def estimatePos_cyl(pos_0, ang, measB, bnds=None):
     ''' estimating the position
-    
+
     Parameters
     ----------
     pos_0 : 2darray
@@ -254,21 +274,15 @@ def estimatePos_cyl(pos_0, ang, measB, bnds=None):
         angle of the magnet in radians
     measB : 2darray
         the measured B-field ([B_z, B_rho])
-        
+
     Returns
     -------
     res : OptimizeResult
-    
+
     '''
 
-    res = minimize(minimizeB_cyl,pos_0,args=(ang, measB),method='bfgs', tol=1.e-05)
-#    res = minimize(cy.minimizeB_cyl_cy,pos_0,args=(ang, measB),method='bfgs', tol=1.e-05)
+#    res = minimize(minimizeB_cyl,pos_0,args=(ang, measB),method='bfgs', tol=1.e-05, bounds=bnds)
+    res = minimize(cy.minimizeB_cyl_cy,pos_0,args=(ang, measB),method='bfgs', tol=1.e-05)
 #    res = minimize(minimizeB_cyl,pos_0,args=(ang, measB),method='slsqp', tol=1.e-05, bounds=bnds)
-    
+
     return res
-    
-
-
-  
-    
-    

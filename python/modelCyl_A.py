@@ -214,7 +214,7 @@ def minimizeAng_cyl(ang, fingerL, sPos, jointPos, measB):
     return res
 
 
-def estimateAng_cyl(theta_0, fingerL, offL, sL, measB, bnds=None, method=0):
+def estimateAng_cyl(theta_0, fingerL, sL, offL, measB, bnds=None, method=0):
     ''' estimating the joint angles
 
     Parameters
@@ -238,7 +238,7 @@ def estimateAng_cyl(theta_0, fingerL, offL, sL, measB, bnds=None, method=0):
 #    res = minimize(minimizeAng_cyl,ang_0,
 #                   args=(fingerL, sPos, jointPos, measB),
 #                    method='bfgs', tol=1.e-05)
-    
+
 #    res = minimize(cy.minimizeAng_cyl,ang_0,
 #                   args=(fingerL, sPos, jointPos, measB),
 #                    method='bfgs', tol=1.e-05)
@@ -248,13 +248,13 @@ def estimateAng_cyl(theta_0, fingerL, offL, sL, measB, bnds=None, method=0):
                          args=(fingerL, sL, offL, measB),
                          method='bfgs', tol=1.e-05)
         return res
-        
-    if method == 1:                         
+
+    if method == 1:
         res = minimize(cy.minimizeAng_cyl, theta_0,
                          args=(fingerL, sL, offL, measB),
                          method='slsqp', tol=1.e-05, bounds=bnds)
         return res
-    
+
     if method == 2:
         res = minimize(cy.minimizeAng_cyl, theta_0,
                          args=(fingerL, sL, offL, measB),

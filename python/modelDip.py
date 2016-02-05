@@ -13,23 +13,21 @@ def calcB(r,h):
     mu_r = 1.05
     addFact = 1
     lamb = (Br*mu_0*mu_r)/(4*np.pi)*addFact
-    factor = np.array([lamb, lamb, lamb])
+#    factor = np.array([lamb, lamb, lamb])
     no = sqrt(float(r[0]**2+r[1]**2+r[2]**2))
-    b = np.array([((3*r*np.dot(h,r))/(no**5)) - (h/(no**3))])*factor
+#    b = np.array([((3*r*np.dot(h,r))/(no**5)) - (h/(no**3))])*factor
+    b = np.array([((3*r*np.dot(h,r))/(no**5)) - (h/(no**3))])*[lamb, lamb, lamb]
     return b[0]
-    
-    
-    
-def angToP(theta,finger,off):
-    finger_0 = 0.
+
+
+
+def angToP(theta,finger,off):    
     theta_k = 0.0
     theta = np.array([theta[0], theta[1], theta[1]*2./3.])
-    P = np.array([(1*(finger_0*np.sin(np.pi/2.) + finger[0]*np.sin(np.pi/2-theta[0]) +              # x
+    P = np.array([(finger[0]*np.sin(np.pi/2-theta[0]) +              # x
                 finger[1]*np.sin(np.pi/2.-theta[0]-theta[1]) +
-                finger[2]*np.sin(np.pi/2.-theta[0]-theta[1]-theta[2]))+off[0]),
-                ((finger[0]*np.cos(np.pi/2.-theta[0]) +                  # y
-                finger[1]*np.cos(np.pi/2.-theta[0]-theta[1]) +
-                finger[2]*np.cos(np.pi/2.-theta[0]-theta[1]-theta[2]))*np.sin(theta_k)+off[1]),
+                finger[2]*np.sin(np.pi/2.-theta[0]-theta[1]-theta[2])+off[0]),
+                (off[1]),
                 (-1*(finger[0]*np.cos(np.pi/2.-theta[0]) +               # z (*-1 because you move in neg. z-direction)
                 finger[1]*np.cos(np.pi/2.-theta[0]-theta[1]) +
                 finger[2]*np.cos(np.pi/2.-theta[0]-theta[1]-theta[2]))*np.cos(theta_k)+off[2])])
@@ -42,9 +40,9 @@ def angToH(theta):
                      0,
                      1*np.sin(-theta[0]-theta[1]-theta[2])])
 
-    return H    
-    
-    
+    return H
+
+
 
 def angToBm(theta,finger,S,off):
     """returns the magnetic field
@@ -62,26 +60,27 @@ def angToBm(theta,finger,S,off):
     S : array
         the position of the sensor
     """
-    
+
 #    theta = np.array([theta[0], theta[1], theta[1]*(2./3.)])
 #    P = angToP(theta,finger,off)
 #    H = angToH(theta)
-    
+
     B = np.zeros((1,len(S)*3))
     sensCnt = 0
-    for sens in S:        
+    for sens in S:
 #        print "sensCnt: ", sensCnt
         for i in range(len(finger)):
 #            print "i: ", i
-            r = sens - angToP(theta[i*3:i*3+3],finger[i],off[i])
-            h = angToH(theta[i*3:i*3+3])
-            B[0][sensCnt*3:sensCnt*3+3] += calcB(r,h)            
+            r = (angToP(theta[i*2:i*2+2],finger[i],off[i]) - sens)
+#            r = sens - angToP(theta[i*2:i*2+2],finger[i],off[i])
+#            print "dipole: ",r
+            h = angToH(theta[i*2:i*2+2])
+            B[0][sensCnt*3:sensCnt*3+3] += calcB(r,h)
         sensCnt += 1
 
-    return B    
-    
-    
-    
+    return B
+
+
 def minimizeAng(theta,finger,S,off,B):
     """The function to minimize
 
@@ -105,14 +104,14 @@ def minimizeAng(theta,finger,S,off,B):
         print "wrong number of fingerlength, to finger offsets!"
         return 0
     else:
-        dif = B - angToBm(theta,finger,S,off)        
+        dif = B - angToBm(theta,finger,S,off)
         dif = dif.astype('float')
         res = np.linalg.norm(dif)
-    
+
         return res
-        
-            
-def estimate_BtoAng(theta_0, fingerL, offL, sL, measB,bnds=None):
+
+
+def estimate_BtoAng(theta_0, fingerL, sL, offL, measB,bnds=None, method=0):
     """Estimates the angles for a certain (measured) B-field
 
     Parameters
@@ -130,14 +129,44 @@ def estimate_BtoAng(theta_0, fingerL, offL, sL, measB,bnds=None):
     bnds : tuple
         the static (inequality) bounds for the angles
     """
-            
+
 #    res = minimize(minimizeAng, theta_0,
 #                    args=(fingerL, sL, offL, measB),
 #                    method='slsqp', bounds=bnds)
-    res = minimize(cy.minimizeAng_cy, theta_0,
-                    args=(fingerL, sL, offL, measB),
-                    method='slsqp', tol=1.e-05, bounds=bnds)
+#    res = minimize(cy.minimizeAng_cy, theta_0,
+#                    args=(fingerL, sL, offL, measB),
+#                    method='bfgs', tol=1.e-05)
+    if method == 0:
+        res = minimize(cy.minimizeAng_cy, theta_0,
+                         args=(fingerL, sL, offL, measB),
+                         method='bfgs', tol=1.e-05)
+        return res
+        
+    if method == 1:                         
+        res = minimize(cy.minimizeAng_cy, theta_0,
+                         args=(fingerL, sL, offL, measB),
+                         method='slsqp', tol=1.e-05, bounds=bnds)
+        return res
+    
+    if method == 2:
+        res = minimize(cy.minimizeAng_cy, theta_0,
+                         args=(fingerL, sL, offL, measB),
+                         method='cobyla', tol=1.e-05)
+        return res
+
+    
 
 
-    return res    
+def minimizePos(p, h, measB):
+    dif = measB - calcB(p, h)
+    dif = dif.astype('float')       # I have to do it, otherwise a numpy.linalg.norm can not be applied...
+    res = np.linalg.norm(dif)
+    return res
 
+
+def estimatePos(p_0, h, measB):
+
+#    res = minimize(minimizePos, p_0, args=(h, measB), method='bfgs', tol=1.e-05)
+    res = minimize(cy.minimizePos_cy, p_0, args=(h, measB), method='bfgs')
+
+    return res

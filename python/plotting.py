@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
 
-def plotter2d(inputlist, titlelist, shareAxis = True):
+def plotter2d(inputlist, titlelist, shareAxis = True, mtitle=None, typ='mag'):
     """plot the data
 
     Parameters
@@ -23,17 +23,17 @@ def plotter2d(inputlist, titlelist, shareAxis = True):
 
     """
 #    plt.close("all")
-    print "len(inputlist) ", len(inputlist)
-    print "len(titlelist) ", len(titlelist)
+#    print "len(inputlist) ", len(inputlist)
+#    print "len(titlelist) ", len(titlelist)
     if len(inputlist) != len(titlelist):
         print "len(inputlist) != len(titlelist)"
         pass
     else:
-        plotIt2d(inputlist,titlelist, len(inputlist), shareAxis)
+        plotIt2d(inputlist,titlelist, len(inputlist), shareAxis, mtitle, typ)
 
 
 
-def plotIt2d(data, title, sizeData, shareAxis):
+def plotIt2d(data, title, sizeData, shareAxis, mtitle, typ):
     colorList = ('r','b','g','y')
     #fingerList = ('index', 'middle', 'ring', 'pinky')
     cnt = 0
@@ -57,16 +57,16 @@ def plotIt2d(data, title, sizeData, shareAxis):
 #                plt.title(title[0])
 #                if cnt==0: plt.legend()
 #                cnt+=1
-        
-       
+
+
 
     if sizeData >= 2:
         lst = [sizeData]
         f, lst = plt.subplots(1,sizeData, sharey=shareAxis)
         for i in range(sizeData):
-            cnt = 0            
+            cnt = 0
             for j in data:
-                linCol = colorList[cnt%4]                     
+                linCol = colorList[cnt%4]
                 # line plot representation
                 lst[cnt].plot(j[:,0], color=linCol, ls='-', label='x')
                 lst[cnt].plot(j[:,1], color=linCol, ls='--', label='y')
@@ -83,10 +83,16 @@ def plotIt2d(data, title, sizeData, shareAxis):
 #                    lst[cnt].plot(j[:,0], color=linCol, ls='-')
 #                    lst[cnt].plot(j[:,1], color=linCol, ls='--')
 #                    lst[cnt].plot(j[:,2], color=linCol, ls=':')
-                    
+
                 lst[cnt].set_title(title[cnt])
-                cnt+=1        
-    
+                if typ == 'mag':
+                    lst[cnt].set_xlabel('meas Nr')
+                    lst[cnt].set_ylabel('B-field[]')
+                else:
+                    lst[cnt].set_xlabel('meas Nr')
+                    lst[cnt].set_ylabel('angle [rad]')
+                cnt+=1
+    if mtitle != None: plt.suptitle(mtitle)
 
 
 def plotter3d(inputlist, titlelist):
@@ -172,20 +178,20 @@ def multiPlotter(data, title, comp=None):
 #        g.set_yticklabels([])
 
 
-#def visMagData(data,title = None):       
-#    if len(data.shape) == 3:    
+#def visMagData(data,title = None):
+#    if len(data.shape) == 3:
 #        colorList = ('b','g','r','y')
-#        cnt = 0 
+#        cnt = 0
 #        fig = plt.figure()
 #        a = fig.add_subplot(2,3,2,projection='3d')
-#        a.axis('equal')        
+#        a.axis('equal')
 #        xy = fig.add_subplot(2,3,4)
 #        xz = fig.add_subplot(2,3,5)
 #        yz = fig.add_subplot(2,3,6)
-#        
+#
 #        for i in data:
 #            a.scatter(i[:,0],i[:,1],i[:,2],c=colorList[cnt%4])
-#            
+#
 #            xy.scatter(i[:,0],i[:,1],c=colorList[cnt%4])
 #            xz.scatter(i[:,0],i[:,2],c=colorList[cnt%4])
 #            yz.scatter(i[:,1],i[:,2],c=colorList[cnt%4])
@@ -194,13 +200,13 @@ def multiPlotter(data, title, comp=None):
 #        fig = plt.figure()
 #        a = fig.add_subplot(111,projection='3d')
 #        a.axis('equal')
-#        a.scatter(data[:,0],data[:,1],data[:,2],marker='o') 
+#        a.scatter(data[:,0],data[:,1],data[:,2],marker='o')
 
-def visMagData(data,title = None):       
-    colorList = ('b','g','r','y')   
+def visMagData(data,title = None):
+    colorList = ('b','g','r','y')
     fig = plt.figure()
     a = fig.add_subplot(2,3,2,projection='3d')      # 3d scatter plot
-    a.axis('equal')        
+    a.axis('equal')
     a.set_title('3d representation')
     xy = fig.add_subplot(2,3,4)                     # 2d scatter plot
     xy.axis('equal')
@@ -214,29 +220,29 @@ def visMagData(data,title = None):
     yz.axis('equal')
     yz.set_title('yz')
     yz.grid()
-    
+
     cnt = 0
     for i in data:
-        a.scatter(i[:,0],i[:,1],i[:,2],c=colorList[cnt%4])            
+        a.scatter(i[:,0],i[:,1],i[:,2],c=colorList[cnt%4])
         xy.scatter(i[:,0],i[:,1],c=colorList[cnt%4])
         xz.scatter(i[:,0],i[:,2],c=colorList[cnt%4])
         yz.scatter(i[:,1],i[:,2],c=colorList[cnt%4])
         cnt += 1
-    
-    
-#    if len(data.shape) == 3:    
+
+
+#    if len(data.shape) == 3:
 #        colorList = ('b','g','r','y')
-#        cnt = 0 
+#        cnt = 0
 #        fig = plt.figure()
 #        a = fig.add_subplot(2,3,2,projection='3d')
-#        a.axis('equal')        
+#        a.axis('equal')
 #        xy = fig.add_subplot(2,3,4)
 #        xz = fig.add_subplot(2,3,5)
 #        yz = fig.add_subplot(2,3,6)
-#        
+#
 #        for i in data:
 #            a.scatter(i[:,0],i[:,1],i[:,2],c=colorList[cnt%4])
-#            
+#
 #            xy.scatter(i[:,0],i[:,1],c=colorList[cnt%4])
 #            xz.scatter(i[:,0],i[:,2],c=colorList[cnt%4])
 #            yz.scatter(i[:,1],i[:,2],c=colorList[cnt%4])
@@ -245,4 +251,60 @@ def visMagData(data,title = None):
 #        fig = plt.figure()
 #        a = fig.add_subplot(111,projection='3d')
 #        a.axis('equal')
-#        a.scatter(data[:,0],data[:,1],data[:,2],marker='o')                   
+#        a.scatter(data[:,0],data[:,1],data[:,2],marker='o')
+
+
+def timeDatPlot(data,title):
+    colorList = ('r','b','g','y')
+    #fingerList = ('index', 'middle', 'ring', 'pinky')
+    cnt = 0
+    sizeData = len(data)
+    if sizeData == 1:
+        for i in data:
+#            print i.shape
+            plt.plot(i[:,0],i[:,1], ls='-',color='r', label='x')
+            try:
+                plt.plot(i[:,0],i[:,2], ls='--',color='r', label='y')
+                plt.plot(i[:,0],i[:,3], ls=':',color='r', label='z')
+            except:
+                print "doesn't have it..."
+            plt.title(title[0])
+            plt.legend()
+#            cnt = 0
+#            for j in i:
+#                linCol = colorList[cnt%4]
+#                plt.plot(j[:,0], color=linCol, ls='-', label='x')
+#                plt.plot(j[:,1], color=linCol, ls='--', label='y')
+#                plt.plot(j[:,2], color=linCol, ls=':', label='z')
+#                plt.title(title[0])
+#                if cnt==0: plt.legend()
+#                cnt+=1
+
+
+
+    if sizeData >= 2:
+        lst = [sizeData]
+        f, lst = plt.subplots(1,sizeData)
+        for i in range(sizeData):
+            cnt = 0
+            for j in data:
+                linCol = colorList[cnt%4]
+                # line plot representation
+                lst[cnt].plot(j[:,0],j[:,1], color=linCol, ls='-', label='x')
+                lst[cnt].plot(j[:,2], color=linCol, ls='--', label='y')
+                try:
+                    lst[cnt].plot(j[:,3], color=linCol, ls=':', label='z')
+                except:
+                    print "only 2d..."
+                # scatter plot representation
+#                lst[cnt].scatter(np.arange(len(j[:,0])),j[:,0], color=linCol, label='x')
+#                lst[cnt].scatter(np.arange(len(j[:,1])),j[:,1], color=linCol, label='y')
+#                lst[cnt].scatter(np.arange(len(j[:,2])),j[:,2], color=linCol, label='z')
+#                plt.legend()
+#                else:
+#                    lst[cnt].plot(j[:,0], color=linCol, ls='-')
+#                    lst[cnt].plot(j[:,1], color=linCol, ls='--')
+#                    lst[cnt].plot(j[:,2], color=linCol, ls=':')
+
+                lst[cnt].set_title(title[cnt])
+                cnt+=1

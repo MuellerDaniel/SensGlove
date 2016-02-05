@@ -108,7 +108,7 @@ def minimizeAng(theta,finger,S,off,B):
         return res
 
 
-def estimate_BtoAng(theta_0, fingerL, offL, sL, measB,bnds=None, method=0):
+def estimate_BtoAng(theta_0, fingerL, sL, offL, measB,bnds=None, method=0):
     """Estimates the angles for a certain (measured) B-field
 
     Parameters
@@ -136,18 +136,15 @@ def estimate_BtoAng(theta_0, fingerL, offL, sL, measB,bnds=None, method=0):
                          args=(fingerL, sL, offL, measB),
                          method='bfgs', tol=1.e-05)
         return res
-        
-    if method == 1:                         
+
+    if method == 1:
         res = minimize(cy.minimizeAng_cy, theta_0,
                          args=(fingerL, sL, offL, measB),
                          method='slsqp', tol=1.e-05, bounds=bnds)
         return res
-    
+
     if method == 2:
         res = minimize(cy.minimizeAng_cy, theta_0,
                          args=(fingerL, sL, offL, measB),
                          method='cobyla', tol=1.e-05)
         return res
-                         
-
-    

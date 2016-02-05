@@ -32,7 +32,7 @@ def serialAcquisition(serPort, fileName, offset, measNr, timeStamp = True):
     """
     ser = serial.Serial(port=serPort, baudrate=9600, timeout=1)
     fl = open(fileName, 'w')
-    start_time = time.time()
+    startime = time.time()
     if timeStamp:
         fl.write("# measurement started at start_time " + str(start_time) + "\n")
     magMat = np.empty(shape=[0,3]) 
@@ -87,6 +87,8 @@ def serialAcquisition(serPort, fileName, offset, measNr, timeStamp = True):
  
 
 def saveToFile(data,fileName):
+    ''' Takes a n x 4 array and writes it to a file '''    
+    
     try:
         fl = open(fileName,'w')
     except IOError:
@@ -189,9 +191,12 @@ def structDataSer(data):
             except ValueError:
                 print 'float conversion not possible ', data
                 return np.array([0.,0.,0.])
-    else: 
-        print data
-        return np.array([0.,0.,0.,0.])
+    elif len(data) == 4:
+        b[0] = float(data[0])
+        b[1] = 1*float(data[1])
+        b[2] = 1*float(data[2])
+        b[3] = 1*float(data[3])
+        return b
 
 
 
@@ -299,7 +304,7 @@ def pipeAcquisition(arg, nrSens, fileName=None, measNr=None, offset=0):
     """
     
     # "gatttool -t random -b E3:C0:07:76:53:70 --char-write-req --handle=0x000f --value=0300 --listen"
-    mat = [[0.,0.,0.,0.]]
+    mat = np.array([[0.,0.,0.,0.]])
     if "/dev/tty" in arg:
         proc = subprocess.Popen(arg, stdout=subprocess.PIPE, 
                                 close_fds=True, shell=True)
@@ -318,25 +323,22 @@ def pipeAcquisition(arg, nrSens, fileName=None, measNr=None, offset=0):
             if output != '':                
                 if "gatttool" in arg:                
                     data = structDataBLE(output)
-#                    data = invertX(data)
-#                    print "raw output: ", output
-                    print "data output: ", data
+#                    print "data output: ", data
                 if "/dev/tty" in arg:
                     data = structDataSer(output)
                     print "ser data: ", data
-#                    data = invertX(data)
-    #                print data
+                    if data == None: continue
                 if (i>offset):                    
                     print i-offset, "measurements taken"                    
                 else: print "BELOW OFFSET ", i
-#                print "data: ",data
+                print "data: ",data
                 #if data[0] != mat[-1][0] :   #
                 if data[0] == (mat[-1][0]+1)%nrSens:    
                     mat = np.append(mat, [data], axis=0)
                 else:   #
                     print "!!!!!!!!!!!!!!!!!!!!!!!!!oh no!!!!!!!!!!!!!!!!!!!!!!!!!"   #
                     i -= 1  #
-                    print "writing...", data                                
+#                    print "received...", data                                
                 
             else :                
                 proc.stdout.close()
@@ -368,15 +370,35 @@ def pipeAcquisition(arg, nrSens, fileName=None, measNr=None, offset=0):
     return mat
     
     
+def readMagPacket(proc):
+    mat = np.zeros((4,4))    
+    dlist = [0,1,2,3]
+#    complete = False    
+    while dlist:
+        data = structDataBLE(proc.stdout.readline())
+        
+        try: 
+            dlist.remove(int(data[0]))
+            mat[int(data[0])] = data
+#            print data
+        except:
+            continue
+        
+    return mat        
+    
+    
 def RTdata_blocking(proc):
     mat = np.zeros((4,4))
     cnt = 0
-    while cnt != 4:
+    while cnt < 4:
         data = structDataBLE(proc.stdout.readline())
 #        print data
         if data[0] == cnt:
             mat[cnt] = data
-            cnt += 1
+            cnt += 1        
+        else:       # no data 
+            print "here"
+            continue
         
     
     return mat    
@@ -409,10 +431,7 @@ def RTdata(data,proc):
         if tmpData[0] == 0: data[0][1:] = tmpData[1:]
         if tmpData[0] == 1: data[1][1:] = tmpData[1:]
         if tmpData[0] == 2: data[2][1:] = tmpData[1:]
-        if tmpData[0] == 3: data[3][1:] = tmpData[1:]
-            
-#    else:
-#        print "nothing new!"            
+        if tmpData[0] == 3: data[3][1:] = tmpData[1:]        
         
     return data    
   
@@ -532,7 +551,7 @@ def collectForTime(arg,sec,wait=0.01, fileName=None, avgFil=False, avgN=10):
         while time.time()-startTime < sec:          
             data = RTdata(data,subpro)
             collected = np.append(collected,data,0)
-            print data
+#            print data
             if not len(collected) % 400:
                 print str(time.time()-startTime) + " seconds running"
             time.sleep(wait)    # sleep a bit, otherwise you will be flooded by data...     
@@ -564,3 +583,92 @@ def collectForTime(arg,sec,wait=0.01, fileName=None, avgFil=False, avgN=10):
         fl.close()     
            
     return out 
+    
+"""
+fitting the data to the model
+"""
+def getScaleOff(ref,meas):
+    scale = np.zeros((ref.shape[1],))
+    for i in range(len(scale)):
+        raReal = max(ref[:,i]) - min(ref[:,i])
+        raMeas = max(meas[:,i]) - min(meas[:,i])
+        scale[i] = raReal/raMeas
+
+    offset = np.zeros((ref.shape[1],))
+    
+    for i in range(len(offset)):
+        offset[i] = ref[0][i]-meas[0][i]*scale[i]
+
+    print "scale: ",scale
+    print "offset: ",offset
+    return (scale,offset)
+
+
+def fitMeasurements(ref, meas, valOffset):
+    """returns the measurement data fitted to the reference data
+
+    Parameters
+    ----------
+    ref : array
+        the reference values
+    meas : array
+        the measured values
+    valOffset : tuple
+        the values for defining the initial offset (meas[valOffset[0]:valOffset[1]])
+
+    Returns
+    -------
+    fitted : array
+        the fitted measurement data
+
+    """
+    scaled = scaleMeasurements(ref, meas)
+    fitted = shiftMeasurements(ref, scaled, valOffset)
+    return fitted
+
+def scaleMeasurements(real, meas):
+    i=0
+    raReal=0
+    raMeas=0
+    scale = np.array([0.,0.,0.])
+    resMat = meas.copy()
+
+    for i in range(3):
+        raReal = max(real[:,i]) - min(real[:,i])
+        raMeas = max(meas[:,i]) - min(meas[:,i])
+        scale[i] = raReal/raMeas
+        i+=1
+    print "scale " + str(scale)
+
+    i=0
+    for i in range(resMat.shape[0]):
+        resMat[i][0] *= scale[0]
+        resMat[i][1] *= scale[1]
+        resMat[i][2] *= scale[2]
+        i+=1
+
+    return resMat
+#    return (resMat, scale)
+
+
+def shiftMeasurements(real, meas, valOffset):
+#    offset = real[0] - meas[0]
+    resMat = meas.copy()
+
+    startMat = meas[valOffset[0]:valOffset[1]]
+    meanMeas = np.array([np.mean(startMat[:,0]),
+                         np.mean(startMat[:,1]),
+                         np.mean(startMat[:,2])])
+    offset = real[0] - meanMeas
+
+    i=0
+    for i in range (resMat.shape[0]):
+        resMat[i][0] += offset[0]
+        resMat[i][1] += offset[1]
+        resMat[i][2] += offset[2]
+    #    yShiftArr[i][0] += offset[0]*scale[0]
+    #    yShiftArr[i][1] += offset[1]*scale[1]
+    #    yShiftArr[i][2] += offset[2]*scale[2]
+        i+=1
+    print "offset: " + str(offset)
+    return resMat    
