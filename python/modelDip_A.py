@@ -2,16 +2,16 @@ import numpy as np
 from scipy.optimize import *
 import dipModel_A as cy
 
-def calcB(r,h):
-    Br = 12.6e+03
+def calcB(r,h_in):
+    Br = 1.26
     mu_0 = 4*np.pi*1e-07
-    mu_r = 1.05
-    addFact = 1
-    lamb = (Br*mu_0*mu_r)/(4*np.pi)*addFact
-#    factor = np.array([lamb, lamb, lamb])
+    r_mag = 0.0025
+    l_mag = 0.015
+    m = Br*(np.pi*r_mag**2*l_mag)/mu_0      # magnetic dipole moment
+    h = h_in*m
+
     no = np.sqrt(float(r[0]**2+r[1]**2+r[2]**2))
-#    b = np.array([((3*r*np.dot(h,r))/(no**5)) - (h/(no**3))])*factor
-    b = np.array([((3*r*np.dot(h,r))/(no**5)) - (h/(no**3))])*[lamb, lamb, lamb]
+    b = np.array([((3*r*np.dot(h,r))/(no**5)) - (h/(no**3))]) * (mu_0/(4.*np.pi))
     return b[0]
 
 def angToP(theta_in,finger,off):

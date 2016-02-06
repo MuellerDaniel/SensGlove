@@ -7,15 +7,16 @@ from libc.stdlib cimport malloc,free
 
 DTYPE = np.double
 
-def calcB_cy(np.ndarray r, np.ndarray h):
-    cdef long double Br = 12.6e+03
+def calcB_cy(np.ndarray r, np.ndarray h_in):
+    cdef long double Br = 1.26
     cdef long double mu_0 = 4*np.pi*1e-07
-    cdef long double mu_r = 1.05
-    cdef long double addFact = 1
-    cdef long double lamb = (Br*mu_0*mu_r)/(4*np.pi)*addFact
-    cdef np.ndarray factor = np.array([lamb, lamb, lamb])
+    cdef long double r_mag = 0.0025
+    cdef long double l_mag = 0.015
+    cdef long double m = Br*(np.pi*r_mag**2*l_mag)/mu_0      # magnetic dipole moment
+    cdef long double h = h_in*m
+
     cdef long double no = sqrt(float(r[0]**2+r[1]**2+r[2]**2))
-    cdef np.ndarray b = np.array([((3*r*np.dot(h,r))/(no**5)) - (h/(no**3))])*factor
+    cdef np.ndarray b = np.array([((3*r*np.dot(h,r))/(no**5)) - (h/(no**3))]) * (mu_0/(4.*np.pi))
     return b[0]
 
 
@@ -96,7 +97,7 @@ def angToBm_cy(np.ndarray theta,finger,S,off):
 
 
 
-def minimizeAng_cy(np.ndarray theta,finger,S,off, np.ndarray B):
+def minimizeAng_cy(np.ndarray theta, finger, S, off, np.ndarray B):
     """The function to minimize
 
     Parameters

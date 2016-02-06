@@ -83,8 +83,9 @@ def calcB_cyl(pos, ang):
 
     a = 0.0025     # radius [m]
     b = 0.015/2    # half length of magnet [m]
-    # magic value...
-    Bo = 1.0e+3*4.0107      # magnetic constant
+    Br = 1.26
+
+    Bo = Br/np.pi      # magnetic constant
 
     # component calculations
     z_pos = z+b
@@ -236,19 +237,19 @@ def estimateAng_cyl(theta_0, fingerL, sL, offL, measB, bnds=None, method=0):
                          args=(fingerL, sL, offL, measB),
                          method='bfgs', tol=1.e-05)
         return res
-        
-    if method == 1:                         
+
+    if method == 1:
         res = minimize(cy.minimizeAng_cyl, theta_0,
                          args=(fingerL, sL, offL, measB),
                          method='slsqp', tol=1.e-05, bounds=bnds)
         return res
-    
+
     if method == 2:
         res = minimize(cy.minimizeAng_cyl, theta_0,
                          args=(fingerL, sL, offL, measB),
                          method='cobyla', tol=1.e-05)
         return res
-   
+
 
 
 

@@ -8,8 +8,6 @@ from libc.stdlib cimport malloc,free
 
 DTYPE = np.double
 
-# ctypedef np.double long_double_t DTYPE_t
-
 def cel_bul(long double kc, long double p, long double c, long double s):
     ''' approximate a complete elliptical integral with Bulirsch algorithm '''
 
@@ -94,8 +92,9 @@ def calcB_cyl(np.ndarray pos, long double ang):
 
     cdef long double a = 0.0025     # radius [m]
     cdef long double b = 0.015/2    # half length of magnet [m]
+    cdef long double Br = 1.26
     # magic value...
-    cdef long double Bo = 1.0e+3*4.0107      # magnetic constant
+    cdef long double Bo = Br/np.pi      # magnetic constant
 
     # component calculations
     cdef long double z_pos = z+b
@@ -186,7 +185,8 @@ def angToB_cyl(np.ndarray angles, fingerL, sPos, jointPos):
             for i in sPos:
                 for j in range(len(jointPos)):
                     actAngles = angles[j*2:j*2+2]
-                    p = angToP_cyl(actAngles, fingerL[j])+(i-jointPos[j])
+                    p = ((angToP_cyl(actAngles,fingerL[j])+jointPos[j]) - i)
+                    # print "cy cyl: ", p
                     ang = sum(actAngles)+(2./3.*actAngles[1])
                     B[sCnt*3:sCnt*3+3] += calcB_cyl(p,ang)
                 sCnt += 1

@@ -92,8 +92,9 @@ def calcB_cyl(pos, angles):
 
     a = 0.0025     # radius [m]
     b = 0.015/2    # half length of magnet [m]
-    # magic value...
-    Bo = 1.0e+3*4.0107      # magnetic constant
+    Br = 1.26
+
+    Bo = Br/np.pi      # magnetic constant
 
     # component calculations
     z_pos = z+b

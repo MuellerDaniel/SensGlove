@@ -100,8 +100,9 @@ def calcB_cyl(np.ndarray pos, np.ndarray ang):
 
     cdef long double a = 0.0025     # radius [m]
     cdef long double b = 0.015/2    # half length of magnet [m]
+    cdef long double Br = 1.26
     # magic value...
-    cdef long double Bo = 1.0e+3*4.0107      # magnetic constant
+    cdef long double Bo = Br/np.pi      # magnetic constant
 
     # component calculations
     cdef long double z_pos = z+b

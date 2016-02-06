@@ -7,21 +7,24 @@ import dipModel as cy
     only for list elements and multiple sensor/magnet constelations! '''
 
 
-def calcB(r,h):
-    Br = 12.6e+03
+def calcB(r,h_in):
+    # print "calcBDIP h:", h
+    Br = 1.26
     mu_0 = 4*np.pi*1e-07
-    mu_r = 1.05
-    addFact = 1
-    lamb = (Br*mu_0*mu_r)/(4*np.pi)*addFact
-#    factor = np.array([lamb, lamb, lamb])
-    no = sqrt(float(r[0]**2+r[1]**2+r[2]**2))
-#    b = np.array([((3*r*np.dot(h,r))/(no**5)) - (h/(no**3))])*factor
-    b = np.array([((3*r*np.dot(h,r))/(no**5)) - (h/(no**3))])*[lamb, lamb, lamb]
+    r_mag = 0.0025
+    l_mag = 0.015
+    m = Br*(np.pi*r_mag**2*l_mag)/mu_0      # magnetic dipole moment
+    h = h_in*m
+
+    # print "calcBDIP m:", m
+
+    no = np.sqrt(float(r[0]**2+r[1]**2+r[2]**2))
+    b = np.array([((3*r*np.dot(h,r))/(no**5)) - (h/(no**3))]) * (mu_0/(4.*np.pi))
     return b[0]
 
 
 
-def angToP(theta,finger,off):    
+def angToP(theta,finger,off):
     theta_k = 0.0
     theta = np.array([theta[0], theta[1], theta[1]*2./3.])
     P = np.array([(finger[0]*np.sin(np.pi/2-theta[0]) +              # x
@@ -141,20 +144,20 @@ def estimate_BtoAng(theta_0, fingerL, sL, offL, measB,bnds=None, method=0):
                          args=(fingerL, sL, offL, measB),
                          method='bfgs', tol=1.e-05)
         return res
-        
-    if method == 1:                         
+
+    if method == 1:
         res = minimize(cy.minimizeAng_cy, theta_0,
                          args=(fingerL, sL, offL, measB),
                          method='slsqp', tol=1.e-05, bounds=bnds)
         return res
-    
+
     if method == 2:
         res = minimize(cy.minimizeAng_cy, theta_0,
                          args=(fingerL, sL, offL, measB),
                          method='cobyla', tol=1.e-05)
         return res
 
-    
+
 
 
 def minimizePos(p, h, measB):
