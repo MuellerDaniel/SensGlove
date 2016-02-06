@@ -60,29 +60,19 @@ class SampleListener(Leap.Listener):
 
     def on_connect(self, controller):
         print "Connected"
-
-        # Enable gestures
-        # controller.enable_gesture(Leap.Gesture.TYPE_CIRCLE);
-        # controller.enable_gesture(Leap.Gesture.TYPE_KEY_TAP);
-        # controller.enable_gesture(Leap.Gesture.TYPE_SCREEN_TAP);
-        # controller.enable_gesture(Leap.Gesture.TYPE_SWIPE);
-
+        
     def on_disconnect(self, controller):
-        # Note: not dispatched when running in a debugger.
         print "Disconnected"
 
     def on_exit(self, controller):
-        # self.f.close()
+#         self.f.close()
         print "Exited"
 
     def on_frame(self, controller):
         # Get the most recent frame and report some basic information
-#        time.sleep(2)
+
         frame = controller.frame()
         f = open(self.fileName,'w')
-        # print "Frame available"
-        # print "Frame id: %d, timestamp: %d, hands: %d, fingers: %d, tools: %d, gestures: %d" % (
-        #        frame.id, frame.timestamp, len(frame.hands), len(frame.fingers), len(frame.tools), len(frame.gestures()))
 
         # Get hands
         if len(frame.hands) > 0:
