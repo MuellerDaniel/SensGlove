@@ -1,6 +1,6 @@
 function b = calcB(p,r,h)
 % function b = calcB(r,h)
-factor = [1 1 1];
+% factor = [1 1 1];
 % factor = [3.0593e-04 1 1];
 
 
