@@ -300,16 +300,16 @@ As already depicted in \ref{sec:magneticFound}, the exact solution of a \ac{CEL}
 
 \section{Hand state estimation} \label{sec:estimation}
 
-Assumed is a system with $ K $ magnets and $ N $ sensors. The beforehand models for deriving the magnetic flux density are refereed equally as $ \mathrm{B}_{n}(x_{k}) $ representing the field at sensor $ n $, excited by the state of magnet $ k $. Since magnetic fields sum up, this is a cumulative value over all the presented magnets $ k $, being
+Assumed is a system with $ K $ magnets and $ N $ sensors. The beforehand models for deriving the magnetic flux density are refereed equally as $ \mathrm{B}_{n}(x_{k}) $ representing the field at sensor $ n $, excited by the state $ x_{x} $ of magnet $ k $. Since magnetic fields sum up, for $ K > 1 $ this is a cumulative value over all the presented magnets $ k $, being
 \begin{equation}
 \mathrm{B}_{n} = \sum_{k=1}^{K} \mathrm{B}_n(x_{k})
 \end{equation}
 \todo{Soll ich alle Gleichungen durchnummerieren, oder nur die wichtigen?\\}
 for sensor $ n $. The complete system state vector has a shape of $ (3 \cdot K) \times 1 $ and is denoted by
 \begin{equation}
-\mathrm{X}_K = \begin{bmatrix} x_{1} & x_{2} & \cdots & x_{K}  \end{bmatrix}
+\mathrm{X}_K = \begin{bmatrix} x_{1} & x_{2} & \cdots & x_{K}  \end{bmatrix}^{T}
 \end{equation} 
-the overall measurable \todo{how to express?} representation of $ \mathrm{X} $ is
+the overall measurable/outcome of the equations/... \todo{how to express?} representation of $ \mathrm{X} $ is
 \begin{equation}
 \begin{aligned}
 \mathrm{M} &\equiv \begin{bmatrix} {\mathrm{B}}_{1} & {\mathrm{B}}_{2} & \cdots & {\mathrm{B}}_{N} \end{bmatrix}^{T}\\
@@ -326,7 +326,7 @@ The measurement of sensor $ n $ is denoted by $ \tilde{\mathrm{B}_{n}} $, the me
 \begin{equation}
 \tilde{\mathrm{M}} \equiv \begin{bmatrix} \tilde{\mathrm{B}_{1}} & \tilde{\mathrm{B}_{2}} & \cdots & \tilde{\mathrm{B}_{N}} \end{bmatrix}^{T}
 \end{equation}
-In order to derive an estimate of the system state $ \mathrm{X}_K $, one can minimize the error between the actual sensor measurements and the state representation by
+In order to derive an estimate of the system state $ \mathrm{X}_K $, one can formulate an optimization problem. The objective of this function is the minimization of the residual between the actual sensor measurements and the state representation by the model. 
 \begin{equation}
 \begin{aligned}
 \underset{\mathrm{X}_K}{\text{minimize}} & & || \tilde{\mathrm{M}} - \mathrm{M}(\mathrm{X}_K) ||\\
@@ -337,23 +337,33 @@ In order to derive an estimate of the system state $ \mathrm{X}_K $, one can min
 				  & & \vdots
 \end{aligned}
 \end{equation}
-for minimizing such a function, one has to remember the mathematical framework of the used models. The dipole model includes nonlinearities, which makes the optimization problem more complex. The cylindrical model is solved by a numerical approximation, which in return means that differentiation or further mathematical operations can not be applied. Since the programming language \emph{Python} is used to solve this problem, it is refereed to methods provided by the \emph{SciPy} package \todo{how to cite Python, SciPy and Cython?}. This packages provides a minimize method, that is implement just for such use cases. It comes with several user definable options, to provide the solver with additional information. In \todo{reference to minimize results} some of the built in algorithms are evaluated and the performance and quantity of the results is compared. Anyway, to speed up the computational time for solving the equations and the optimization problem, the functions are implemented in Cython \todo{more details about Cython???}.
+As constraints, the natural range of motion for each finger angle is plugged in. For minimizing such a function, one has to remember the mathematical form of the used models. The dipole model includes nonlinearities, which brings additional restrictions. The cylindrical model is solved by a numerical approximation, which in return means that differentiation or further mathematical operations can not be applied. Since the programming language \emph{Python} is used to solve this problem, it is refereed to methods provided by the \emph{SciPy} package \todo{how to cite Python, SciPy and Cython?}. This library provides a minimize method, that is implement just for such use cases. It comes with several user definable options, to provide the solver with additional information. In \todo{reference to minimize results} the utilized optimization methods are explained and the performance and quantity of the results are compared. Anyway, to speed up the computational time for solving the equations and the optimization problem, the functions are implemented in Cython. This interface allows to write C-like Python code and to work with predefined variables. \todo{more details about Cython???}.
 
-Another way of solving such a state estimation problem by applying a Kalman Filter. Since this method needs linear functions or at least the Jacobian of the model equation, it is only suitable for the dipole model.
+Another way of solving such a state estimation problem is by applying a Kalman Filter. This filter comprises a prediction step, foreseeing the next system state and an update step, correcting this prediction with the actual measurement. The utilized recursive filter equations are depicted by
+
+\emph{Prediction step:} 
+\begin{equation}
+\begin{aligned}
+\hat{\mathrm{X}}_{K}(t) &= \mathrm{X}_{K}(t-1)\\
+P(t) &= P(t-1) + Q
+\end{aligned}
+\end{equation}
+\emph{Update step:}
+\begin{equation}
+\begin{aligned}[l|l]
+G &= \frac{P(t) J_{\mathrm{M}}}{(J_{\mathrm{M}} P(t) J_{\mathrm{M}}^{T} + R)} \\
+\hat{\mathrm{X}}_{K}(t+1) &= \mathrm{X}_{K}(t) + G[\tilde{\mathrm{M}} - \mathrm{M}(\hat{\mathrm{X}}_{K}(t))]\\
+P(t+1) &= (I - G J_{\mathrm{M}}) P(t)
+\end{aligned}
+\end{equation}
+As one can see, some simplifications have been applied to the \ac{EKF}. A state transition model, describing the behaviour of the system between two measurements, is left out. This assumption is made, because the intention of the user and therefore the evolution of the state is not known. So the predicted system state is assumed to stay constant. The process noise matrix $ Q $ and the measurement noise $ R $ are assumed to be diagonal matrices. This can be said, since the measurements of each axis and sensor do not effect each other. For the state evolution this also accepted. It would be possible to model inter finger constraints by a $ Q $ matrix, showing contributions on the off-diagonals, however since those restrictions can not be generalized for every human hand, they are left out. The \ac{EKF} uses the Jacobian of the model, to linearize around the actual predicted state. This is denoted by 
+\begin{equation}
+J_{M} = \left . \frac{\partial \mathrm{M}}{\partial \mathrm{X}} \right \vert _{\hat{\mathrm{X}}_{K}(t)}  
+\end{equation}
+One drawback of this method is, that it cannot be constrained. However it serves as a computationally fast method, since only matrix calculations have to be performed. Casually spoken, the $ Q $ matrix gives a measure how much the system state will change. By applying big values, the state is assumed to change much, vice versa for small values. Via $ R $ one can determine, how much one can trust the obtained sensor values. Big entries assume to have exact measurement data, small values the contrary. By adjusting those two matrices, one can tune the filter equations, to adjust the predicted results.
 
 
 
-
-
-
-\begin{itemize}
-\item assumption, that every pose leads to a unique combination of B-fields
-\item general description of minimizing the error
-\item how do I set up my matrices and therefore, how does my optimization problem look like
-\item optional constrains
-\item 3 different minimization approaches available by scipy, compared!
-\item solving it with the EKF approach
-\end{itemize}
 
 
 \section{Visualization} \label{sec:visual}
