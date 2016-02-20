@@ -118,7 +118,9 @@ def calcB_cyl(pos, angles):
     B = np.array([B_lat, B_rho*np.sin(phi), B_rho*np.cos(phi)])
     B = np.dot(B,np.linalg.inv(rotG))
 
-
+    convert = 1e+6  # output is in muT
+    B *= convert
+    
     return B
 
 
@@ -179,7 +181,7 @@ def angToB_cyl(angles, fingerL, sPos, jointPos):
     # pass everything as lists!!!!
     if type(sPos) == type(jointPos) == type(fingerL) == list:
 #        print "here!"
-        if len(jointPos) == len(fingerL) == len(angles)/2:
+        if len(jointPos) == len(fingerL) == len(angles)/3:
             B = np.zeros((3*len(sPos),))
             sCnt = 0
             for i in sPos:
@@ -188,7 +190,7 @@ def angToB_cyl(angles, fingerL, sPos, jointPos):
                     p = ((angToP_cyl(actAngles,fingerL[j])+jointPos[j]) - i)
 #                    print "cyl: ",p
                     ang = [actAngles[0]+actAngles[1]*5./3., actAngles[2]]
-                    print "py: ", ang
+                    # print "py: ", ang
                     B[sCnt*3:sCnt*3+3] += calcB_cyl(p,ang)
                 sCnt += 1
             return B
@@ -235,7 +237,7 @@ def estimateAng_cyl(theta_0, fingerL, sL, offL, measB, bnds=None, method=0):
     res : OptimizeResult
 
     '''
-
+    dif = 1e-10
 #    res = minimize(minimizeAng_cyl,ang_0,
 #                   args=(fingerL, sPos, jointPos, measB),
 #                    method='bfgs', tol=1.e-05)
@@ -247,19 +249,59 @@ def estimateAng_cyl(theta_0, fingerL, sL, offL, measB, bnds=None, method=0):
     if method == 0:
         res = minimize(cy.minimizeAng_cyl, theta_0,
                          args=(fingerL, sL, offL, measB),
-                         method='bfgs', tol=1.e-05)
+                         method='bfgs', tol=dif)
         return res
 
     if method == 1:
         res = minimize(cy.minimizeAng_cyl, theta_0,
                          args=(fingerL, sL, offL, measB),
-                         method='slsqp', tol=1.e-05, bounds=bnds)
+                         method='slsqp', tol=dif, bounds=bnds)
         return res
 
     if method == 2:
         res = minimize(cy.minimizeAng_cyl, theta_0,
                          args=(fingerL, sL, offL, measB),
-                         method='cobyla', tol=1.e-05)
+                         method='cobyla', tol=dif)
         return res
 
-#    return res
+
+def estimateSeries(meas, fingerL, sL, offL, bnds=False, met=0, theta_0=None):
+    b = ((0.0,np.pi/2.),
+    (0.0,np.pi*(110./180.)),
+    (-(30./180)*np.pi,(30./180)*np.pi),
+    (0.0,np.pi/2.),
+    (0.0,np.pi*(110./180.)),
+    (-(30./180)*np.pi,(30./180)*np.pi),
+    (0.0,np.pi/2.),
+    (0.0,np.pi*(110./180.)),
+    (-(30./180)*np.pi,(30./180)*np.pi),
+    (0.0,np.pi/2.),
+    (0.0,np.pi*(110./180.)),
+    (-(30./180)*np.pi,(30./180)*np.pi))
+
+    estAng = np.zeros((len(meas), 3*len(fingerL)))
+
+    for i in range(1,len(meas)):
+        # print "modelCyl_A.py estimation step: ", i
+        res = estimateAng_cyl(estAng[i-1], fingerL, sL, offL, meas[i], bnds=b[:len(fingerL)*3],method=met)
+        estAng[i] = res.x
+        # if met == 0:
+        #     res = estimateAng_cyl(estAng[i-1], fingerL, sL, offL, meas[i], bnds=None,method=0)
+        #     estAng[i] = res.x
+        # elif bnds:
+        #     res = estimateAng_cyl(estAng[i-1], fingerL, sL, offL, meas[i], bnds=b[:len(fingerL)*3],method=met)
+        #     estAng[i] = res.x
+        # else:
+        #     res = estimateAng_cyl(estAng[i-1], fingerL, sL, offL, meas[i],method=0)
+        #     estAng[i] = res.x
+
+        # add the DIP states
+    dips = np.zeros((len(estAng),len(estAng[0])/3))
+    for i in range(0,int(len(estAng[0])/3)):
+        dips[:,i] = (estAng[:,i*3+1]*(2./3.))
+    cnt = 0
+    for i in range(2,int(len(estAng[0])+3),4):
+        estAng = np.insert(estAng,i,dips[:,cnt],1)
+        cnt += 1
+
+    return estAng

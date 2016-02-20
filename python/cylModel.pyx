@@ -118,6 +118,9 @@ def calcB_cyl(np.ndarray pos, long double ang):
     cdef np.ndarray B = np.array([B_lat, B_rho*np.sin(phi), B_rho*np.cos(phi)])
     B = np.dot(B,np.linalg.inv(rotMatPos))
 
+    cdef long double convert = 1e+6
+    B *= convert
+
     return B
 
 

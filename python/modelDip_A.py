@@ -12,7 +12,9 @@ def calcB(r,h_in):
 
     no = np.sqrt(float(r[0]**2+r[1]**2+r[2]**2))
     b = np.array([((3*r*np.dot(h,r))/(no**5)) - (h/(no**3))]) * (mu_0/(4.*np.pi))
-    return b[0]
+
+    convert = 1e+6
+    return b[0]*convert
 
 def angToP(theta_in,finger,off):
     psi = theta_in[2]
@@ -126,25 +128,69 @@ def estimate_BtoAng(theta_0, fingerL, sL, offL, measB,bnds=None, method=0):
     bnds : tuple
         the static (inequality) bounds for the angles
     """
+    dif = 1e-10
 
-#    res = minimize(minimizeAng, theta_0,
-#                   args=(fingerL, sL, offL, measB),
-#                   method='bfgs', tol=1.e-05)
+    # res = minimize(minimizeAng, theta_0,
+    #               args=(fingerL, sL, offL, measB),
+    #               method='bfgs', tol=1.e-05)
 
     if method == 0:
         res = minimize(cy.minimizeAng_cy, theta_0,
                          args=(fingerL, sL, offL, measB),
-                         method='bfgs', tol=1.e-05)
+                         method='bfgs', tol=dif)
         return res
 
     if method == 1:
         res = minimize(cy.minimizeAng_cy, theta_0,
                          args=(fingerL, sL, offL, measB),
-                         method='slsqp', tol=1.e-05, bounds=bnds)
+                         method='slsqp', tol=dif, bounds=bnds)
         return res
 
     if method == 2:
         res = minimize(cy.minimizeAng_cy, theta_0,
                          args=(fingerL, sL, offL, measB),
-                         method='cobyla', tol=1.e-05)
-        return res
+                         method='cobyla', tol=dif)
+    return res
+
+
+
+def estimateSeries(meas, fingerL, sL, offL, bnds=False, met=0, theta_0=None):
+    b = ((0.0,np.pi/2.),
+    (0.0,np.pi*(110./180.)),
+    (-(30./180)*np.pi,(30./180)*np.pi),
+    (0.0,np.pi/2.),
+    (0.0,np.pi*(110./180.)),
+    (-(30./180)*np.pi,(30./180)*np.pi),
+    (0.0,np.pi/2.),
+    (0.0,np.pi*(110./180.)),
+    (-(30./180)*np.pi,(30./180)*np.pi),
+    (0.0,np.pi/2.),
+    (0.0,np.pi*(110./180.)),
+    (-(30./180)*np.pi,(30./180)*np.pi))
+
+    estAng = np.zeros((len(meas), 3*len(fingerL)))
+
+    for i in range(1,len(meas)):
+        # print "modelDip_A.py estimation step: ",i
+        res = estimate_BtoAng(estAng[i-1], fingerL, sL, offL, meas[i], bnds=b[:len(fingerL)*3],method=met)
+        estAng[i] = res.x
+        # if met == 0:
+        #     res = estimate_BtoAng(estAng[i-1], fingerL, sL, offL, meas[i], bnds=None,method=0)
+        #     estAng[i] = res.x
+        # elif bnds:
+        #     res = estimate_BtoAng(estAng[i-1], fingerL, sL, offL, meas[i], bnds=b[:len(fingerL)*3],method=met)
+        #     estAng[i] = res.x
+        # else:
+        #     res = estimate_BtoAng(estAng[i-1], fingerL, sL, offL, meas[i],method=0)
+        #     estAng[i] = res.x
+
+    # add the DIP states
+    dips = np.zeros((len(estAng),len(estAng[0])/3))
+    for i in range(0,int(len(estAng[0])/3)):
+        dips[:,i] = (estAng[:,i*3+1]*(2./3.))
+    cnt = 0
+    for i in range(2,int(len(estAng[0])+3),4):
+        estAng = np.insert(estAng,i,dips[:,cnt],1)
+        cnt += 1
+
+    return estAng

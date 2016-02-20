@@ -13,11 +13,12 @@ def calcB_cy(np.ndarray r, np.ndarray h_in):
     cdef long double r_mag = 0.0025
     cdef long double l_mag = 0.015
     cdef long double m = Br*(np.pi*r_mag**2*l_mag)/mu_0      # magnetic dipole moment
-    cdef long double h = h_in*m
+    cdef np.ndarray h = h_in*m
 
     cdef long double no = sqrt(float(r[0]**2+r[1]**2+r[2]**2))
     cdef np.ndarray b = np.array([((3*r*np.dot(h,r))/(no**5)) - (h/(no**3))]) * (mu_0/(4.*np.pi))
-    return b[0]
+    cdef long double convert = 1e+6
+    return b[0]*convert
 
 
 def angToP_cy(np.ndarray thetaIn, np.ndarray finger, np.ndarray off):
