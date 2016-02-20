@@ -7,6 +7,18 @@
   organization={ACM}
 }
 
+@article{bulirsch1965numerical,
+  title={Numerical calculation of elliptic integrals and elliptic functions},
+  author={Bulirsch, Roland},
+  journal={Numerische Mathematik},
+  volume={7},
+  number={1},
+  pages={78--90},
+  year={1965},
+  publisher={Springer}
+}
+
+
 @article{ozyagcilar2012calibrating,
   title={Calibrating an ecompass in the presence of hard and soft-iron interference},
   author={Ozyagcilar, Talat},
@@ -181,6 +193,33 @@
   publisher={IEEE}
 }
 
+@misc{python,
+	title = {Python programming language},
+	author = {software Foundation Python},
+	year = {1991},
+	howpublished = {\url{https://www.python.org/}}
+}
+
+@misc{scipy,
+	title = {SciPy programming language},
+	author = {software Foundation Python},
+	year = {1991},
+	howpublished = {\url{https://www.scipy.org/}}
+}
+
+@misc{cython,
+	title = {Cython: C-extensions for Python},
+	author = {Robert Bradshaw, Stefan Behnel, et al.},
+	year = {2007},
+	howpublished = {\url{https://www.scipy.org/}}
+}
+
+@misc{blender,
+	title = {Blender},
+	author = {Foundation Blender},
+	year = {1994},
+	howpublished = {\url{https://www.blender.org/}}
+}
 
 @article{supuk2008evaluation,
   title={Evaluation of hand grasping by instrumented glove},
@@ -324,6 +363,39 @@
   publisher={IEEE}
 }
 
+@manual{rfduino2015data,
+	 organization  = "RFdigital Corporation",
+	 title         = "BLE RF module RFD22301",
+	 number        = "R25",
+	 year          =  2015,
+	 month         =  8,    
+}
+
+@manual{STlsm2012,
+	 organization  = "STMicroelectronics N.V.",
+	 title         = "LSM303D - Ultra compact high performance e-Compass 3D accelerometer and 3D magnetometer module",
+	 number        = "Rev 1",
+	 year          =  2012,
+	 month         =  4,    
+	 note		   = "ID 023312"
+}
+
+@manual{TImux2003,
+	 organization  = "Texas Instruments",
+	 title         = "CD74HC4067, CD74HCT4067 - High-Speed CMOS logic 16-Channel Analog Multiplexer/Demultiplexer",
+	 number        = "Rev 1",
+	 year          =  2003,
+	 month         =  6
+}
+
+@manual{MPU2014,
+	organization = "InvenSense Inc.",
+	title = "MPU-9250 Product Specification",
+	number = "Rev 1",
+	year = 2014,
+	month = 1	
+}
+
 @inproceedings{ekvall2005grasp,
   title={Grasp recognition for programming by demonstration},
   author={Ekvall, Staffan and Kragi{\'c}, Danica},
@@ -340,6 +412,27 @@
   note = {Accessed: 2016-01-02}
 }
 
+@misc{mikeshub2012,
+	title = {Implementation of Madgwick filter for Pololu MinIMU-9 v3},
+	author = {Github user mikeshub},
+	howpublished = {\url{https://github.com/mikeshub/Pololu_Open_IMU/blob/master/Pololu_Open_IMU/Pololu_Open_IMU.ino}},
+	note = {Accessed: 2016-02-12}
+}	
+
+@misc{konv2009,
+	title = { Motion/Velocity/Displacement Compensating for Tilt, Hard-Iron, and Soft-Iron Effects},
+	author = {Christopher Konvalin},
+	howpublished = {Sensors Online},
+	date = {2009}
+}
+
+@misc{pol2016,
+	title = {MinIMU-9 v3 Gyro, Accelerometer, and Compass (L3GD20H and LSM303D Carrier), Product 2468},
+	author = {Pololu, Robotics and Electronics, Las Vegas USA},
+	howpublished = {\url{https://www.pololu.com/product/2468}}
+}
+
+
 @article{madgwick2010efficient,
   title={An efficient orientation filter for inertial and inertial/magnetic sensor arrays},
   author={Madgwick, Sebastian OH},
@@ -348,30 +441,33 @@
 }
 
 
-@misc{Winer,
+@misc{Winer2015,
   title = {Simple and Effective Magnetometer Calibration},
-  author={Winer Kris},
+  author={Kris Winer},
   howpublished = {\url{https://github.com/kriswiner/MPU-6050/wiki/Simple-and-Effective-Magnetometer-Calibration}},
+  year = {2015},
   note = {Accessed: 2016-02-04}
 }
 
 
-@article{madgwick2010efficient,
-  title={An efficient orientation filter for inertial and inertial/magnetic sensor arrays},
-  author={Madgwick, Sebastian OH},
-  journal={Report x-io and University of Bristol (UK)},
-  year={2010}
-}
-
 
 @misc{Synertial,
+  author = {Synertial Labs UK, US},
   title = {Synertial, Glove Systems overview},
   howpublished = {\url{http://synertial.com/brochure-gloves}},    
   note = {Accessed: 2016-01-06}
 }
 
+@misc{arduino,
+	author = {Arduino LLC},
+	title = {Arduino},
+	howpublished = {\url{https://www.arduino.cc/}},
+	note = {Accessed: 2016-02-07}	
+}
+
 
 @misc{anthrotronix,
+  author = {Anthrotronix, Inc.},
   title = {Anthrotronix, Human Machine Interfaces},
   howpublished = {\url{http://www.anthrotronix.com/our-work/human-machine-interfaces}},
   note = {Accessed: 2016-01-06}
@@ -386,16 +482,6 @@
 	year={2009}
 }
 
-@article{sturman1994survey,
-  title={A survey of glove-based input},
-  author={Sturman, David J and Zeltzer, David},
-  journal={Computer Graphics and Applications, IEEE},
-  volume={14},
-  number={1},
-  pages={30--39},
-  year={1994},
-  publisher={IEEE}
-}
 
 @misc{zimmerman1985optical,
   title={Optical flex sensor},
@@ -509,7 +595,8 @@
 }
 
 @misc{leap,
-	title = {Leap Motion, Inc},
+	author = {Leap Motion, Inc},
+	title = {Leap Motion web presence},
 	howpublished = {\url{https://www.leapmotion.com/}},
 	note = {Accessed: 2016-01-04}	
 }	

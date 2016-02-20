@@ -8,55 +8,307 @@
 
 \rfoot[]{\thepage}
 
-\chapter{Results} \label{cha:results}
+\chapter{Experimental Results} \label{cha:results}
 
-\section{Data/Sensor behaviour} \label{sec:dataRes}
+\section{Sensor behaviour} \label{sec:dataRes}
 
-\begin{itemize}
-\item general behaviour of sensor (when you get to near, there is a clipping/oversteering)
-\item timing behaviour with the earth-mag elimination
-\end{itemize}
+The utilized LSM303D sensors show some general measurement characteristics. If they are exposed to a magnetic field, higher than the configured measurement range, a clipping of the returned value can be observed. In \todo{insert figure} this effect can be seen on the measurement for the $ x $-axis. The magnet is moved along this axis towards the sensor. As expected, the measured field increases mainly on the $ x $-axis, by shrinking the distance $ \varDelta d $ between sensor and magnet. Approximately at \todo{x} cm the measured field reaches the current upper range and the returned sensor value gets negative. By turning the magnet around \SI{180}{\degree} and therefore measuring a decreasing negative magnetic field by the sensor, the same behaviour can be recognized. This time however the clipping occurs from negative to positive (\todo{both cases!}). To overcome this effect, one has to set the magnetic full scale range to an appropriate value. However by setting for every user the maximum range of $ \pm \SI{1.2}{\milli \tesla} $, one looses precision in the measurements. The approximately reachable maximum full scale range for one user can easily be determined. By simulating the range of possible flexion-extension, which would be performing a fist, and looking at the predicted outcome of the  model, one gets an image for the result of the measurable magnetic field. From that the measurement range can be determined. However due to the influence of surrounding magnetic fields, this value is only a guideline for the de facto measured field. Based on this context, the magnetic full scale range of the sensors for the ongoing measurements and experiments was set to $ \pm \SI{0.4}{\milli \tesla} $.
+
+\begin{figure}
+\subfloat[negClipping caption]
+{\includegraphics{pictures/plots/negClipping.png} \label{fig:negClip}}
+\hfil
+\subfloat[posClipping caption]
+{\includegraphics{pictures/plots/posClipping.png} \label{fig:posClip}}
+\caption{bla}
+\label{fig:clipping}
+\end{figure}
+
+For evaluating the timing behaviour of the system, the bottleneck is the sensor data rate. As described in \ref{cha:sensors}, this could be set to a maximum value of \SI{100}{\Hz}, such that one could retrieve new magnetometer values each \SI{10}{\milli \second}. The switching and forwarding of the clock signal via the utilized multiplexer takes only \SI{21}{\nano \second} into account. This value composes a \grqq Break-before-make\grqq \, pause of \SI{6}{\nano \second}, to prevent crosstalk between the channels and a propagation delay time of \SI{15}{\nano \second}. In order to verify those values and to identify the overall time for acquiring, scaling to distortion factors, sending and receiving the measurement data by the host system, the respective code sections were timed. It is observed that the overall sampling frequency of the sensors can only be set to \SI{50}{\Hz}. So the time between two new sensor read outs is \SI{20}{\milli \second}. The read out of the registers and the scaling for the hard- and soft-iron distortion values shows an insignificant influence on the timing. Further on it makes no difference whether only one sensor unit is read out, or all four, since they all show the same data rate and have measurements available after \SI{20}{\milli \second}. The sending of the sensor values for one unit via BLE needs \SI{220}{\micro \second}. So in total, acquiring the data of four magnetometers and sending it via BLE with the RFduino system takes around \SI{20}{\milli \second} in total. The readout on the client side is done by requesting the notifications of the server (here, the RFduino). However by this method it is not ensured, that each data packet, send by the microcontroller is also received by the PC. That's why some packets might get lost. To ensure a constant updated of all four sensor values at a time, the client waits till he received four data packets, where each comes from an individual sensor unit. This listening procedure can vary by time. In \ref{fig:sensTime} the time, till the magnetometer readings of four individual sensors were received is displayed for 200 measurements. The average lies at \SI{70}{\milli \second}. So the overall data rate performance of the system with four individual sensor units is measured to be \SI{14}{\Hz}.
+
+\todo{Source of error for timing: The sending via BLE is time critical!... The RFduino safes the data into a queue. When you just put more and more data into this queue, while it is not sent (or without taking care whether the queue is full), you will overwrite entries! With checking the \grqq fullness \grqq of the queue with a while-loop (look at code!) you wait, till you are allowed to push the data to the queue. This ensures, that you don't overwrite entries. However your system is stuck during that time and since the sensor datarate with 50Hz is faster than the sending, data packets are lost! So you should try to adapt the sensor data rate to the sending rate. Taking one measurement out of 5(case with $ f_{sens} \gg f_{ble} $) is less good, than taking one out of 2(case for $ f_{sens} \geq f_{ble} $ ). This could lead to an overall slower acquisition of packets (since you have to wait longer for you sensors), but the values from the sensor are more representative!}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=1.0\textwidth]{pictures/plots/timingRFd_v2.png}
+\caption{Time till four measurements, each of an individual sensor, were received by the host PC over 200 accepted packets.\todo{Do a histogram plot with both, f=50 and f=25 and write the mean and var values for them into the plot! Stored in timeF50.dat / timeF25.dat}}
+\label{fig:sensTime}
+\end{figure}
+
+%\begin{table}[h]
+%\begin{tabular}{|l|c|c|}
+%	Task & one sensor & four sensors \\ \hline
+%	new meas available (interrupt occured) & \SI{20}{\milli } & d \\
+%	sending sensor values via BLE & d & d \\
+%	whole process & d & d \\
+%\end{tabular}
+%\caption{Timing behaviour for the presented system, structured into critical parts.}
+%\label{tab:timing}
+%\end{table}
 
 
-\section{Quality of calibration procedure} \label{sec:cali}
+\section{Quality of calibration procedures} \label{sec:cali}
 
-\begin{itemize}
-\item comparing the calibration methods \\
-		$ \rightarrow $ hard-soft as good as Freescale, took Freescale
-		$ \rightarrow $ comparison/visualization available in Matlab!
-		
-\item observations from the earth-mag elimination \\
-		$ \rightarrow $ no good results, due to sensor drifts, ...
-		$ \rightarrow $ took data with and without cancellation, look at cell 287 in Excel sheet 
-		
-\item problems with determining the model fit parameters \\
-		$ \rightarrow $ tried to find scaling factors on flat surface with known distances (Excel sheet cell 283 ) \\
-		$ \rightarrow $ tried to fit it to wooden hand, but there the error is already in the simulated(fitting) data \\
-		$ \rightarrow $ tried to derive the position values on the wooden hand, no definite solution found
-		$ \rightarrow $ so the fitting is done by a initialization gesture with the hard coded position values
-		
-\end{itemize}
+\subsection{Calibration for hard- and soft-iron effects}\label{subsec:resHardSoft}
+
+Two methods are compared and classified for determining the hard- and soft-iron factors. On the one hand the approach, presented by Winer, declaring hard- and soft-iron values by using the maximum and minimum measurements for an axis. This one is chosen, since it is an often cited and easy method for compensating the distortion factors. On the other hand, the version from Freescale \cite{ozyagcilar2012calibrating} which takes a whole series of measurement into account and only compensates for the hard-iron effects. 1000 measurements were collected, by rotating the sensor slowly around all possible axes. The environment is a normal lab, without any protections against additional, artificial magnetic fields. The results of the comparison between those two approaches and the uncalibrated values are visualized in \todo{figure}.
+
+\begin{figure}
+%\centering
+\includegraphics[width=1\textwidth]{pictures/plots/cali3d.eps}\label{fig:hs3d}
+\caption{3d}
+\end{figure}
+
+\begin{figure}
+\centering
+\includegraphics[width=1\textwidth]{pictures/plots/cali2d.eps}\label{fig:hs2d}
+\caption{2d}
+\end{figure}
+
+\begin{figure}
+\centering
+\includegraphics[width=1\textwidth]{pictures/plots/devi.eps}\label{fig:devi}
+\caption{deviations}
+\end{figure}
+
+
+
+In \todo{3d} the calibrated and the uncalibrated data points are plotted, with a sphere around them. One thing that is clearly visible here is the shift, caused by the hard iron effects. In \todo{2d} this offset is also observable. Recognizable by those two plots is also the fact, that the influence of the soft-iron distortion is very small. The data points lie already on an almost perfect sphere. This is also represented in those scale values, calculated by the Winer approach. They lie in the range of $ 1 \pm 0.03 $. That both calibration methods serve almost the same results can already be seen by the fact that the blue and green datapoints are overlapping each other. In order to compare the two calibration methods, the distance of each calibrated value to the perfect sphere with radius $ \mathrm{B}_earth $ is calculated. The outcome is shown in \todo{deviation}. In the end, the mean value of the deviation for the Freescale approach is smaller than those, calibrated by the Winer method (for this particular example: $ \mu_{Freescale} = -0.0842\si{\micro \tesla}, \mu_{Winer} = 6.5525\si{\micro \tesla} $). Because the hard-iron offsets dominate the soft-iron effects, the Freescale method is more accurate than the Winer approach, since it takes all the observed measurements into account and not just the minimum and maximum values. Therefore for the utilized sensor units, which show small soft-iron deviation, the Freescale approach is preferred. The provided procedure was evaluated several times, each time showing similar and constant results. As already mentioned in \ref{subsec:hardSoft} this calibration procedure has to be performed for each sensor and the observed values all have to be scaled to a common value for $ \mathrm{B}_{earth} $.
+
+
+\subsection{Determining the fitting parameters for the model} \label{subsec:resModelFit}
+
+For determining the scaling factors to the model, the sensor rack is placed onto a cardboard box with a height of \SI{2}{\cm}. The magnet is statically aligned with the sensor $ x $-axis and is moved along the y-axis on a flat surface. The distance in $ x $-direction is held static. The origin of the coordinate frame is determined to be the position of the upper most sensor unit. The magnet is moved at a distance of $ x=5\si{\cm} $ and $ x=7\si{\cm} $ from $ y=-6\si{\cm} $ (which is the $ y $-height of the under most sensor) to $ y=0\si{cm} $ (which is the $ y $-heigth of the first sensor). For defining the scaling factors, the B-field, which should be observed by each sensor is calculated. The range of the actually measured values is then fitted to the simulated ones. The scaling factors for the two $ x $-positions should be same. However this is not the case. A comparison of the two scaling factors is given in \ref{fig:flatFit}.
+
+\begin{figure}[h]
+\includegraphics[width=1\textwidth]{pictures/plots/flatFit.png}
+\caption{Comparison between the scaling factors, observed from $ x=5\si{\cm} $ and $ x=7\si{\cm} $. The simulated, perfect data is for $ x=5\si{\cm} $.}
+\label{fig:flatFit}
+\end{figure}
+
+The maximal difference between the factors is $ 0.195 $, the mean over all differences is $ 0.12 $. This difference between the results is not negligible. As a source for the observed disagreement, one could head that the whole procedure is performed by a human being. The position values are only determinable up to a certain amount of accuracy, as well as the start and end points of the performed movement.
+
+
+\subsection{Elimination of earth magnetic field} \label{subsec:resEarthEli}
+
+Since a constant elimination of the earth magnetic field would be very important for a portable system, two methods of the approach, presented in \ref{subsec:earthEli} are tested. The difference between those two lies in the determination of the orientation. The one estimates it by using an implementation of a Madgwick Filter, provided from \cite{mikeshub2012}. This algorithm can directly be executed on one sensor device, since the accelerometer and the gyroscope are already on the breakout board. So for this method, no additional sensors have to be mounted onto the sensor bracket. The other approach uses an additional \ac{IMU}, which can output the orientation directly as quaternion. The MPU9250 from Invensense \cite{MPU2014} is used for this. The orientation of the magnetometers relative to each other does not change, since they are placed inside the self designed bracket. For implementation follow the steps, presented in \ref{subsec:earthEli}. As an intermediate step, the calculated relative orientation $ R_{d} $ of both methods was inspected and was proven to represent the real relative rotation.
+
+As an early observation, the approach using the Madgwick filter is considered bad. Since the readings from the magnetometer are used, for guaranteeing a stable and non-drifting estimation of the orientation, the artificial magnets interfere this algorithm. This was observed by a constant drift of the values over time, when introducing the artificial magnets. So the further verification was only performed with the MPU9250 sensor, with whom this drift behaviour was not observed. Nevertheless it is mentionable that the upcoming results for cancelling solely the earth magnetic field (in absence of artificial magnets) were similar for both methods.
+
+A proper working system should constantly return a magnetic field of almost \SI{0}{\tesla}, when it is rotated in an environment without artificial magnets. In order to verify this, the sensors are slowly moved around each axis. By comparing the results with and without the subtraction of the initially observed magnetic field, one should get an impression on the quality of the algorithm. In \ref{fig:earthCancelRes} the observed data of each axis is displayed.
+
+At the beginning everything is fine, the cancelled values are 0, but when it comes to moving they also alternate...
+
+\begin{figure}[h]
+\centering
+	\subfloat[LSM]
+	{\includegraphics[width=0.7\textwidth]{pictures/plots/LSMCancel1.png} \label{fig:LSMCancel}}
+	%\hfill
+	\\
+	\subfloat[MPU]
+	{\includegraphics[width=0.7\textwidth]{pictures/plots/MPUCancel1.png} \label{fig:MPUCancel}}
+\caption{Comparison of cancelling the earth magnetic field}
+\label{fig:earthCancelRes}
+\end{figure}
+
+The two plots show the measured magnetic field of the $ x $-axis for one sensor with (represented by the green line) and without (represented by the red line) subtracting the rotated initially observed field $ \mathrm{B}_{earth} $. The expected outcome would be that the values with the earth cancellation should stay almost constantly at \SI{0}{\tesla} or at least show a significantly smaller change for various rotations. Unfortunately, as visualized by the plots in \ref{fig:earthCancelRes}, this is not the case for both methods. The results of the implemented method look as if the rotation is not applied in the right way...
+
 
 
 \section{Pose estimation} \label{sec:estimationRes}
 
+\subsection{Quality/Results for simulated data; Identifying the minimization process} \label{subsec:resSim}
+
 \begin{itemize}
-\item results of minimization for simulated data with and without noise
-\item results for easy movement (making a fist) with and without noise
-\item results for complex movement with and without noise
+\item $ \rightarrow $ try to get a feeling for the shape of the data/B-field
+\item the difference between the results for the dip and the cyl model (just difference plot...)
 
-\item EKF results
+\item describe the three different minimization algorithms \\
+	$ \rightarrow $ unconstrained BFGS, COBYLA\\
+	$ \rightarrow $ constrained SLSQP (this is the choice!)
+	
+\item describe how you tested it, so describe the script 160203\_miniComp.py
+\item explain, that you always take ad-ab for the b-field into account, since it is a normal movement
 
-\item results with real data
-\item as described, sensor values are not good scalable to model...
-\item though not so good results...
-\item due to timing behaviour of RT minimization, not such a good way to do have a real time estimation
-\item so I have results for single magnet - one/multiple sensor 
-\item and for multiple magnet - multiple sensor combinations
-\item presentation and comparison between EKF and minimizing approach
-\item claiming that the difficulty in scaling the measurements is critical...
+\item 1 magnet - 1 sensor
+	\begin{itemize}
+	\item ad-ab detection not possible at all...
+	\item best results for method 1(with and without ad-ab/cyl and dip)
+	\item pretty fast (max 0.1 sec)
+	\end{itemize}
+\item 1 magnet - 4 sensors
+	\begin{itemize}
+	\item good results for 1cylA, (!)2dipA(!) 
+	\item good speed (ca. 0.1 sec)
+	\end{itemize}
+\item 4 magnets - 4 sensors
+	\begin{itemize}
+	\item very slow! ($ \geq 1sec $)
+	\item very bad results!
+	\item best results for: 1dipnA, 1cylnA (also the fastest)
+	\end{itemize}
+	
+\item overall results/conclusion for algorithms
+	\begin{itemize}
+	\item cylindrical (in most cases) slower than dip!
+	\end{itemize}	
+		
+\begin{itemize}
+\item results of minimization/EKF for simulated data with and without noise
+\item results for easy movement (making a fist/90 deg fit) with and without noise
+\item results for complex movement with and without noise \\
+		$ \rightarrow $ simple movements pretty good reconstructible\\
+		$ \rightarrow $	complex movements and noise not so good...\\
+		$ \rightarrow $ when estimating more than one finger, very time consuming...\\
+		$ \rightarrow $	behaviour as with singe finger
+\end{itemize}
 
 \end{itemize}
 
 
 
+\subsection{Results for recorded/real data} \label{subsec:resMeas}
+
+Describe the recording procedure
+
+\begin{itemize}
+
+%
+\item \textbf{estimation of four fingerstates}
+	\begin{itemize}
+	\item very slow! And very poor results!
+	\item 160210\_set6 nice for showing things for all fingers
+	\item no good results without ad-ab (for 90 fitted gesture)
+	\item moving together can a bit be tracked (initialization gesture reconstructed, for dip better than cyl)
+	\item individual movement can not be tracked! (values 257:471)
+	\item $ \rightarrow $ so no further details about four - four estimation, it is not possible!
+	\end{itemize}
+
+\item textbf{estimation one - one}
+	\begin{itemize}
+	\item results are \grqq a bit\grqq worse than with four sensors (should be valid for all sets, tested for 160217\_set3 (no ad-ab))
+	\item results are much worse than with four sensors (160210\_set2)
+	\item ad-ab can also be recognized (160217\_set4)
+	\item \todo{more comparison of datasets!}
+	\item estimation is ca. \textbf{two times} faster than one - four!
+	\item e.g. four-one better than one-one 160210\_set4 (beginning of fist)
+	\end{itemize}
+
+%
+\item \textbf{recognizing movements}
+	\begin{itemize}
+	\item not constantly \grqq good or bad\grqq, it differs and is dependent on beforehand movements (seen by almost all datasets) and movement of hand
+	\item 160217\_set3 nice detection between 50s and 70s by cyl\_A (but directly afterwards, stretched position is not recognized...)
+	\end{itemize}
+
+
+\item \textbf{difference between model with and without ad-ab}:
+	\begin{itemize}
+	\item with ad-ab results are better (even for doing no movement in ad-ab)
+	\item $ \rightarrow $ no ad-ab results over all are not so good...
+	\item 160217\_set7: for simple movements almost no difference to with ad-ab
+	\item 160210\_set1: big difference (no ad-ab worse...)
+	\end{itemize}
+
+
+\item \textbf{comparing results/difference for using cyl and dip}
+	\begin{itemize}
+	\item dip is much faster than cyl (around 7 times faster!)
+	\item regarding accuracy, no clear statement possible...
+	\item sometimes cyl is better, sometimes dip
+
+	\end{itemize}
+
+\item \textbf{detectability of ad-ab / comparing cyl\_A with dip\_A}
+	\begin{itemize}
+	\item 160210\_set4 shows that dip and cyl without ad-ab show only small differences!
+	\item in the end: cylindrical estimation with ad-ab is more accurate than dipole with ad-ab! (160217\_set3)
+	\item well it really depends... sometimes dip is better, sometimes cyl...
+	\item but ad-ab can be estimated much better by cyl model, but only if finger is stretched! (160217\_set2)
+	\item and only slow and clear ad-ab movements can be detected (160210\_set3 nothing is detected...)
+	\item 160217\_set4 cyl\_A detects negative AND positive ad-ab!
+	\item $ \rightarrow $ ad-ab is hard to detect. Even Leap is not capable
+	\end{itemize}
+
+\item \textbf{comparison to Leap}
+	\begin{itemize}
+	\item comparison is difficult, since it is also not perfect...
+	\item 160210\_set1-2 are good examples, which show, that Leap is not perfect!
+	\item 160210\_set2 however also shows, that it can work pretty good!
+	\item values for ad-ab are not very good (e.g. 160210\_set3)
+	\item 160210\_set4 also shows clearly (especially at the end), that Leap is not perfect!
+	\item 160210\_set4 shows, that ad-ab can be detected quite good (70s-90s)
+	\end{itemize}
+
+\item \textbf{issues/observations with Leap}
+	\begin{itemize}
+	\item when finger are close together, tracking is harder
+	\item DIP and PIP show the same constraint as I am using ($ PIP = 2/3 DIP $)
+	\item angle in MCP introduces most times also angle in DIP/PIP (160210\_set2) \\
+			$ \rightarrow $ my system is better for this!
+	\end{itemize}
+
+%
+\item \textbf{influence of normed fitting gesture / use fist? and observed fitting values}
+	\begin{itemize}
+	\item scaling to flat scale fitting values leads to very bad results!
+	\item fist is not good for fitting, since it is slightly different each time and everyone makes it different (pictures of videos and observed B-fields)
+	\item (cardboard) has only slightly influence (dataset 160212\_set1)
+	\item do it during the video (also with cardboard perhaps)
+	\item because you change the height and orientation of your hand too much during calibration...
+	\item so just perform the gesture during your recording
+	\item fitting for ad-ab has almost no influence (dataset 160212\_set3), a clear, structured (performed alone) ad-ab can be detected (dataset 160212\_set4)
+	\end{itemize}
+
+%
+\item \textbf{influence of exact hand dimensions/parameters}
+	\begin{itemize}
+	\item e.g. dataset: 160217\_set3 with handDim from 160210 and 160217 (but every other set should return the same...)
+	\item for sPos there is a difference, but it is very small
+	\item for bone lengths it's the same, only small differences (sometimes my own lengths better, sometimes wooden better)
+	\item so in the end the parameters have to resemble the truth, but since the data is fitted to the calculated values, it's influence is not too big
+	\end{itemize}
+
+%
+\item \textbf{influence of distance sensor to magnets}
+	\begin{itemize}
+	\item changes in magnetic field are too small...
+	\item 160210\_set10 shows that the sensors are too far away! (the results within the methods vary a lot and they do not represent the truth!)
+	\end{itemize}
+
+%
+\item \textbf{tries with MPU}
+	\begin{itemize}
+	\item as expected not good...
+	\item start position can be \grqq detected\grqq after rotation again, but the results with rotation are bad...
+	\item sets: 160217\_set5-6
+	\end{itemize}
+
+\item \textbf{results with ring}
+	\begin{itemize}
+	\item 160217\_set7 no difference to glued magnet
+	\item 160217\_set8 very bad results... but I don't think that the ring is the reason
+	\item \todo{do some more?}
+	\end{itemize}
+
+\item \textbf{for identifying/measuring the difference}
+	\begin{itemize}
+	\item plot the two results for two/several methods in one graph (colors)
+	\item and plot numerical difference below
+	\end{itemize}
+
+\item \textbf{concluding observations}
+	\begin{itemize}
+	\item very fragile/sensitive system
+	\item sensitive to hand/body movements, calibration gesture
+	\item bad/difficult reproducibility of results/measurements
+	\item quality of results is not totally comparable/identifiable by Leap (since this system is also faulty)
+	\end{itemize}
+
+\item 160210\_set4 nice for showing that Leap cannot detect DIP/PIP movement alone...
+
+\item setting datarate to 25Hz has no effect... (160217\_set2)
+
+\end{itemize}
+
+Presentation and compare between EKF and minimizing approach
