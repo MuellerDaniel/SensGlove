@@ -112,9 +112,9 @@ def calcB_cyl(pos, ang):
     B = np.array([B_lat, B_rho*np.sin(phi), B_rho*np.cos(phi)])
 #    B = np.array([B_lat, B_rho*np.cos(phi), B_rho*np.sin(phi)])
     B = np.dot(B,np.linalg.inv(rotMatPos))
-    
-    convert = 1e+6  # output is in muT
-    B *= convert
+
+    # convert = 1e+6  # output is in muT
+    # B *= convert
 
     return B
 
@@ -229,7 +229,7 @@ def estimateAng_cyl(theta_0, fingerL, sL, offL, measB, bnds=None, method=0):
 
     '''
 
-    dif = 1e-10
+    dif = 1e-05
 
     # res = minimize(minimizeAng_cyl,theta_0,args=(fingerL, sL, offL, measB),method='bfgs', tol=1.e-05)
 

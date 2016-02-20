@@ -14,18 +14,15 @@ import numpy as np
 import sys,signal
 
 
-
 ''' routine for recognizing the sigint '''
 def cleanup(signum, frame):
     print "leapState end..."
-#    proc.kill()
-#    datAc.saveToFile(m,"160205_magData") 
-    sys.exit()
+#    controller.remove_listener(listener)
+    sys.exit()   
 
 
-
-''' Avg Framerate, system running alone: 9062 mu_
-s -> f = 110 Hz '''
+''' Avg Framerate, system running alone: 
+    9062 mu_s -> f = 110 Hz '''
 
 
 
@@ -35,52 +32,52 @@ class SampleListener(Leap.Listener):
     state_names = ['STATE_INVALID', 'STATE_START', 'STATE_UPDATE', 'STATE_END']
     joint_names = ['MCP', 'PIP', 'DIP']
     
-    stateFile = open("anglesLeap.txt",'w')
+    stateFile = open("160217_leap",'w')
+    upCnt = 0
     
     
-    def getFlexionAngles(self,finger):
-        # print "here..."
-#        print "Flexion angles for ", self.finger_names[finger.type]
-        angleStr = ""
-        for b in range(0, 4):
+    def getFlexionAngles(self,finger,hand):
+        angleStr = " "
+#        print self.finger_names[finger.type]
+#        theta_mcp = np.pi - hand.direction.angle_to(finger.bone(Leap.Bone.TYPE_PROXIMAL).direction)
+        theta_mcp = hand.palm_normal.angle_to(finger.bone(Leap.Bone.TYPE_PROXIMAL).direction) - np.pi/2.    # take the normal, since it leads better results
+#        print "angle: ", theta_mcp
+        angleStr += str(theta_mcp) + " "                    
+        for b in range(1, 4):
             bone = finger.bone(b)
             if b < 3:
                 jointAngleTo = bone.direction.angle_to(finger.bone(b+1).direction)
-#                print "joint angle %s : %s (rad), %s (deg)" % (self.joint_names[b],
-#                          jointAngleTo, np.rad2deg(jointAngleTo))
+
+#                print "joint angle %s : %s (rad)" % (self.joint_names[b],
+#                          jointAngleTo)
                 angleStr += str(jointAngleTo) + " "
         
+        angleStr += self.getAbductionAngles(finger,hand)    # for ad-ab angle
         return angleStr                
                           
     
 
-    def getAbductionAngles(self,hand):
-        for f in range(1,4):
-            fingerA = hand.fingers[f]
-            dA = fingerA.bone(Leap.Bone.TYPE_PROXIMAL).direction
-            fingerB = hand.fingers[f+1]
-            dB = fingerB.bone(Leap.Bone.TYPE_PROXIMAL).direction
-            angle = dA.angle_to(dB)
-
-            crossP = dA.cross(dB)
-            di = hand.palm_normal.dot(crossP)
-
-            if di < 0:
-                angle *= -1
-
-            print "angle between %s and %s: %s (rad), %s (deg) " % (
-                    self.finger_names[fingerA.type] , self.finger_names[fingerB.type],
-                    angle, np.rad2deg(angle))
-
-
-    def on_init(self, controller):
-        print "Initialized"
-
-    def on_connect(self, controller):
-        print "Connected"
+    # angle between two fingers
+    def getAbductionAngles(self,fing, hand):
+        handD_V = hand.direction
+        handD_V.y = 0
+        handD_V = handD_V.normalized     
         
-    def on_disconnect(self, controller):
-        print "Disconnected"
+        fing_V = -fing.bone(Leap.Bone.TYPE_PROXIMAL).direction
+        fing_V.y = 0
+        fing_V = fing_V.normalized
+        
+        ang = handD_V.angle_to(fing_V)
+        cross = handD_V.cross(fing_V)
+        direc = hand.palm_normal.dot(cross)
+        
+        if direc < 0: ang *= -1
+#        print ang            
+        
+        return str(ang)
+
+            
+            
 
     def on_exit(self, controller):
         self.stateFile.close()
@@ -88,23 +85,30 @@ class SampleListener(Leap.Listener):
 
     def on_frame(self, controller):        
         # Get the most recent frame and report some basic information
-
+#        print "controller up..."
         frame = controller.frame()
-#        f = open(self.fileName,'w')
 
         # Get hands
         if len(frame.hands) > 0:
+            if self.upCnt == 0: 
+                print "LEAP up!"
+                self.upCnt += 1
             for hand in frame.hands:
-                 print "LEAP: hand detected"
-#                 self.getAbductionAngles(hand)               
-                 angleString = str(frame.timestamp)
-                 
+#                 print "LEAP: hand detected"
+                 angleString = "leap " + str(frame.timestamp) + " "
                  for finger in hand.fingers:
                      if finger.type == Leap.Finger.TYPE_THUMB:
                          continue
-                     angleString += " " + self.getFlexionAngles(finger)
+                     angleString += self.getFlexionAngles(finger,hand)
             
+            print "LEAP\tUP"
+#            print angleString
             self.stateFile.write(angleString + '\n')
+
+        else:
+            print "LEAP down..."
+            self.upCnt = 0            
+            
                  
        
            
@@ -113,25 +117,37 @@ class SampleListener(Leap.Listener):
 
 
 def main():
-
+    
+    signal.signal(signal.SIGINT, cleanup)    
+    
+#    try:
+#        sys.stdin.readline()
+#    except KeyboardInterrupt:
+#        pass
+    
     listener = SampleListener()
     controller = Leap.Controller()
 
     # Have the sample listener receive events from the controller
     controller.add_listener(listener)
+    
 
     # Keep this process running until Enter is pressed
     print "Press Enter to quit..."
     signal.signal(signal.SIGINT, cleanup)
     try:
         sys.stdin.readline()
+    except KeyboardInterrupt:
+        pass
+    
     finally:
         print "in finaly..."
         # Remove the sample listener when done
         controller.remove_listener(listener)
 #        f.close()
-        # subPro.kill()
 
 
 if __name__ == "__main__":
     main()
+    
+ 

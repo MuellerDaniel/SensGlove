@@ -1,7 +1,7 @@
 /*
  * COLLECTING AND SENDING ALL THE DATA OF THE SENSOR
- * 
- * 
+ *
+ *
  */
 #include "Wire.h"
 #include <RFduinoBLE.h>
@@ -21,30 +21,33 @@ float magX[4], magY[4], magZ[4], rawX[4], rawY[4], rawZ[4];
 float softBias[4][3] = {{1, 1, 1},
                         {1, 1, 1},
                         {1, 1, 1},
-                        {1, 1, 1}};*/                         
-/*float offFree[4][3] = {{72.621156801701048, 7.2729417646131465, 80.228360877530477},
-                        {72.621156801701048, 7.2729417646131465, 80.228360877530477},
-                        {72.621156801701048, 7.2729417646131465, 80.228360877530477},
-                        {72.621156801701048, 7.2729417646131465, 80.228360877530477}};*/
-float offFree[4][3] = {{0.0, 0.0, 0.0},
+                        {1, 1, 1}};*/
+// zero bias values
+/*float offFree[4][3] = {{0.0, 0.0, 0.0},
                         {0.0, 0.0, 0.0},
                         {0.0, 0.0, 0.0},
                         {0.0, 0.0, 0.0}};
-                        
+float scale[4] = {1.0, 1.0, 1.0, 1.0};*/
+float offFree[4][3] = {{47.289612442372295, 15.181165609732277, 206.6271129712874},
+                        {-141.89726315328829, -49.738964753578351, -351.58590700070096},
+                        {-31.563006578399072, -64.617792909008344, -143.79092483501179},
+                        {-128.65707944985073, -83.688955303444942, -313.42472501811159}};
+float scale[4] = {0.997309043969, 1.01934260961, 0.983302110365, 1.0007045843};
+
 float smoothMagX[4] = {0.0, 0.0, 0.0, 0.0};
 float smoothMagY[4] = {0.0, 0.0, 0.0, 0.0};
 float smoothMagZ[4] = {0.0, 0.0, 0.0, 0.0};
-                        
+
 //float conversionFactor = 0.080;  //for range +-2gauss
-float conversionFactor = 0.160;  //for range +-4gauss
+float conversionFactor = 0.160;    //for range +-4gauss
 //float conversionFactor = 0.320;  //for range +-8gauss
 //float conversionFactor = 0.479;  //for range +-12gauss
 
-char data[16];
-float fData[4][4];
-int sensCnt = 4;    //Number of sensors
+char data[4][16];
+const int sensCnt = 4;    //Number of sensors
+float fData[sensCnt][4];
 int a = 0;
-float alphaMag = 0.15;
+float alphaMag = 0.3;
 //float alphaMag = 1.0;
 
 //pins
@@ -52,7 +55,7 @@ int s0 = 0;
 int s1 = 1;
 int s2 = 2;
 int s3 = 3;
-int ledPin = 4;
+int ledPin = 1;
 
 void setup() {
     //Serial.begin(9600);     //you have not enough gpios to use serial communication...
@@ -71,62 +74,66 @@ void setup() {
     digitalWrite(s3, LOW);
     delay(50);
 
+    pinMode(ledPin, OUTPUT);
+    digitalWrite(ledPin, LOW);
+
     //set up the magnetic range for each sensor
-    for(int i=0; i<4; i++){      
-      setChannel(i);      
+    for(int i=0; i<4; i++){
+      setChannel(i);
       //setChannel(0);
-      delay(50);      
-      compass.init();            
+      delay(50);
+      compass.init();
       //digitalWrite(ledPin,LOW);
       compass.enableDefault();
-      compass.writeReg(compass.CTRL5, 0x74);    // put magnetic data rate to 100 Hz
+      
+      compass.writeReg(compass.CTRL1, 0x00);    // set accelerometer in power-down mode
+      //compass.writeReg(compass.CTRL5, 0x74);    // put magnetic data rate to 100 Hz
+      compass.writeReg(compass.CTRL5, 0x70);    // put magnetic data rate to 50 Hz
+      //compass.writeReg(compass.CTRL5, 0x6C);    // put magnetic data rate to 25 Hz
       //compass.writeReg(compass.CTRL6, 0x00);    // put magnetic scale to +-2 gauss
       compass.writeReg(compass.CTRL6, 0x20);    // put magnetic scale to +-4 gauss
       //compass.writeReg(compass.CTRL6, 0x40);    // put magnetic scale to +-8 gauss
       //compass.writeReg(compass.CTRL6, 0x60);    // put magnetic scale to +-12 gauss
-      
+
     }
-    
+
     RFduinoBLE.deviceName = "magnetic";
     RFduinoBLE.advertisementData = "magField";
     RFduinoBLE.begin();
-    
+
 }
 
-void loop() {      
+void loop() {
 
   getMagnetCali();
-  
+
+  //digitalWrite(ledPin,HIGH);
+
   for(int a = 0; a<sensCnt; a++){
     //setChannel(a);
     //getMagnet(a);
-    
+
     fData[a][0] = a;
     fData[a][1] = magX[a];
     fData[a][2] = magY[a];
-    fData[a][3] = magZ[a];   
+    fData[a][3] = magZ[a];
   }
 
-  // for sending via BLE
-  for(int i = 0; i<4; i++){
-    for(int j = 0; j<4; j++){
-      memcpy(&data[j*sizeof(float)], &fData[i][j], sizeof(float));
-    }      
-    RFduinoBLE.send(data, 16);      
-  }
+  // for sending via BLE 
+    for(int i = 0; i<sensCnt; i++){
+      for(int j = 0; j<4; j++){
+        memcpy(&data[i][j*sizeof(float)], &fData[i][j], sizeof(float));
+      }
+      while(!RFduinoBLE.send(data[i], 16));
+    }
+
   
-  
-  // serial output
-  /*for(int i=0; i<4; i++){
-    Serial.print(i); Serial.print("\t");
-    Serial.print(magX[i]); Serial.print("\t");
-    Serial.print(magY[i]); Serial.print("\t");
-    Serial.println(magZ[i]);
-  }*/
+
 
 }
 
-void setChannel(int ch){    
+
+void setChannel(int ch){
   int controlPin[] = {s0, s1, s2, s3};
 
   int muxChannel[16][4]={
@@ -174,15 +181,15 @@ void getRawMagnet(int channel){
 }
 
 // updates all 4 sensor readings
-void getMagnetCali(){   
-  for(int i=0; i<4; i++){
+void getMagnetCali(){
+  for(int i=0; i<sensCnt; i++){
     setChannel(i);
     //setChannel(0);
     getRawMagnet(i);
     // off Freescale approach
-    magX[i] = rawX[i]-offFree[i][0];
-    magY[i] = rawY[i]-offFree[i][1];
-    magZ[i] = rawZ[i]-offFree[i][2];
+    magX[i] = (rawX[i]-offFree[i][0])*scale[i];
+    magY[i] = (rawY[i]-offFree[i][1])*scale[i];
+    magZ[i] = (rawZ[i]-offFree[i][2])*scale[i];
   }
 }
 

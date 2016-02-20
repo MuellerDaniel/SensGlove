@@ -5,6 +5,7 @@ Created on Wed Jul 15 10:00:35 2015
 @author: daniel
 """
 import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
 from mpl_toolkits.mplot3d import Axes3D
 import numpy as np
 
@@ -44,6 +45,7 @@ def plotIt2d(data, title, sizeData, shareAxis, mtitle, typ):
             try:
                 plt.plot(i[:,1], ls='--',color='r', label='y')
                 plt.plot(i[:,2], ls=':',color='r', label='z')
+                plt.plot(i[:,3], ls='-.',color='r', label='PIP')
             except:
                 print "doesn't have it..."
             plt.title(title[0])
@@ -72,6 +74,8 @@ def plotIt2d(data, title, sizeData, shareAxis, mtitle, typ):
                 lst[cnt].plot(j[:,1], color=linCol, ls='--', label='y')
                 try:
                     lst[cnt].plot(j[:,2], color=linCol, ls=':', label='z')
+                    lst[cnt].plot(j[:,3], color=linCol, ls='-.', label='z')
+                    
                 except:
                     print "only 2d..."
                 # scatter plot representation
@@ -87,7 +91,7 @@ def plotIt2d(data, title, sizeData, shareAxis, mtitle, typ):
                 lst[cnt].set_title(title[cnt])
                 if typ == 'mag':
                     lst[cnt].set_xlabel('meas Nr')
-                    lst[cnt].set_ylabel('B-field[T]')
+                    lst[cnt].set_ylabel(r'B-field[$\mu$ T]')
                 else:
                     lst[cnt].set_xlabel('meas Nr')
                     lst[cnt].set_ylabel('angle [rad]')
@@ -308,3 +312,84 @@ def timeDatPlot(data,title):
 
                 lst[cnt].set_title(title[cnt])
                 cnt+=1
+
+
+
+def plotAngles(timeStamps,data,head=None):    
+    ''' plot multiple datasets with individual timestamps in the same ONE plot 
+        for the calculated/estimated finger angles '''
+    
+    cList = ('r','g','b','y')
+    lList = ('MCP', 'PIP', 'DIP', 'ad-ab')
+    styleList = ('solid', 'dashed', 'dotted', 'dashdot')
+    
+#    indPatch = mpatches.Patch(color=cList[0], label='Index')
+#    midPatch = mpatches.Patch(color=cList[1], label='Middle')
+#    rinPatch = mpatches.Patch(color=cList[2], label='Ring')
+#    pinPatch = mpatches.Patch(color=cList[3], label='Pinky')
+    
+    # check if you have a list of timestamps, indicating that you have two datasets; plot them together
+    if isinstance(data,tuple):     
+        for i in range(0,len(data)):
+            for j in range(0,4):
+                plt.plot(timeStamps, data[i][:,j], color=cList[i], label=lList[j], ls=styleList[j])
+#                plt.plot(timeStamps, data[i][:,j], color=cList[i], ls=styleList[j])
+        plt.ylabel('angle [rad]')
+        plt.xlabel('time [s]')
+        plt.legend()
+        if head: plt.title(head)
+        plt.show()
+    # you only have one timestamp                
+    else:           
+        print "data must be tuple!"
+
+
+
+def plotLeapVsMag(leapData,magData,head=None,dif=False):
+    ''' ploting leap or angle/state values on top and underneath the measured magnetic data '''
+    cList = ('r','g','b','y')
+    angL = ('MCP', 'PIP', 'DIP', 'ad-ab')
+    axisL = ('x', 'y', 'z', 'angles...')
+    styleList = ('solid', 'dashed', 'dotted', 'dashdot')    
+    
+    if dif:
+        f, lst = plt.subplots(3, sharex=True)    
+    else:
+        f, lst = plt.subplots(2, sharex=True)    
+    
+    # plot leap
+    for i in range(1,len(leapData)):
+        for j in range(0,(leapData[i].shape[1])):
+#            print "i ",
+#            print "j ", j
+            lst[0].plot(leapData[0], leapData[i][:,j], color=cList[i-1], label=angL[j], ls=styleList[j])            
+            lst[0].set_title('states Leap')
+            lst[0].set_ylabel('angles [rad]')
+            if head: lst[0].set_title(head)
+        lst[0].legend()
+        
+    # plot mag data/angles
+    for i in range(1,len(magData)):
+        if magData[i].shape[1] == 3:
+            for j in range(0,(magData[i].shape[1])):
+                lst[1].plot(magData[0], magData[i][:,j], color=cList[i-1], label=axisL[j], ls=styleList[j])
+                lst[1].set_title('Magnetic Field')
+                lst[1].set_ylabel('B-field [T]')
+                lst[1].set_xlabel('time [s]')
+            lst[1].legend()            
+        elif magData[i].shape[1] == 4:
+            for j in range(0,(magData[i].shape[1])):
+                lst[1].plot(magData[0], magData[i][:,j], color=cList[i-1], label=angL[j], ls=styleList[j])
+                lst[1].set_title('estimated states')
+                lst[1].set_ylabel('angles [rad]')
+                lst[1].set_xlabel('time [s]')
+            lst[1].legend()  
+            
+    if dif:
+        print "bla..."            
+    
+    
+    
+    
+    
+    

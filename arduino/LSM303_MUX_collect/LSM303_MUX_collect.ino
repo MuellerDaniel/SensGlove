@@ -52,7 +52,16 @@ float softBias[4][3] = {{1.01,  1.0  ,  1.0},
                          {0.98,  1.0  ,  1.02},
                          {1.04,  1.02,  0.94}};*/
 
-float hardBias[4][3] = {{0, 0, 0},
+float hardBias[4][3] = {{-116.4 ,   72.57,   83.11},
+                        {-44.31,  42.15,  73.29},
+                        {-106.58,   47.66,  -42.39},
+                        {-175.31,  -73.05, -143.94}};
+float softBias[4][3] = {{1.24,  1.  ,  0.84},
+                         {1.18,  0.95,  0.91},
+                         {1.07,  0.98,  0.95},
+                         {1.15,  0.93,  0.95}};
+
+/*float hardBias[4][3] = {{0, 0, 0},
                         {0, 0, 0},
                         {0, 0, 0},
                         {0, 0, 0}};
@@ -60,7 +69,7 @@ float softBias[4][3] = //{{0.001, 0.001, 0.001},  //output is in mgauss!
                         {{1, 1, 1},
                         {1, 1, 1},
                         {1, 1, 1},
-                        {1, 1, 1}};                         
+                        {1, 1, 1}};*/
 
 //float conversionFactorMag = 0.080;  //for range +-2gauss
 float conversionFactorMag = 0.160;  //for range +-4gauss
@@ -77,6 +86,8 @@ int s0 = 0;
 int s1 = 1;
 int s2 = 2;
 int s3 = 3;
+
+float scaleFactor = 0.001;
 
 void setup() {
     //Serial.begin(9600);     //you have not enough gpios to use serial communication...
@@ -118,9 +129,9 @@ void loop() {
       getMagnetCali(a);
       
       fData[a][0] = a;
-      fData[a][1] = magX;
-      fData[a][2] = magY;
-      fData[a][3] = magZ;   
+      fData[a][1] = magX*scaleFactor;
+      fData[a][2] = magY*scaleFactor;
+      fData[a][3] = magZ*scaleFactor;   
     }
     //float endTime = millis();    
     //RFduinoBLE.sendFloat(endTime-startTime);

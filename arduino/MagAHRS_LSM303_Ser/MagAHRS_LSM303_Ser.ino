@@ -7,7 +7,7 @@ Based on the Madgwick algorithm found at:
  The MinIMU v2 has a roughly +/- 1 degree accuracy
  */
 #include <Wire.h>
-//#include <RFduinoBLE.h>
+#include <RFduinoBLE.h>
 #include <LSM303.h>
 #include <L3G.h>
 #include <math.h>
@@ -107,8 +107,8 @@ int quat_IPin = 9;
 void setup(){
   Serial.begin(38400);
   Serial.println("Keeping the device still and level during startup will yeild the best results");
-  //Wire.beginOnPins(5,6);    //SCL on GPIO 5, SDA on GPIO 6
-  Wire.begin();
+  Wire.beginOnPins(5,6);    //SCL on GPIO 5, SDA on GPIO 6
+  //Wire.begin();
   //TWBR = ((F_CPU / 400000) - 16) / 2;//set the I2C speed to 400KHz
   IMUinit();
   printTimer = millis();

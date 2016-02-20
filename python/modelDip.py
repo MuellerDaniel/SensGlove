@@ -21,8 +21,10 @@ def calcB(r,h_in):
     no = np.sqrt(float(r[0]**2+r[1]**2+r[2]**2))
     b = np.array([((3*r*np.dot(h,r))/(no**5)) - (h/(no**3))]) * (mu_0/(4.*np.pi))
 
-    convert = 1e+6
-    return b[0]*convert
+    res = b[0]
+    # convert = 1e+6      # output is in muT
+    # res = b[0]*convert
+    return res
 
 
 
@@ -135,7 +137,7 @@ def estimate_BtoAng(theta_0, fingerL, sL, offL, measB,bnds=None, method=0):
         the static (inequality) bounds for the angles
     """
 
-    dif = 1e-10
+    dif = 1e-05
 
     # res = minimize(minimizeAng, theta_0,
     #                args=(fingerL, sL, offL, measB),

@@ -61,7 +61,9 @@ def calcFreescale(data):
     off = [0.5*beta[0], 0.5*beta[1], 0.5*beta[2]]
     mag = np.sqrt(beta[3]+off[0]**2+off[1]**2+off[2]**2)
     
-    return (off,mag)
+    calibrated = data - off    
+    
+    return (off,mag,calibrated)
             
 
 ''' checking the calibration values '''
@@ -109,7 +111,10 @@ def calcHardSoft(data):
     
     hard = np.array([offX, offY, offZ])
     soft = np.array([rad/tmpX, rad/tmpY, rad/tmpZ])
-    return (hard,soft)
+    
+    calibrated = data*soft-hard    
+    
+    return (hard,soft, calibrated)
     
    
 def deviation(values):    
@@ -131,36 +136,38 @@ def deviation(values):
     
     return (meanArr,devArr)
     
+ 
+def meanCalc(values):
+    mean = np.zeros((values.shape[0],3))    
     
+    cnt = 0
+    for i in values:        
+        mean[cnt] = np.array([np.mean(i[:,0]), np.mean(i[:,1]), np.mean(i[:,2])])
         
+        cnt += 1
+        
+    return mean        
     
+   
+def calcDif(data, ref):
+    res = np.zeros((len(data),))
     
+    cnt = 0
+    for i in data:
+        res[cnt] = (np.sqrt(i[0]**2+i[1]**2+i[2]**2) - ref) / ref 
+        cnt += 1
+    res *= 100
+    return res
     
+   
 ''' data acquisition '''
-d = datAc.pipeAcquisition("gatttool -t random -b E3:C0:07:76:53:70 --char-write-req --handle=0x000f --value=0300 --listen",
-                             4,measNr=1000)
 
-#d = datAc.pipeAcquisition('stty -F /dev/ttyACM0 time 50; cat /dev/ttyACM0',nrSens=1,fileName="160123_calDat0",measNr=3000)
-#d = datAc.textAcquisition("160123_calDat1")
-#d1 = datAc.textAcquisition("160123_calDat0")
-#d2 = datAc.textAcquisition("160123_calDat2")
-#h = np.zeros((1,len(d[0])+len(d1[0])+len(d2[0]),3))
-#h[0][:len(d[0])] = d[0]
-#h[0][len(d[0]):len(d[0])+len(d1[0])] = d1[0]
-#h[0][(len(d[0])+len(d1[0])):] = d2[0]
-#d = h
-#d = datAc.textAcquisition("160123_calibrated")
-#d1 = datAc.textAcquisition("160111_calData1")
-#d2 = datAc.textAcquisition("160111_calData2")
+#d = datAc.pipeAcquisition("gatttool -t random -b E3:C0:07:76:53:70 --char-write-req --handle=0x000f --value=0300 --listen",
+#    d = datAc.pipeAcquisition("gatttool -t random -b E7:00:30:16:CD:18 --char-write-req --handle=0x000f --value=0300 --listen",                          
+#                                 4,measNr=500, fileName="160127_noRot")
+d = datAc.textAcquisition("160208_calDat")
+#    d = datAc.textAcquisition("160212_calDat")
 
-#plo.visMagData(data)           
-#plt.figure()
-#plo.plotter2d((data[0],),("meas",))
-#plt.plot(data[0][:,0])
-#plt.figure()
-#plt.plot(data[0][:,1])
-#plt.figure()
-#plt.plot(data[0][:,2])
 
 ''' calculate and the hard/soft bias values '''
 #(hard_old, soft_old) = calcHardSoft(d[0])
@@ -195,12 +202,18 @@ d = datAc.pipeAcquisition("gatttool -t random -b E3:C0:07:76:53:70 --char-write-
 #print "off0 ", off
 #print "mag0 ", mag
 
-(off0, b0) = calcFreescale(d[0])
-(off1, b1) = calcFreescale(d[1])
-(off2, b2) = calcFreescale(d[2])
-(off3, b3) = calcFreescale(d[3])
+(off0, b0, free0) = calcFreescale(d[0])
+(off1, b1, free1) = calcFreescale(d[1])
+(off2, b2, free2) = calcFreescale(d[2])
+(off3, b3, free3) = calcFreescale(d[3])
 
-print "off0: ", off0
+(h0,s0,hs0) =calcHardSoft(d[0])
+(h1,s1,hs1) =calcHardSoft(d[1])
+(h2,s2,hs2) =calcHardSoft(d[2])
+(h3,s3,hs3) =calcHardSoft(d[3])
+
+
+print "\noff0: ", off0
 print "off1: ", off1
 print "off2: ", off2
 print "off3: ", off3
@@ -208,6 +221,114 @@ print "\nb0: ", b0
 print "b1: ", b1
 print "b2: ", b2
 print "b3: ", b3
+
+meanB = (b0+b1+b2+b3)/4
+scale0 = meanB/b0
+scale1 = meanB/b1
+scale2 = meanB/b2
+scale3 = meanB/b3
+
+print "scale0 ", scale0
+print "scale1 ", scale1
+print "scale2 ", scale2
+print "scale3 ", scale3
+
+
+diffFree = calcDif(free0*1e-4,b0*1e-4)
+diffHs = calcDif(hs0[0]*1e-4,b0*1e-4)
+
+
+''' plotting for .tex '''
+#plt.close('all')
+#
+#dFree = free0*1e-4
+#bFree = b0*1e-4
+#dHs = hs0[0]*1e-4
+#raw = d[0]*1e-4
+#
+#Direct input 
+plt.rcParams['text.latex.preamble']=[r"\usepackage{lmodern}"]
+#Options
+
+params = {'text.usetex' : True,
+          'font.size' : 11,
+          'font.family' : 'lmodern',
+          'text.latex.unicode': True,
+          'figure.autolayout': True
+          }
+plt.rcParams.update(params) 
+#
+#figHeight = 3
+#figWidth = 3
+#rad = 2
+#sh = 0.5
+#fig = plt.figure(figsize=(figWidth,figHeight),dpi=500)
+##fig = plt.figure()
+#plt.axis('equal')
+#plt.grid(True)
+#plt.scatter(dFree[:,0],dFree[:,1],color='green', s=rad, alpha=sh)
+#plt.scatter(dHs[:,0], dHs[:,1],color='cyan', s=rad, alpha=sh)
+#plt.scatter(raw[:,0], raw[:,1],color='red', s=rad, alpha=sh)
+#circ = plt.Circle((0.,0.),bFree, fill=False, color='blue')
+#plt.axhline(0,0,1,c='k',ls='--')
+#plt.axvline(0,0,1,c='k',ls='--')
+#plt.gcf().gca().add_artist(circ)
+#plt.axis([ -0.06, 0.06, -0.07, 0.07])
+#plt.xlabel('measurements x-axis [mT]')
+#plt.ylabel('measurements y-axis [mT]')
+#plt.savefig("../thesis/pictures/plots/cali_xy.png", dpi=500)
+#
+#fig = plt.figure(figsize=(figWidth,figHeight),dpi=500)
+##fig = plt.figure()
+#plt.axis('equal')
+#plt.grid(True)
+#plt.scatter(dFree[:,1],dFree[:,2],color='green', s=rad, alpha=sh)
+#plt.scatter(dHs[:,1], dHs[:,2],color='cyan', s=rad, alpha=sh)
+#plt.scatter(raw[:,1], raw[:,2],color='red', s=rad, alpha=sh)
+#circ = plt.Circle((0.,0.),bFree, fill=False, color='blue')
+#plt.axhline(0,0,1,c='k',ls='--')
+#plt.axvline(0,0,1,c='k',ls='--')
+#plt.gcf().gca().add_artist(circ)
+#plt.axis([ -0.06, 0.06, -0.07, 0.07])
+#plt.xlabel('measurements y-axis [mT]')
+#plt.ylabel('measurements z-axis [mT]')
+#plt.savefig("../thesis/pictures/plots/cali_yz.png", dpi=500)
+#
+#
+#
+#fig = plt.figure(figsize=(6,3),dpi=500)
+#ax = plt.subplot(121)
+#ax.grid(True)
+#ax.axis('equal')
+#ax.scatter(dFree[:,0],dFree[:,2],color='green', s=rad, alpha=sh, label='Freescale')
+#ax.scatter(dHs[:,0], dHs[:,2],color='cyan', s=rad, alpha=sh, label='Winer')
+#ax.scatter(raw[:,0], raw[:,2],color='red', s=rad, alpha=sh, label='Raw')
+#circ = plt.Circle((0.,0.),bFree, fill=False, color='blue')
+#ax.axhline(0,0,1,c='k',ls='--')
+#ax.axvline(0,0,1,c='k',ls='--')
+#ax.add_artist(circ)
+#ax.set_xlabel('measurements x-axis [mT]')
+#ax.set_ylabel('measurements z-axis [mT]')
+#ax.legend(loc='upper center', bbox_to_anchor=(1.5,1))
+#plt.savefig("../thesis/pictures/plots/cali_xz.png", dpi=500)
+
+
+
+
+fig = plt.figure(figsize=(4,3), dpi=500)
+plt.hist([diffFree, diffHs], color=['green', 'cyan'], histtype='bar', label=['Freescale','Winer'])
+plt.xlabel(r'Deviation [$\%$]')
+plt.legend(loc='west')
+plt.text(-9, 150, r'$\mu_{Free}$=-0.02 mT', color='green')
+plt.text(-9, 135, r'$\sigma_{Free}$=4.7', color='green')
+plt.text(-9, 115, r'$\mu_{Winer}$=-0.8 mT', color='blue')
+plt.text(-9, 100, r'$\sigma_{Winer}$=5.6', color='blue')
+plt.savefig("../thesis/pictures/plots/cali_devi.png", dpi=500)
+
+
+
+
+
 
 
 ''' inet approach... '''
@@ -253,5 +374,5 @@ print "b3: ", b3
 #print "Freescale hard values of mean ",frees
 
 
-      
+
         
