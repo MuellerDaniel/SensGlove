@@ -41,14 +41,14 @@ The following list summarizes the proposed assumptions and simplifications, appl
 \item The movement of the thumb is neglected for simplicity reasons.
 \item The flexion-extension of metacarpals is neglected, this means the palm is assumed as a rigid plane which comprises the fixed positions of the \acp{MCP}.
 \item The flexion-extension of one finger is planar
-\item \ac{MCP} has 2 \ac{DOF} with flexion-extension angle: $ \ang{0} \leq \theta_{MCP} \leq \ang{90} $ and adduction/abduction angle: $ \ang{0} \leq \psi_{MCP} \leq \ang{30} $
+\item \ac{MCP} has 2 \ac{DOF} with flexion-extension angle: $ \ang{0} \leq \theta_{MCP} \leq \ang{90} $ and adduction/abduction angle: $ \ang{0} \leq \phi_{MCP} \leq \ang{30} $
 \item \ac{DIP} and \ac{PIP} have 1 DOF with flexion-extension angle: $ \ang{0} \leq \theta_{DIP} \leq \ang{90} $ and $ \ang{0} \leq \theta_{PIP} \leq \ang{110} $
 \item Dynamic constraint between $ \theta_{DIP} = \frac{2}{3} \theta_{PIP} $
 \item So each finger has 3 \ac{DOF} in total.
 \item A local frame is used for motion reconstruction, so one can represent a pose by describing the joint angles.
 \end{itemize}
 
-The introduced assumptions try to restrict the human hand in a useful meaning, without loosing too much generality. There can even be introduced inter-finger constraints, due to naturalness of hand motions. For example that one can not totally bend the index finger without also bending the others. However each hand is different, implying the range and ability of finger poses, so this behavior is very difficult to generalize and to model.\\
+The introduced assumptions try to restrict the human hand in a useful meaning, without loosing too much generality. Inter-finger constraints, due to the naturalness of hand motions could also be introduced. For example that one can not totally bend the index finger without also bending the others. However each hand is different, implying the range and ability of finger poses, so this behavior is very difficult to generalize and to model.\\
 The application specific restrictions, applied to the model used for this work are further depicted in \ref{sec:handModel}.
 
 

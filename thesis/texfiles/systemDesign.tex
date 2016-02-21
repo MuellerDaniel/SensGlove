@@ -86,9 +86,9 @@ In the end every finger is modelled equally as a kinematic chain with 3 joints, 
 \centering
 \begin{tikzpicture}[x=0.5cm,y=0.5cm,z=0.3cm,>=stealth]
 % coordinate system axes
-\draw[->] (xyz cs:x=-8) -- (xyz cs:x= 8) node[above] {$z$};
-\draw[->] (xyz cs:y=-8) -- (xyz cs:y= 8) node[right] {$x$};
-\draw[->] (xyz cs:z= 8) -- (xyz cs:z=-8) node[above] {$y$};
+\draw[->] (xyz cs:x=-8) -- (xyz cs:x= 2) node[above] {$z$};
+\draw[->] (xyz cs:y=-1) -- (xyz cs:y= 8) node[right] {$x$};
+\draw[->] (xyz cs:z= 1) -- (xyz cs:z=-8) node[above] {$y$};
 % the finger
 \newcommand\offx{-1}
 
@@ -145,8 +145,8 @@ In the end every finger is modelled equally as a kinematic chain with 3 joints, 
 \draw[dashed, red, ->] (S) -- ++ (H);
 
 \end{tikzpicture}
-\caption{Kinematic chain representation of a single finger. The Cartesian coordinate system is aligned according to the sensor frame. This coordinate system defines the orientation, used throughout the whole thesis. The \ac{MCP} joint lies on the y-Axis.\\
-\todo{placement of the MCP/DIP/PIP naming; placement of $ \theta $s; placement of bone lengths; insert $ \phi $ for adduction-abduction}}
+\caption{Kinematic chain for representation of a single finger. The cartesian coordinate system is aligned according to the sensor frame. This coordinate system defines the orientation, used throughout the whole thesis. The \ac{MCP} joint lies on the y-Axis.\\
+\todo{placement of the MCP/DIP/PIP naming; placement of $ \theta $s; placement of bone lengths}}
 \label{fig:handMod}
 \end{figure}
 
@@ -365,7 +365,7 @@ In order to derive an estimate of the system state $ \mathrm{X}_K $, one can for
 				  & & \vdots
 \end{aligned}
 \end{equation}
-As constraints, the natural range of motion for each finger angle is plugged in. The solvability and the uniquness of the result for this minimization is dependent on the determinateness of the system. To gather unique and clear solutions, the system has to be fully determined at any time. Since one is trying to estimate the pose of 4 magnets, by also using 4 sensors, this condition is fulfilled. For minimizing such a function, one has to remember the mathematical form of the used models. The dipole model includes nonlinearities, the cylindrical model in contrary is solved by a numerical approximation, which in return means that differentiation or further mathematical operations can not be applied. Since the programming language \emph{Python} \cite{python} is used to solve this problem, it is refereed to methods provided by the \emph{SciPy} \cite{scipy} package . This library provides a minimize method, that is implement just for such use cases. It comes with several user definable options, to provide the solver with additional information. In \todo{reference to minimize results} the utilized optimization methods are explained and the performance and quantity of the results are compared. Anyway, to speed up the computational time for solving the equations and the optimization problem, the functions are implemented in Cython \ref{cython}. This interface allows to write C-like Python code and to work with predefined variables. \todo{more details about Cython???}.
+As constraints, the natural range of motion for each finger angle is plugged in. The solvability and the uniquness of the result for this minimization is dependent on the determinateness of the system. To gather unique and clear solutions, the system has to be fully determined at any time. Since one is trying to estimate the pose of 4 magnets, by also using 4 sensors, this condition is fulfilled. For minimizing such a function, one has to remember the mathematical form of the used models. The dipole model includes nonlinearities, the cylindrical model in contrary is solved by a numerical approximation, which in return means that differentiation or further mathematical operations can not be applied. Since the programming language \emph{Python} \cite{python} is used to solve this problem, it is refereed to methods provided by the \emph{SciPy} \cite{scipy} package . This library provides a minimize method, that is implement just for such use cases. It comes with several user definable options, to provide the solver with additional information. In \todo{reference to minimize results} the utilized optimization methods are explained and the performance and quantity of the results are compared. Anyway, to speed up the computational time for solving the equations and the optimization problem, the functions are implemented in Cython \ref{cython}. This interface allows to write C-like Python code and to work with predefined variables. 
 
 Another way of solving such a state estimation problem is by applying a Kalman Filter. This filter comprises a prediction step, foreseeing the next system state and an update step, correcting this prediction with the actual measurements. The utilized recursive filter equations are described by
 
