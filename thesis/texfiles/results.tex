@@ -22,6 +22,7 @@ The utilized LSM303D sensors show some general measurement characteristics. If t
 {\includegraphics{pictures/plots/posClipping.png} \label{fig:posClip}}
 \caption{The magnet is moved towards the measurement unit, to record the clipping behaviour of the sensors. The distance from sensor to magnet is represented by $ \Delta d $ in \si{\cm}. For \label{fig:negClip}, the oversteering of the sensor begins at around \SI{4.5}{\cm}, for \label{fig:posClip}, this effect starts at \SI{4}{\cm}. The sensor range is adjusted to be $ \pm \SI{0.4}{\milli \tesla} $, which can be observed by the dataplots.}
 \label{fig:clipping}
+%python script: 160214_clippingDetection.py
 \end{figure}
 
 For evaluating the timing behaviour of the system, the code on the RFduino is debugged. As described in \ref{cha:sensors}, the sensor data rate could be set to a maximum value of \SI{100}{\Hz}, such that one could retrieve new magnetometer values each \SI{10}{\milli \second}. The switching and forwarding of the clock signal via the utilized multiplexer takes only \SI{21}{\nano \second} into account. This value composes a \grqq Break-before-make\grqq \, pause of \SI{6}{\nano \second}, to prevent crosstalk between the channels and a propagation delay time of \SI{15}{\nano \second}. In order to verify those values and to identify the overall time for acquiring, scaling to distortion factors, sending and receiving the measurement data by the host system, the respective code sections were timed. It is observed that the overall sampling frequency of the sensors can only be set to \SI{50}{\Hz}. So the time between two new sensor read outs is \SI{20}{\milli \second}. The read out of the registers and the scaling for the hard- and soft-iron distortion values shows an insignificant influence on the timing. Further on it makes no difference whether only one sensor unit is read out, or all four, since they all show the same data rate and have measurements available after \SI{20}{\milli \second}. 
@@ -34,6 +35,7 @@ The sending via BLE is implemented by the RFduino environment. The maximum trans
 \includegraphics{pictures/plots/timingRFd_v2.png}
 \caption{200 acquisitions of complete measurement packets, comprising the values of four sensor units, where timed. One time the data rate of the sensor is set to \SI{50}{\Hz}, the other to \SI{25}{\Hz}. The mean value for $ f_{Sensor}=25\si{Hz} $ is higher than, for $ f_{Sensor}=50\si{Hz} $. However the variance of the acquisition time is smaller for this and therefore the outcome is more consistent to itself. Further on the sensor values from a data rate of \SI{25}{\Hz} represent the actual obtained measurements slightly better, than the higher data rate. In the ongoing evaluation, the results for both data rates are taken into account and compared to each other.}
 \label{fig:sensTime}
+% python script: 160212_timing.py
 \end{figure}
 
 
@@ -60,6 +62,7 @@ The presented procedure was evaluated for several times and sensors, each time s
 	\subfloat[Obtained measurements along the $ x $ vs. the $ z $ axis]
 	{\includegraphics{pictures/plots/cali_xz.png}\label{fig:xz}}
 \caption{The measurements where recorded by rotating the sensor around each axis in an environment without artificial magnetic sources. 1000 measurements were collected. The obtained raw values are represented by the red dots. The results of the calibration procedures are plotted by the respectively color. The perfect centered sphere is represented by a circle with $ r=\mathrm{B}_{earth} $. Already the unscaled values show only a very low influence of soft iron distortion. It is also observed, that the calibrated results do not differ much.}
+% python script: checkCalibration.py
 \end{figure}
 
 \begin{figure}
@@ -67,9 +70,10 @@ The presented procedure was evaluated for several times and sensors, each time s
 \includegraphics{pictures/plots/cali_devi.png}
 \caption{The procentual deviation of the two calibration methods to the corresponding perfect centered sphere is visualized. It can be obtained, that the Freescale approach leads to slightly more accurate results, since the mean and variance of the scaled measurements are smaller than for the Winer approach.}
 \label{fig:devi}
+% python script: checkCalibration.py
 \end{figure}
 
-
+\todo{make statement about the range!}
 
 %In \todo{3d} the calibrated and the uncalibrated data points are plotted, with a sphere around them. One thing that is clearly visible here is the shift, caused by the hard iron effects. In \todo{2d} this offset is also observable. Recognizable by those two plots is also the fact, that the influence of the soft-iron distortion is very small. The data points lie already on an almost perfect sphere. This is also represented in those scale values, calculated by the Winer approach. They lie in the range of $ 1 \pm 0.03 $. That both calibration methods serve almost the same results can already be seen by the fact that the blue and green datapoints are overlapping each other. In order to compare the two calibration methods, the distance of each calibrated value to the perfect sphere with radius $ \mathrm{B}_earth $ is calculated. The outcome is shown in \todo{deviation}. In the end, the mean value of the deviation for the Freescale approach is smaller than those, calibrated by the Winer method (for this particular example: $ \mu_{Freescale} = -0.0842\si{\micro \tesla}, \mu_{Winer} = 6.5525\si{\micro \tesla} $). Because the hard-iron offsets dominate the soft-iron effects, the Freescale method is more accurate than the Winer approach, since it takes all the observed measurements into account and not just the minimum and maximum values. Therefore for the utilized sensor units, which show small soft-iron deviation, the Freescale approach is preferred. The provided procedure was evaluated several times, each time showing similar and constant results. As already mentioned in \ref{subsec:hardSoft} this calibration procedure has to be performed for each sensor and the observed values all have to be scaled to a common value for $ \mathrm{B}_{earth} $.
 
@@ -82,6 +86,7 @@ For determining the scaling factors to the model, the sensor rack is placed onto
 \includegraphics{pictures/plots/flatFit.png}
 \caption{Comparison between the scaling factors, observed from $ x=5\si{\cm} $ and $ x=7\si{\cm} $. The simulated data is for a distance of $ x=7\si{\cm} $. Please note, that the measured values cannot be compared directly to the results of the simulation. The simulation assumes a constant movement of the magnet. This however cannot be performed perfectly, since it is done by hand. Due to this fact, also the distance in $ x $ direction can slightly change. The plot reflects the differences between the two different scaling factors and the raw values for each sensor axis. In this way it can be observed, that the results show the most variation along the magnetic $ x $-axis. \todo{arange plot x-axis!}}
 \label{fig:flatFit}
+% python script: 160201_flatSensFit.py
 \end{figure}
 
 The maximal difference between the two observed factors is $ 0.195 $, the mean over all differences is $ 0.12 $. This deviation between the results is not negligible. An exact difference value between the perfect B-field values from the model and the actually observed and scaled ones is not directly possible. The values of the model assume a movement with a constant velocity. Since the magnet motion is performed by hand, the measured field is not changing constantly. However for this reason, the magnet is held still at some dedicated positions, to get an impression on the difference of the scaled measurements to the calculated field. This is represented by the flat sections in the graph. The deviation from the perfect values for those positions is calculated and normed, to get a representation of the overall magnetic field strength. \ref{tab:diffScaled} represents the results.
@@ -97,6 +102,7 @@ y-Position [\si{cm}] & scaled to $ x=5\si{cm} $ [\si{\micro \tesla}] & scaled to
 \end{tabular}
 \caption{The deviation of the scaled magnetic field to the simulated at the stopped positions. The observed values show, that an exact fitting, by scaling only for the maximum and minimum values for a certain movement does not lead identical and exact results.}
 \label{tab:diffScaled}
+% python script: 160201_flatSensFit.py
 \end{table}
 
 As a source for the observed disagreement, one could head that the whole procedure is performed by a human being. The position values are only determinable up to a certain amount of accuracy, as well as the start and end points of the performed movement. Since this calibration procedure does not result in clear scaling values for the sensors, it is not further used in this work. For scaling the observed sensor values to the model, a predefined fitting gesture is used, as described in \ref{subsec:modelFit}.  
@@ -115,11 +121,59 @@ A proper working system should constantly return a magnetic field of almost \SI{
 \includegraphics{pictures/plots/earthCanc.png} 
 \caption{The result for the cancellation of the earth magnetic field, relative to the sensor rotation is displayed. One change in orientation is performed, to observe the capability of constantly subtracting the initially observed surrounding magnetic field. The plot can be divided into three orientation phases. The initial orientation 0, orientation 1 and orientation 2. That the surrounding magnetic field can be cancelled is shown section 0 and 2. However the large deviations from \SI{0}{\tesla} during the movement in between the two orientation sections show, that the implemented approach does somehow not work for every rotation. As comparison, the raw values without subtracting the rotated surrounding magnetic field are also plotted.}
 \label{fig:earthCancelRes}
+% python script: 160217_earthCancel.py
 \end{figure}
 
 The two plots show the measured magnetic field along all three axes for one sensor with (represented by the green line) and without (represented by the yellow line) subtracting the rotated initially observed field $ \mathrm{B}_{earth} $. It is visible, that unfortunately the elimination method does not work properly. At the beginning, the B-field with the cancellation is 0. However by rotating the device, the observed field changes a lot. For the results along the x-axis, the offset can be compensated relatively good. But for the values observed along the y- and z-axis, this does not hold. Moving the sensor in its starting position again, one sees, that the surrounding field is eliminated pretty well again. This short example visualizes only a simple movement around one axis. Even for this, the surrounding magnetic field can not be eliminated. Small changes could be claimed upon calibration errors or small static magnetic sources in the environment, such as cell phones or metal bodies. But the observed deviation from 0 is much higher than this. So in the end, the surrounding magnetic field can not be cancelled with the presented method. Further investigation has to be done for this. However, since this work focuses on the evaluation for pose estimation with magnets, the cancellation of the earth magnetic field is left by that. The proposed method would just has been a benefit for the work, by bringing it to a mobile system. So for the ongoing evaluation, it has to be noted, that the hand is always held still. 
 
 
+\section{Evaluation of the models for describing the magnetic field} \label{sec:modelDif}
+
+In order to verify the two introduced models for describing the magnetic field of a cylindrical bar magnet with real measurements, a simple movement is inspected. The sensor is placed at the origin and the magnet is moved along its $ x $-axis. The motion is performed from distance $ x=5\si{\cm} $ to $ x=10\si{\cm} $. The cylindrical model describes the magnetic flux density the most accurate and especially for the observed case, it represents the ground truth. Remember that we want to measure in this simple case the influence along the axis of magnetization, therefore the complex cylindrical formula is reduced to the common known equation \ref{eq:b_z}. The results are plotted in \todo{figure} %\ref{fig:modCompFlat}
+
+\begin{figure}[h]
+\centering
+\includegraphics{pictures/plots/compX.png}
+\caption{\todo{caption!}write that these are the measurements along the x-axis!}
+\label{fig:modCompFlat}
+% python script: 160221_modelComp.py
+\end{figure}
+
+Note that the measurement data is fitted to the results of the cylindrical model, since the raw measurements suffer from the influence of the surrounding magnetic field and the beforehand mentioned distortion factors. The plot shows pretty well, that the two magnetic field models have the same behaviour and can represent the measurements quite good. The dipole model serves as a quite good approximation. As the influence of the magnet goes further away, also the deviation from the cylindrical model decreases. The maximum error is \SI{0.2}{\milli \tesla}. For the measurements, the maximum deviation is observed to be \SI{25}{\milli \tesla}. Note that the sensor values suffer again from an not perfectly consistent moving speed and accuracy restrictions. Therefore the observed differences from the simulated values should not be overweighted.
+
+A similar verification is done for classifying the measurements directly on the hand. Exemplary the bending of the \ac{MCP} joint about \SI{90}{deg} of the index finger is evaluated. The real positions for the sensors and knuckles of the hand are measured and passed to the models. The measurements are observed and again scaled to the cylindrical model, since it represents again the ground truth. The results can be seen for each magnetic axis in \todo{figure} %\ref{fig:modCompHand}
+
+\begin{figure}[h]
+\centering
+\includegraphics{pictures/plots/compFing.png}
+\caption{\todo{caption!}}
+\label{fig:modCompHand}
+% python script: 160221_modelComp.py
+\end{figure}
+
+As already observed in the beforehand example, the dipole model serves thoroughly as an adequate approximation to the cylindrical bar magnet model. The overall maximum error is observed to be \SI{0.016}{\milli \tesla}. That the models really represent the measured field is observed by blue line, which behaves, as predicted. Again, the biggest errors arise because of a non constant finger movement. 
+
+By looking at the overall observed field for the individual measurement axes, one could get an impression on the forthcoming observable magnetic flux densities (for a recall on the underlying cartesian coordinate frame, please look at \ref{sec:handModel}). For a more natural picture of the observed magnetic field values along each axis, one could think of the three dimensional values as one vector in space, pointing from the magnetic south to the north pole. The sensor is almost directly beneath the \ac{MCP} joint, and since no adduction or abduction is performed, the change on the sensor $ y $-axis is small (for this example \SI{0.01}{\milli \tesla}). For a sensor showing a bigger offset in $ y $ direction from the joint, the influence on this magnetic axis would also be higher. A more observable difference can be seen on the $ x $- and $ z $-axis. Since the gesture starts with a stretched finger, the biggest value for the magnetic flux density is measured on the $ x $-axis. By bending the \ac{MCP} joint around \SI{90}{\degree}, the influence on the $ x $-axis decreases and on the $ z $-axis increases. Remember, that the position of the magnet is done towards the negative $ z $ direction, therefore also the observed values for this axis are negative. Another observation, that can be made by this simple example is the range of the expected measurements. For these specific finger lengths and sensor positions, the observable values lie in a range of $ \pm 0.3\si{\milli \tesla} $. This is a small range, especially compared to the range of the surrounding magnetic field, observed in \ref{subsec:resHardSoft}. Therefore a constant elimination of this disturbing field would be very important. As already stated, the introduced example shows the movement of a single \ac{MCP} joint. By introducing multiple magnets on other fingers and performing a more involved gesture, like a fist, the expected values will vary more. Especially during the movement to a fist, the magnet on the fingertip gets nearer to the sensor again and therefore the influence increases. In order to get an impression for the anticipated magnetic values for different movements and combinations of magnets, some sequences are simulated and plotted in \ref{fig:compMovement}.
+
+
+\begin{figure}
+\centering
+\subfloat[Bending only the \ac{MCP} of the index finger. The values for the sensors beneath the index and the pinky finger are displayed. Only one magnet on the index fingertip is utilized.]
+{\includegraphics{pictures/plots/bInd.png} \label{fig:indComp}} 
+%\hfil
+\subfloat[Simulating the maximum movement of adduction-abduction of the index finger. The measurements, observed by the sensor beneath the index finger are plotted. Only one magnet on the index fingertip is utilized.]
+{\includegraphics{pictures/plots/bInd_A.png} \label{fig:ad-abComp}}\\
+
+\subfloat[Bending the \ac{MCP}, \ac{PIP} and \ac{DIP} of the four fingers simultaneously about \SI{90}{\degree}. The measurements, observed by the sensor beneath the middle and the pinky finger are plotted. All four fingers are equipped with magnets.]
+{\includegraphics{pictures/plots/bFist.png} \label{fig:fistComp}}	
+%\includegraphics{pictures/plots/fingSim.png}
+\caption{The anticipated values for various sensor positions, foreseen by the cylindrical model for wearing one magnet on the index finger (a, b) and four magnets (c).}
+\label{fig:compMovement}
+\end{figure}
+
+With figure \todo{a} one can compare the influence of the sensor position on the observable magnetic field. As already depicted in \ref{fig:modCompHand}, the measurement on the $ y $-axis changes only slightly for the sensor beneath the index finger. This is induced by the very slight offset between the $ y $ position of the sensor and the movement direction of the fingertip. Comparing this to the value, which can be observed by the sensor, placed under the \ac{MCP} of the pinky finger, a greater change can be measured. This is only logic, since the offset in $ y $-direction is also bigger for this sensor. Further on it could be stated, that the values observed by a sensor with a greater distance to the studied magnet also show less influence. By \todo{b} the influence of the maximum achievable adduction-abduction movement of the index finger is visualized. Here, the main change of the magnetic flux density can be observed along the $ y $-axis of $ s_{Index} $. Since the movement happens only in the $ x-y $ plane of the sensor, this is just reasonable. As a last example, the movement of the fist with all four fingers, each being equipped with magnets on its fingertip is plotted in \todo{c}. Note, that the values for the \ac{MCP}, \ac{PIP} and \ac{DIP} are increasing simultaneously for each finger at the same time. The values, observed by $ s_{Middle} $ and $ s_{Pinky} $ are plotted exemplary. As mentioned beforehand, the values, especially observed along the $ x $- and $ z $-axis first go into the negative direction and then increase to the positive. This is because, the magnet first is moved \grqq away \grqq by the motion and then gets nearer to the sensor units again. Along the $ y $-axis, once more the influence of the sensor position is detectable. The unit beneath the middle finger is influenced by magnets to the left (positive $ y $-direction) and to the right (negative $ y $-direction). The one beneath the pinky finger has only magnetic influences to the left of it. This is why the curve for the observable magnetic field along the $ y $-axis is in the end slightly increasing for $ s_{Middle} $ and decreasing for $ s_{Pinky} $. Another influence on this behaviour are the lengths of the bones, and therefore the overall distance, determined by the fingers itself. Further on one could note, that the overall observed magnetic flux density is around 10 times higher, than measuring only a single magnet.
+
+By the introduced sensor rack, a constant localization of the measurement units relative to each other and to the \ac{MCP} joints is given. Therefore the observable behaviour and influence of the individual magnets on each unit is constant and serves as a characteristic. So by comparing the differences between each observed sensor measurement, one could make a first statement about the finger positions. This point is important for finding a suitable solution to the optimization problem and therefore for the pose estimation. By introducing more sensor units at various static positions, one would get better results for the estimated pose, since each pose causes an individual magnetic field at each sensor. Not at least, this is why the group of Ma et al. is using 6 sensors in total, to estimate the position of a single magnet. Since the goal of the underlying thesis is to utilize a flexible and wearable system, only four sensor units are used. The presented claim is proven throughout simulation and real measurements and presented in the next section of this work.
 
 
 \section{Pose estimation} \label{sec:estimationRes}
@@ -127,8 +181,6 @@ The two plots show the measured magnetic field along all three axes for one sens
 \subsection{Quality/Results for simulated data; Identifying the minimization process} \label{subsec:resSim}
 
 \begin{itemize}
-\item $ \rightarrow $ try to get a feeling for the shape of the data/B-field
-\item the difference between the results for the dip and the cyl model (just difference plot...)
 
 \item describe the three different minimization algorithms \\
 	$ \rightarrow $ unconstrained BFGS, COBYLA ... forget COBYLA, since it only returns shitty results...\\
