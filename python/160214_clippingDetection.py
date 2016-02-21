@@ -7,8 +7,8 @@ import dataAcquisitionMulti as datAc
 
 
 
-dP = datAc.textAcquisition("160215_clipPos")[0]*1e-7
-dN = datAc.textAcquisition("160215_clipNeg")[0]*1e-7
+dP = datAc.textAcquisition("160215_clipPos")[0]*1e-4
+dN = datAc.textAcquisition("160215_clipNeg")[0]*1e-4
 
 
 
@@ -66,8 +66,8 @@ fig = plt.figure(figsize=(figWidth,figHeight),dpi=500)
 #plt.figure()
 plt.xlim(rPos[0],rPos[-1])
 #plt.plot(rPos,bP[:,0]*1e+3,'r--',label='model data')
-plt.plot(rPos,dP[:,0]*1e+3,'b-',label='measurement data')
-plt.axis([7,rPos[-1],-0.6,0.6])
+plt.plot(rPos,dP[:,0],'b-',label='measurement data')
+plt.axis([7,rPos[-1],-0.8,0.6])
 plt.grid(True)
 plt.xlabel(r'$\Delta d$ [cm]')
 plt.ylabel('B-field [mT]')
@@ -78,7 +78,7 @@ plt.savefig("../thesis/pictures/plots/posClipping.png", dpi=500 ,format='png')
 fig = plt.figure(figsize=(figWidth,figHeight),dpi=500)
 plt.xlim(rNeg[0],rNeg[-1])
 #plt.plot(rNeg,bN[:,0]*1e+3, 'r--', label='model data')
-plt.plot(rNeg,dN[:,0]*1e+3, 'b-', label='measurement data')
+plt.plot(rNeg,dN[:,0], 'b-', label='measurement data')
 plt.axis([7, rNeg[-1], -0.6, 0.6])
 plt.grid(True)
 plt.xlabel(r'$\Delta d$ [cm]')

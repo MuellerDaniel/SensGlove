@@ -56,6 +56,13 @@ plt.close('all')
 #plt.legend()
 #plt.title('unit 1')
 
+con = 1e-4
+
+#plt.figure()
+#normR = np.linalg.norm(twoR*con,axis=1)
+#normC = np.linalg.norm(twoC*con, axis=1)
+#plt.plot(normR,color='y')
+#plt.plot(normC,color='g')
 
 #Direct input 
 plt.rcParams['text.latex.preamble']=[r"\usepackage{lmodern}"]
@@ -68,8 +75,8 @@ params = {'text.usetex' : True,
           }
 plt.rcParams.update(params) 
 
-figHeight = 4
-figWidth = 4
+figHeight = 5
+figWidth = 5
 fig = plt.figure(figsize=(figWidth,figHeight),dpi=500)
 ax = plt.subplot(212)
 
@@ -77,12 +84,14 @@ sX, = ax.plot(np.arange(0,6e-5,16e-1),'k-',label='x')
 sY, = ax.plot(np.arange(0,6e-5,16e-1),'k--',label='y')
 sZ, = ax.plot(np.arange(0,6e-5,16e-1),'k:',label='z')
 
-ax.plot(twoC[:,0],'g-',label='With cancelation')
-ax.plot(twoC[:,1],'g--')
-ax.plot(twoC[:,2],'g:')
-ax.plot(twoR[:,0],'y-',label='Raw')
-ax.plot(twoR[:,1],'y--')
-ax.plot(twoR[:,2],'y:')
+ax.plot(twoC[:,0]*con,'g-',label='With cancellation')
+ax.plot(twoC[:,1]*con,'g--')
+ax.plot(twoC[:,2]*con,'g:')
+ax.plot(twoR[:,0]*con,'y-',label='Raw')
+ax.plot(twoR[:,1]*con,'y--')
+ax.plot(twoR[:,2]*con,'y:')
+ax.set_xlabel('Measurement number')
+ax.set_ylabel('B-field [mT]')
 #plt.title('unit 2')
 ax.legend(loc='upper center',ncol=2,bbox_to_anchor=(0.5,1.65))
 plt.savefig("../thesis/pictures/plots/earthCanc.png", dpi=500)
