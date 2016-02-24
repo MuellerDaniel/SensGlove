@@ -129,7 +129,7 @@ The two plots show the measured magnetic field along all three axes for one sens
 
 \section{Evaluation of the models for describing the magnetic field} \label{sec:modelDif}
 
-In order to verify the two introduced models for describing the magnetic field of a cylindrical bar magnet with real measurements, a simple movement is inspected. The sensor is placed at the origin and the magnet is moved along its $ x $-axis. The motion is performed from distance $ x=5\si{\cm} $ to $ x=10\si{\cm} $. The cylindrical model describes the magnetic flux density the most accurate and especially for the observed case, it represents the ground truth. Remember that we want to measure in this simple case the influence along the axis of magnetization, therefore the complex cylindrical formula is reduced to the common known equation \ref{eq:b_z}. The results are plotted in \todo{figure} %\ref{fig:modCompFlat}
+In order to verify the two introduced models for describing the magnetic field of a cylindrical bar magnet with real measurements, a simple movement is inspected. The sensor is placed at the origin and the magnet is moved along its $ x $-axis. The motion is performed from distance $ x=5\si{\cm} $ to $ x=10\si{\cm} $. The cylindrical model describes the magnetic flux density the most accurate and especially for the observed case, it represents the ground truth. Remember that we want to measure in this simple case the influence along the axis of magnetization, therefore the complex cylindrical formula is reduced to the common known equation \ref{eq:b_z}. The results are plotted in \ref{fig:modCompFlat}.
 
 \begin{figure}[h]
 \centering
@@ -141,7 +141,7 @@ In order to verify the two introduced models for describing the magnetic field o
 
 Note that the measurement data is fitted to the results of the cylindrical model, since the raw measurements suffer from the influence of the surrounding magnetic field and the beforehand mentioned distortion factors. The plot shows pretty well, that the two magnetic field models have the same behaviour and can represent the measurements quite good. The dipole model serves as a quite good approximation. As the influence of the magnet goes further away, also the deviation from the cylindrical model decreases. The maximum error is \SI{0.2}{\milli \tesla}. For the measurements, the maximum deviation is observed to be \SI{25}{\milli \tesla}. Note that the sensor values suffer again from an not perfectly consistent moving speed and accuracy restrictions. Therefore the observed differences from the simulated values should not be overweighted.
 
-A similar verification is done for classifying the measurements directly on the hand. Exemplary the bending of the \ac{MCP} joint about \SI{90}{deg} of the index finger is evaluated. The real positions for the sensors and knuckles of the hand are measured and passed to the models. The measurements are observed and again scaled to the cylindrical model, since it represents again the ground truth. The results can be seen for each magnetic axis in \todo{figure} %\ref{fig:modCompHand}
+A similar verification is done for classifying the measurements directly on the hand. Exemplary the bending of the \ac{MCP} joint about \SI{90}{deg} of the index finger is evaluated. The real positions for the sensors and knuckles of the hand are measured and passed to the models. The measurements are observed and again scaled to the cylindrical model, since it represents again the ground truth. The results can be seen for each magnetic axis in \ref{fig:modCompHand}.
 
 \begin{figure}[h]
 \centering
@@ -171,213 +171,10 @@ By looking at the overall observed field for the individual measurement axes, on
 \label{fig:compMovement}
 \end{figure}
 
-With figure \todo{a} one can compare the influence of the sensor position on the observable magnetic field. As already depicted in \ref{fig:modCompHand}, the measurement on the $ y $-axis changes only slightly for the sensor beneath the index finger. This is induced by the very slight offset between the $ y $ position of the sensor and the movement direction of the fingertip. Comparing this to the value, which can be observed by the sensor, placed under the \ac{MCP} of the pinky finger, a greater change can be measured. This is only logic, since the offset in $ y $-direction is also bigger for this sensor. Further on it could be stated, that the values observed by a sensor with a greater distance to the studied magnet also show less influence. By \todo{b} the influence of the maximum achievable adduction-abduction movement of the index finger is visualized. Here, the main change of the magnetic flux density can be observed along the $ y $-axis of $ s_{Index} $. Since the movement happens only in the $ x-y $ plane of the sensor, this is just reasonable. As a last example, the movement of the fist with all four fingers, each being equipped with magnets on its fingertip is plotted in \todo{c}. Note, that the values for the \ac{MCP}, \ac{PIP} and \ac{DIP} are increasing simultaneously for each finger at the same time. The values, observed by $ s_{Middle} $ and $ s_{Pinky} $ are plotted exemplary. As mentioned beforehand, the values, especially observed along the $ x $- and $ z $-axis first go into the negative direction and then increase to the positive. This is because, the magnet first is moved \grqq away \grqq by the motion and then gets nearer to the sensor units again. Along the $ y $-axis, once more the influence of the sensor position is detectable. The unit beneath the middle finger is influenced by magnets to the left (positive $ y $-direction) and to the right (negative $ y $-direction). The one beneath the pinky finger has only magnetic influences to the left of it. This is why the curve for the observable magnetic field along the $ y $-axis is in the end slightly increasing for $ s_{Middle} $ and decreasing for $ s_{Pinky} $. Another influence on this behaviour are the lengths of the bones, and therefore the overall distance, determined by the fingers itself. Further on one could note, that the overall observed magnetic flux density is around 10 times higher, than measuring only a single magnet.
+With figure \ref{fig:indComp} one can compare the influence of the sensor position on the observable magnetic field. As already depicted in \ref{fig:modCompHand}, the measurement on the $ y $-axis changes only slightly for the sensor beneath the index finger. This is induced by the very slight offset between the $ y $ position of the sensor and the movement direction of the fingertip. Comparing this to the value, which can be observed by the sensor, placed under the \ac{MCP} of the pinky finger, a greater change can be measured. This is only logic, since the offset in $ y $-direction is also bigger for this sensor. Further on it could be stated, that the values observed by a sensor with a greater distance to the studied magnet also show less influence. By \ref{fig:ad-abComp} the influence of the maximum achievable adduction-abduction movement of the index finger is visualized. Here, the main change of the magnetic flux density can be observed along the $ y $-axis of $ s_{Index} $. Since the movement happens only in the $ x-y $ plane of the sensor, this is just reasonable. As a last example, the movement of the fist with all four fingers, each being equipped with magnets on its fingertip is plotted in ref{fig:fistComp}. Note, that the values for the \ac{MCP}, \ac{PIP} and \ac{DIP} are increasing simultaneously for each finger at the same time. The values, observed by $ s_{Middle} $ and $ s_{Pinky} $ are plotted exemplary. As mentioned beforehand, the values, especially observed along the $ x $- and $ z $-axis first go into the negative direction and then increase to the positive. This is because, the magnet first is moved \grqq away \grqq by the motion and then gets nearer to the sensor units again. Along the $ y $-axis, once more the influence of the sensor position is detectable. The unit beneath the middle finger is influenced by magnets to the left (positive $ y $-direction) and to the right (negative $ y $-direction). The one beneath the pinky finger has only magnetic influences to the left of it. This is why the curve for the observable magnetic field along the $ y $-axis is in the end slightly increasing for $ s_{Middle} $ and decreasing for $ s_{Pinky} $. Another influence on this behaviour are the lengths of the bones, and therefore the overall distance, determined by the fingers itself. Further on one could note, that the overall observed magnetic flux density is around 10 times higher, than measuring only a single magnet.
 
-By the introduced sensor rack, a constant localization of the measurement units relative to each other and to the \ac{MCP} joints is given. Therefore the observable behaviour and influence of the individual magnets on each unit is constant and serves as a characteristic. So by comparing the differences between each observed sensor measurement, one could make a first statement about the finger positions. This point is important for finding a suitable solution to the optimization problem and therefore for the pose estimation. By introducing more sensor units at various static positions, one would get better results for the estimated pose, since each pose causes an individual magnetic field at each sensor. Not at least, this is why the group of Ma et al. is using 6 sensors in total, to estimate the position of a single magnet. Since the goal of the underlying thesis is to utilize a flexible and wearable system, only four sensor units are used. The presented claim is proven throughout simulation and real measurements and presented in the next section of this work.
+By the introduced sensor rack, a constant localization of the measurement units relative to each other and to the \ac{MCP} joints is given. Therefore the observable behaviour and influence of the individual magnets on each unit is constant and serves as a characteristic. So by comparing the differences between each observed sensor measurement, one could make a first statement about the finger positions. This point is important for finding a suitable solution to the optimization problem and therefore for the pose estimation. By introducing more sensor units at various static positions, one would get better results for the estimated pose, since each pose causes an individual magnetic field at each sensor. Not at least, this is why the group of Ma et al. is using 6 sensors in total, to estimate the position of a single magnet. Since the goal of the underlying thesis is to utilize a flexible and wearable system, only four sensor units are used. The presented claim is proven throughout simulation and real measurements. The results are given in the next section of this work.
 
-
-\section{Pose estimation} \label{sec:estimationRes}
-
-\subsection{Quality/Results for simulated data; Identifying the minimization process} \label{subsec:resSim}
-
-\begin{itemize}
-
-\item describe the three different minimization algorithms \\
-	$ \rightarrow $ unconstrained BFGS, COBYLA ... forget COBYLA, since it only returns shitty results...\\
-	$ \rightarrow $ constrained SLSQP (this is the choice!)
-	
-\item describe how you tested it, so describe the script 160203\_miniComp.py
-\item explain, that you always take ad-ab for the b-field into account, since it represents a normal movement and anyway you only have it at some simulated states
-
-\item 1 magnet - 1 sensor
-	\begin{itemize}
-	\item overall bad results...
-	\item best results for 1dip/cylA
-	\item or good results, neglecting ad-ab (1dip/cylnA)
-	\item pretty fast way however (ca 0.05 sec)
-	\end{itemize}
-\item 1 magnet - 4 sensors
-	\begin{itemize}
-	\item good results ad-ab, regardless of method	
-	\item good speed (ca. 0.1 sec)
-	\item best result for 1dipA (also fastest! 0.07 sec) and 1cylA (0.05 sec)
-	\end{itemize}
-\item 4 magnets - 4 sensors
-	\begin{itemize}
-	\item very slow! 
-	\item bad results!
-	\item best results for: 1dipA, 1cylA (also the fastest)
-	\end{itemize}
-	
-\item 4 magnets - 8 sensors
-	\begin{itemize}
-	\item test it...
-	\end{itemize}	
-	
-\item overall results/conclusion for algorithms
-	\begin{itemize}
-	\item method 1 is best!
-	\item 14 leads best results
-	\item 44 very time consuming and inaccurate
-	\item 11 also very inaccurate
-	\end{itemize}	
-		
-\begin{itemize}
-\item results of minimization/EKF for simulated data with and without noise
-\item results for easy movement (making a fist/90 deg fit) with and without noise
-\item results for complex movement with and without noise \\
-		$ \rightarrow $ simple movements pretty good reconstructible\\
-		$ \rightarrow $	complex movements and noise not so good...\\
-		$ \rightarrow $ when estimating more than one finger, very time consuming...\\
-		$ \rightarrow $	behaviour as with singe finger
-\end{itemize}
-
-\end{itemize}
+\input{texfiles/estimationRes}
 
 
-
-\subsection{Results for recorded/real data} \label{subsec:resMeas}
-
-Describe the recording procedure
-
-\begin{itemize}
-
-%
-\item \textbf{estimation of four fingerstates}
-	\begin{itemize}
-	\item very slow! And very poor results!
-	\item 160210\_set6 nice for showing things for all fingers
-	\item no good results without ad-ab (for 90 fitted gesture)
-	\item moving together can a bit be tracked (initialization gesture reconstructed, for dip better than cyl)
-	\item individual movement can not be tracked! (values 257:471)
-	\item $ \rightarrow $ so no further details about four - four estimation, it is not possible!
-	\end{itemize}
-
-\item textbf{estimation one - one}
-	\begin{itemize}
-	\item results are \grqq a bit\grqq worse than with four sensors (should be valid for all sets, tested for 160217\_set3 (no ad-ab))
-	\item results are much worse than with four sensors (160210\_set2)
-	\item ad-ab can also be recognized (160217\_set4)
-	\item \todo{more comparison of datasets!}
-	\item estimation is ca. \textbf{two times} faster than one - four!
-	\item e.g. four-one better than one-one 160210\_set4 (beginning of fist)
-	\end{itemize}
-
-%
-\item \textbf{recognizing movements}
-	\begin{itemize}
-	\item not constantly \grqq good or bad\grqq, it differs and is dependent on beforehand movements (seen by almost all datasets) and movement of hand
-	\item 160217\_set3 nice detection between 50s and 70s by cyl\_A (but directly afterwards, stretched position is not recognized...)
-	\end{itemize}
-
-
-\item \textbf{difference between model with and without ad-ab}:
-	\begin{itemize}
-	\item with ad-ab results are better (even for doing no movement in ad-ab)
-	\item $ \rightarrow $ no ad-ab results over all are not so good...
-	\item 160217\_set7: for simple movements almost no difference to with ad-ab
-	\item 160210\_set1: big difference (no ad-ab worse...)
-	\end{itemize}
-
-
-\item \textbf{comparing results/difference for using cyl and dip}
-	\begin{itemize}
-	\item dip is much faster than cyl (around 7 times faster!)
-	\item regarding accuracy, no clear statement possible...
-	\item sometimes cyl is better, sometimes dip
-
-	\end{itemize}
-
-\item \textbf{detectability of ad-ab / comparing cyl\_A with dip\_A}
-	\begin{itemize}
-	\item 160210\_set4 shows that dip and cyl without ad-ab show only small differences!
-	\item in the end: cylindrical estimation with ad-ab is more accurate than dipole with ad-ab! (160217\_set3)
-	\item well it really depends... sometimes dip is better, sometimes cyl...
-	\item but ad-ab can be estimated much better by cyl model, but only if finger is stretched! (160217\_set2)
-	\item and only slow and clear ad-ab movements can be detected (160210\_set3 nothing is detected...)
-	\item 160217\_set4 cyl\_A detects negative AND positive ad-ab!
-	\item $ \rightarrow $ ad-ab is hard to detect. Even Leap is not capable
-	\end{itemize}
-
-\item \textbf{comparison to Leap}
-	\begin{itemize}
-	\item comparison is difficult, since it is also not perfect...
-	\item 160210\_set1-2 are good examples, which show, that Leap is not perfect!
-	\item 160210\_set2 however also shows, that it can work pretty good!
-	\item values for ad-ab are not very good (e.g. 160210\_set3)
-	\item 160210\_set4 also shows clearly (especially at the end), that Leap is not perfect!
-	\item 160210\_set4 shows, that ad-ab can be detected quite good (70s-90s)
-	\end{itemize}
-
-\item \textbf{issues/observations with Leap}
-	\begin{itemize}
-	\item when finger are close together, tracking is harder
-	\item DIP and PIP show the same constraint as I am using ($ PIP = 2/3 DIP $)
-	\item angle in MCP introduces most times also angle in DIP/PIP (160210\_set2) \\
-			$ \rightarrow $ my system is better for this!
-	\end{itemize}
-
-%
-\item \textbf{influence of normed fitting gesture / use fist? and observed fitting values}
-	\begin{itemize}
-	\item scaling to flat scale fitting values leads to very bad results!
-	\item fist is not good for fitting, since it is slightly different each time and everyone makes it different (pictures of videos and observed B-fields)
-	\item (cardboard) has only slightly influence (dataset 160212\_set1)
-	\item do it during the video (also with cardboard perhaps)
-	\item because you change the height and orientation of your hand too much during calibration...
-	\item so just perform the gesture during your recording
-	\item fitting for ad-ab has almost no influence (dataset 160212\_set3), a clear, structured (performed alone) ad-ab can be detected (dataset 160212\_set4)
-	\end{itemize}
-
-%
-\item \textbf{influence of exact hand dimensions/parameters}
-	\begin{itemize}
-	\item e.g. dataset: 160217\_set3 with handDim from 160210 and 160217 (but every other set should return the same...)
-	\item for sPos there is a difference, but it is very small
-	\item for bone lengths it's the same, only small differences (sometimes my own lengths better, sometimes wooden better)
-	\item so in the end the parameters have to resemble the truth, but since the data is fitted to the calculated values, it's influence is not too big
-	\end{itemize}
-
-%
-\item \textbf{influence of distance sensor to magnets}
-	\begin{itemize}
-	\item changes in magnetic field are too small...
-	\item 160210\_set10 shows that the sensors are too far away! (the results within the methods vary a lot and they do not represent the truth!)
-	\end{itemize}
-
-%
-\item \textbf{tries with MPU}
-	\begin{itemize}
-	\item as expected not good...
-	\item start position can be \grqq detected\grqq after rotation again, but the results with rotation are bad...
-	\item sets: 160217\_set5-6
-	\end{itemize}
-
-\item \textbf{results with ring}
-	\begin{itemize}
-	\item 160217\_set7 no difference to glued magnet
-	\item 160217\_set8 very bad results... but I don't think that the ring is the reason
-	\item \todo{do some more?}
-	\end{itemize}
-
-\item \textbf{for identifying/measuring the difference}
-	\begin{itemize}
-	\item plot the two results for two/several methods in one graph (colors)
-	\item and plot numerical difference below
-	\end{itemize}
-
-\item \textbf{concluding observations}
-	\begin{itemize}
-	\item very fragile/sensitive system
-	\item sensitive to hand/body movements, calibration gesture
-	\item bad/difficult reproducibility of results/measurements
-	\item quality of results is not totally comparable/identifiable by Leap (since this system is also faulty)
-	\end{itemize}
-
-\item 160210\_set4 nice for showing that Leap cannot detect DIP/PIP movement alone...
-
-\item setting datarate to 25Hz has no effect... (160217\_set2)
-
-\end{itemize}
-
-Presentation and compare between EKF and minimizing approach

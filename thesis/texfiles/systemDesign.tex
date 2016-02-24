@@ -333,11 +333,14 @@ Assumed is a system with $ K $ magnets and $ N $ sensors. The beforehand models 
 \mathrm{B}_{n} = \sum_{k=1}^{K} \mathrm{B}_n(x_{k})
 \end{equation}
 \todo{Soll ich alle Gleichungen durchnummerieren, oder nur die wichtigen?\\}
-for sensor $ n $. The complete system state vector has a shape of $ (3 \cdot K) \times 1 $ and is denoted by
+for sensor $ n $. Since the state $ x_{k} $ consists of 3 values, the complete system state vector has a shape of $ (3 \cdot K) \times 1 $ and is denoted by
 \begin{equation}
-\mathrm{X}_K = \begin{bmatrix} x_{1} & x_{2} & \cdots & x_{K}  \end{bmatrix}^{T}
+\begin{aligned}
+& \mathrm{X}_K = \begin{bmatrix} x_{1} & x_{2} & \cdots & x_{K}  \end{bmatrix}^{T}\\
+& \text{with: } x_{k} = \begin{bmatrix} \theta_{MCP} & \theta_{PIP} & \phi_{MCP} \end{bmatrix}^{T}
+\end{aligned}
 \end{equation}
-the overall measurable/outcome of the equations/... \todo{how to express?} representation of $ \mathrm{X}_{k} $ is
+the overall observable representation of $ \mathrm{X}_{k} $ by the sensor units is 
 \begin{equation}
 \begin{aligned}
 \mathrm{M} &\equiv \begin{bmatrix} {\mathrm{B}}_{1} & {\mathrm{B}}_{2} & \cdots & {\mathrm{B}}_{N} \end{bmatrix}^{T}\\
@@ -352,20 +355,24 @@ the overall measurable/outcome of the equations/... \todo{how to express?} repre
 \end{equation}
 The measurement of sensor $ n $ is denoted by $ \tilde{\mathrm{B}}_{n} $, the measurement array of all sensors $ N $ has a shape of $ (3 \cdot N) \times 1 $ and is represented by
 \begin{equation}
-\tilde{\mathrm{M}} \equiv \begin{bmatrix} \tilde{\mathrm{B}_{1}} & \tilde{\mathrm{B}_{2}} & \cdots & \tilde{\mathrm{B}_{N}} \end{bmatrix}^{T}
-\end{equation}
-In order to derive an estimate of the system state $ \mathrm{X}_K $, one can formulate an optimization problem. The objective of this function is the minimization of the residual between the actual sensor measurements and the state representation by the model.
-\begin{equation}
 \begin{aligned}
-\underset{\mathrm{X}_K}{\text{minimize}} & & || \tilde{\mathrm{M}} - \mathrm{M}(\mathrm{X}_K) ||\\
-\text{subject to} & & 0 & \leq \mathrm{X}_1[0] \leq & 1/2 \pi, \\
-				  & & 0 & \leq \mathrm{X}_1[1]  \leq & 11/18 \pi, \\
-				  & & -1/12 \pi & \leq \mathrm{X}_1[2] \leq & 1/12 \pi, \\
-				  & & 0 & \leq \mathrm{X}_2[0]  \leq & 1/2 \pi, \\
-				  & & \vdots
+& \tilde{\mathrm{M}} \equiv \begin{bmatrix} \tilde{\mathrm{B}_{1}} & \tilde{\mathrm{B}_{2}} & \cdots & \tilde{\mathrm{B}_{N}} \end{bmatrix}^{T}\\
+& \text{with: }  \tilde{\mathrm{B}_{n}} = \begin{bmatrix} \tilde{\mathrm{B}_{n}}(x) & \tilde{\mathrm{B}_{n}}(y) & \tilde{\mathrm{B}_{n}}(z) \end{bmatrix}
 \end{aligned}
 \end{equation}
-As constraints, the natural range of motion for each finger angle is plugged in. The solvability and the uniquness of the result for this minimization is dependent on the determinateness of the system. To gather unique and clear solutions, the system has to be fully determined at any time. Since one is trying to estimate the pose of 4 magnets, by also using 4 sensors, this condition is fulfilled. For minimizing such a function, one has to remember the mathematical form of the used models. The dipole model includes nonlinearities, the cylindrical model in contrary is solved by a numerical approximation, which in return means that differentiation or further mathematical operations can not be applied. Since the programming language \emph{Python} \cite{python} is used to solve this problem, it is refereed to methods provided by the \emph{SciPy} \cite{scipy} package . This library provides a minimize method, that is implement just for such use cases. It comes with several user definable options, to provide the solver with additional information. In \todo{reference to minimize results} the utilized optimization methods are explained and the performance and quantity of the results are compared. Anyway, to speed up the computational time for solving the equations and the optimization problem, the functions are implemented in Cython \ref{cython}. This interface allows to write C-like Python code and to work with predefined variables. 
+In order to derive an estimate of the system state $ \mathrm{X}_K $, one can formulate an optimization problem. The objective of this function is the minimization of the residual between the actual sensor measurements and the state representation by the model.
+\begin{equation} \label{eq:minimization}
+\begin{aligned}
+\underset{\mathrm{X}_K}{\text{minimize}} & & || \tilde{\mathrm{M}} - \mathrm{M}(\mathrm{X}_K) ||\\
+\text{subject to} & & 0 & \leq {x}_1(\theta_{MCP}) \leq & 1/2 \cdot \pi, \\
+				  & & 0 & \leq {x}_1(\theta_{PIP})  \leq & 110/180 \cdot \pi, \\
+				  & & -30/180 \cdot \pi & \leq {x}_1(\phi_{MCP}) \leq & 30/180 \cdot \pi, \\
+				  & & 0 & \leq {x}_2(\theta_{MCP})  \leq & 1/2 \cdot \pi, \\
+				  & & \vdots \\
+				  & & -30/180 \cdot \pi & \leq {x}_K(\phi_{MCP}) \leq & 30/180 \cdot \pi
+\end{aligned}
+\end{equation}
+As constraints, the natural range of motion for each finger angle is plugged in. The solvability and the uniquness of the result for this minimization is dependent on the determinateness of the system. To gather unique and clear solutions, the system has to be fully determined at any time. Since one is trying to estimate the pose of 4 magnets, by also using 4 sensors, this condition is fulfilled. For minimizing such a function, one has to remember the mathematical form of the used models. The dipole model includes nonlinearities, the cylindrical model in contrary is solved by a numerical approximation, which in return means that differentiation or further mathematical operations can not be applied. Since the programming language \emph{Python} \cite{python} is used to solve this problem, it is refereed to methods provided by the \emph{SciPy} \cite{scipy} package . This library provides a minimize method, that is implemented just for such use cases. It comes with several user definable options, to provide the solver with additional information. In \ref{subsubsec:resSim} the utilized optimization methods are explained and the performance and quantity of the results are compared. Anyway, to speed up the computational time for solving the equations and the optimization problem, the functions are implemented in Cython \ref{cython}. This interface allows to write C-like Python code and to work with predefined variables. \todo{mention that you are trying to minimize a scalar (=single variable/value/... nothing but a scalar)}
 
 Another way of solving such a state estimation problem is by applying a Kalman Filter. This filter comprises a prediction step, foreseeing the next system state and an update step, correcting this prediction with the actual measurements. The utilized recursive filter equations are described by
 
