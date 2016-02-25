@@ -1,0 +1,312 @@
+\section{Pose estimation} \label{sec:estimationRes}
+
+\subsection{Identification of the minimization process} \label{subsec:resSim}
+
+\subsubsection{Utilized minimization methods} \label{subsubsec:miniMethod}
+
+The size and complexity of the minimization problem, described in \ref{sec:estimation} is dependent on the number of exploited sensors and magnets. The beforehand introduced minimization problem \ref{eq:minimization} is stated here once again for clarity:
+\begin{equation*} \label{eq:minimization}
+\begin{aligned}
+\underset{\mathrm{X}_K}{\text{minimize}} & & f(\mathrm{X}_K) = || \tilde{\mathrm{M}} - \mathrm{M}(\mathrm{X}_K) ||\\
+\text{subject to} & & 0 & \leq {x}_1(\theta_{MCP}) \leq & 1/2 \cdot \pi, \\
+				  & & 0 & \leq {x}_1(\theta_{PIP})  \leq & 110/180 \cdot \pi, \\
+				  & & -30/180 \cdot \pi & \leq {x}_1(\phi_{MCP}) \leq & 30/180 \cdot \pi, \\
+				  & & 0 & \leq {x}_2(\theta_{MCP})  \leq & 1/2 \cdot \pi, \\
+				  & & \vdots \\
+				  & & -30/180 \cdot \pi & \leq {x}_K(\phi_{MCP}) \leq & 30/180 \cdot \pi
+\end{aligned}
+\end{equation*}
+Remind, that the overall size of the observable measurements $ \tilde{\mathrm{M}} $ is $ (3 \cdot N) \times 1 $ (with $ N $ being the number of sensors, taken into account) and the size of the system state X is $ (3 \cdot K) \times 1 $ (with $ K $ being the number of fingers/magnets to describe). In order to gather a fully determined system, the number of sensors taken into account has to be at least as high as the number of magnets. This means, trying to estimate the state of four fingers with only one sensor could lead to ambiguous and bad results. Further on, the problem is nonlinear, which restricts the selection of the minimization method. The problem can be solved by applying the anatomic constraints as bounds or not. The SciPy package comes with the \emph{minimize} function, which is especially for solving scalar minimization problems. It can be invoked with different algorithms and their corresponding additional options. Since the cylindrical model is a numerical approximation, the derivative can not be evaluated. Therefore the desired minimization algorithms need to approximate it by there own.
+
+The following explanations should give a short overview on the principle of the utilized methods and why they were chosen. For further reading on numerical optimization methods, please have a look at \cite{nocedal2006numerical} (on which the following paragraphs are based).\\
+For solving the problem without taking the anatomic bounds into account, the \ac{BFGS} algorithm is used. It is an approximation of Newton's method, for finding a solution. Newton's method describes derivative based approaches, to find local minima around a certain initial guess $ \mathrm{X}_{0} $. To find values for $ x $, which minimize the outcome of the function $ f $, different search methods exist. The line search approach tries to find the local minimum along a line, which is determined by the Jacobian $ \nabla f $ and Hessian $ \nabla^{2} f $. Since the \ac{BFGS} approximates the derivative  $ \nabla f $, it is called quasi-Newton. $ \nabla f $ is updated at every iteration. An iteration step consists of finding a value $ x_{k+1} $, which minimizes $ f $. This is done till the gradient norm $ || \nabla f|| < \epsilon ||$, with $ \epsilon $ representing the convergence tolerance. In other words, a solution is found, if the change in the value of $ ||\nabla f|| $ is smaller than $ \epsilon $. As a characteristic of the \ac{BFGS} method, only the first derivative needs to be approximated. The rate of convergence for the method is stated to be linear. Further on it is assumed to be robust. The \ac{BFGS} implementation of SciPy shows very good results for the default values for $ \epsilon = 1.5e-08 $. The overall termination tolerance, defining the magnitude of $ f(\mathrm{X}_K) $ is denoted to be $ 1.0e-07 $. Shrinking this value, would lead more exact results, but would also induce more iteration steps and therefore a higher computation time. The results for the presented value show a good trade off between time and accuracy.\\
+For solving the problem by taking the anatomic conditions into account, SciPy provides a method called \ac{SLSQP}. The constraints can be passed in as a pair of $ (min,max) $ for each variable, and reflect hard bounds. The underlying principle is based on least-squares methods. Therefore the system has to be overdetermined or at least fully determined. It tries to fit the observed data (i.e. the measurements) to a given model, by adjusting the model parameters. This is actually often used for data-fitting. While a system state is desired and the model comes with no additional parameters, the method is used in a slightly different way. In contrast to the classic approach, the model is fitted to the measurement data. The parameters in this case are the values of the system state $ \mathrm{X}_K $. In the least squares sense, the sum of the errors between the model at state $ \mathrm{X}_{0} $ and the measurements is squared and minimized. Exactly this is expressed by the objective function $ f(\mathrm{X}_K) $. Again, a starting point $ \mathrm{X}_{0} $ has to be provided. For identifying the direction of $ x $ in each iteration step, Powells method \cite{powell1964efficient} is used. This derivative free approach identifies independent convergence vectors for each variable. It can be interpreted as the approximation of $ \nabla f $. At each iteration step, those search directions are defined and therefore the new system state can be expressed by a combination of them in turn. In order to bring in the constraints, $ f $ is modified to represent those restrictions as a non-negative least squares problem. As the name suggests, the restriction to the system state is the following $ \mathrm{X} \geq 0$. Those reformulations are done by the SciPy method, therefore no further adjustments to the model or the bounds have to be made by the user. In the end the recursion gets performed, till the termination tolerance for $ f(\mathrm{X}_K) $ is fulfilled.\\
+It should be mentioned, that for the implemented estimation routine, the initial guess $ \mathrm{X}_{0} $ is chosen to be the state, estimated by the minimizer one step ahead. Since the estimation assumes to start with stretched fingers, the overall $ \mathrm{X}_{0} $ is a vector of 0.  
+
+
+\subsubsection{Classifying the methods, based on simulated data}
+
+In order to get an impression on the expectable results of the minimization method, it is tested with a simulated dataset. A self chosen predefined set of states is determined, which should represent the motion of the fingers. This sequence of joint angles is simulated using the cylindrical model, to obtain the value of the expectable magnetic flux density, measurable by a specific sensor for the corresponding system state. The cylindrical model is used, since it represents the behaviour of the bar magnet and is not just a simplification, like the dipole model. Those values for the expectable magnetic flux density are then passed to the minimization routine, to estimate the system states. The result of the minimization should of course reflect the predefined motion sequence. Therefore it can directly be compared to the known state values, to identify the quality of the solver and its behaviour.\\
+There are several parameters for formalizing the estimation problem and to tune the solver:
+\begin{itemize}
+\item Expressing the minimization as an unconstrained (by using the \ac{BFGS} algorithm) or constrained (by using the \ac{SLSQP} algorithm) problem
+\item Considering the influence of the movement of adduction-abduction or not.
+\item Formalizing the objective function using the cylindrical or the dipole model.
+\item The behaviour regarding different determinedness of the system, which means estimating the states of one or multiple fingers by taking one or multiple sensors into account.
+\end{itemize}
+The results will be compared by calculating the mean and standard deviation of the error-norm to the perfect system state for each finger. Further on the calculation times of the different methods can be compared.
+
+%The with and without constraints. Further on, in this way the results of using one or multiple sensors for the estimation of the system states of one finger can be compared. In other words, the determinedness of the system can be varied and evaluated.
+%Also the number of fingers to track can be changed and evaluated, to specify the capability of an increasing system complexity.
+%The states are estimated once using the model with adduction-abduction and once without this state variable. This done, to evaluate how good this movement can be tracked and whether it shows an effect on the other system states. Further on, it can be evaluated how the system without regarding adduction-abduction behaves if such movements are actually performed and whether it would improve or worsen the overall results for flexion-extension.
+%As a last characteristic, the states estimated by the objective function, using the dipole and the cylindrical model can be compared to each other. At the end of this section, one should have an impression on the capabilities and characteristics of the different models and how one would get the best results.
+
+As a first step, the different optimization parameters are evaluated for the movement of a single finger. Therefore the size of the system state is $ \mathrm{X}_{1} = 3 $ for taking adduction-abduction into account and $ \mathrm{X}^\prime_{1} = 2 $ for neglecting this additional state. The size of the simulated measurements is dependent on the number of sensors, taken into account. The index finger is chosen for evaluating the different parameters, but the results are expected not to change, by choosing a different one. The utilized gesture sequence is displayed for the three states of the index finger in \ref{fig:indexStates}. The angular change, and therefore the stepwidth between two states is determined by combining the observations for the angular velocity from Ingram et al. \cite{ingram2008statistics} and the data rate of the sensor system. An acquisition frequency of \SI{20}{\Hz} in combination with a mean angular velocity of \SI[per-mode=symbol]{10}{\degree \per \second} leads to an observable maximum change of \SI[per-mode=symbol]{0.5}{\degree \per \second} (= \SI[per-mode=symbol]{0.0085}{\radian \per \second}). Therefore, the whole set is divided into 1419 datapoints, which results in a total duration of \SI{70.95}{\second} for performing the motion. The state values are plotted against time. The motion is constructed, to represent simple and complex movements of the finger, including flexion-extension, as well as adduction-abduction. The motion sequence includes joint movements, which happen as unique motions at a time. For example between \SI{0}{\second} and \SI{20}{\second} only the \ac{MCP} joint moves. Some, which arise together, like between \SI{40}{\second} and \SI{60}{\second}, where all three joints are performing flexion-extension. Also only small movements are simulated. Between \SI{38}{\second} and \SI{42}{\second}, $ \theta_{PIP} \; \text{and} \; \theta_{DIP} $ change only about \SI{0.26}{\radian}. The movement of adduction-abduction is applied during a short sequence, since the range of movement is small and also occurs more rarely, compared to flexion-extension. 
+\begin{figure}
+\includegraphics{pictures/plots/indexStates.png}
+\caption{\todo{caption}}
+\label{fig:indexStates}
+% python script: 160224_plotSequence.py
+\end{figure}
+The obtained error means and standard deviations for each parameter combination are presented in \ref{tab:oneFing} in radians. The numbers in the very first column indicate the combination of fingers and sensors. The first number represents the estimated fingers, which is for this comparison always one, since only the states of the magnet at the index are estimated. The second number represents the amount of simulated measurements. By using only one simulated sensor reading, the one right beneath the index finger is meant. By taking two into account, the index and middle sensor are pointed. And four means that all four simulated units are regarded. The abbreviations in the second column reflect whether the movement of $ \phi_{MCP} $ is regarded or not. \grqq no ad-ab \grqq stands for no adduction-abduction movement and \grqq ad-ab \grqq for the opposite. \\
+One thing, that can be observed directly, is that for the case \grqq 11\grqq which still represents a full determined system, the results show a very high deviation from the perfect values, regardless how the model is adjusted. The mean over all errors is \SI{0.289}{\radian}. The best observable values can be obtained by the method using the constrained cylindrical model and neglecting adduction-abduction. By regarding, that the inserted magnetic values were predicted by this model and that the overall system state is simplified, this seems reasonable. Further on the constraints restrict the algorithm not to drift to far away. \todo{figure 11cylNa1} shows the results for this best guess and the deviation from the perfect values over time. 
+By deploying only one set of forecasted sensor values more, the results get much better. The mean of all error means is \SI{0.054}{\radian}. also the standard deviation is almost constant. One could even state, that by using all four simulated sensor units, the error does not decrease very much (the mean over all errors is \SI{0.045}{\radian}). Therefore it can be stated as a first observation, that the system has to be overdetermined. 
+By comparing the error from the objective function using the dipole model with the cylindrical one, a decrease can be observed. As already stated for the \grqq 11\grqq case, this just seems reasonable, since the magnetic flux densities were calculated by the same. However for real observed measurements, this has to be further evaluated.
+Also, while considering that the field values for estimation still comprise the movement of adduction-abduction and since the ability to estimate the system state with a reasonable accuracy, the neglecting of those values just results in worse results. The biggest difference to the perfect values occur here at the time, the adduction-abduction is performed. The remaining parts, where $ \phi_{MCP} = 0 $ are also almost perfect. For a visualization, the estimated values and their difference over time are plotted in \todo{figure 12or14cylNa1}. By looking at the difference between the results of the constrained and unconstrained methods a slight decrease of the error by regarding the constraints can be observed. The same reason, as mentioned beforehand can be named, which is, that the algorithm shows better convergence by the deployed constraints. In the end almost fault free results can be observed by the cylindrical model, which takes the movement of adduction-abduction into account. Here it does not count too much, whether the minimizer is constrained or not. \todo{concluding statement? what are bad results? which dimension of errors is acceptable?}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{l l c c c c}
+\toprule
+ & &          				\multicolumn{2}{c}{Unconstrained}          &		\multicolumn{2}{c}{Constrained}\\ \cmidrule(lr){3-4}\cmidrule(lr){5-6}
+ & & 								Dipole   			   & Cylindrical 	 			 & 		Dipole 			& 		Cylindrical \\ \midrule[2pt]
+\multirow{2}{*}{11} & no ad-ab    & $ 0.194 \pm 0.002 $ & $ 0.074 \pm 0.001 $ & $ 0.367 \pm 0.015 $ & $ 0.035 \pm 0.000 $ \\ 
+					& ad-ab		 & $ 0.252 \pm 0.003 $ & $ 0.257 \pm 0.013 $ & $ 0.570 \pm 0.020 $ & $ 0.570 \pm 0.020 $ \\ \midrule
+\multirow{2}{*}{12} & no ad-ab    & $ 0.124 \pm 0.001 $ & $ 0.094 \pm 0.001 $ & $ 0.052 \pm 0.000 $ & $ 0.035 \pm 0.000 $ \\ 
+					& ad-ab		 & $ 0.071 \pm 0.000 $ & $ 0.000 \pm 0.000 $ & $ 0.058 \pm 0.000 $ & $ 0.000 \pm 0.000 $\\ \midrule
+\multirow{2}{*}{14} & no ad-ab    & $ 0.112 \pm 0.001 $ & $ 0.098 \pm 0.001 $ & $ 0.040 \pm 0.000 $ & $ 0.033 \pm 0.000 $ \\ 
+					& ad-ab		 & $ 0.042 \pm 0.000 $ & $ 0.000 \pm 0.000 $ & $ 0.038 \pm 0.000 $ & $ 0.000 \pm 0.000 $\\										
+\bottomrule
+\end{tabular}
+\caption{\todo{Means and standard deviations! Write, that it is in radians!}}
+\label{tab:oneFing}
+\end{table}
+
+\begin{figure}
+\centering
+\includegraphics{pictures/plots/difOne.png}
+\caption{\todo{caption!}}
+\label{fig:11cylNa1}
+\end{figure}
+
+In \ref{tab:timeOneFing} the mean time, needed for one estimation cycle is listed in seconds. It can be observed, that the time increases with the determinedness of the system. This is just logic, since the algorithm has more equations to take into account and to evaluate. Also the constrained methods show a faster timing behaviour, than the unconstrained. As a reason the restricted search space of the solver could be mentioned. The reduced system state by neglecting the adduction-abduction movement is also faster than the model, comprising this state, what is only reasonable, since one state variable less has to be estimated. The objective function, formulated with the dipole model shows also a faster evaluation time, compared to the one using the cylindrical. Since the cylindrical model represents a numerical approximation, which has to be evaluated at each iteration, the time consumption for evaluating is higher. The dipole model however consists of a relatively simple nonlinear equation matrix. So in the end the observed computation times are all reasonable. 
+By comparing the quality of the solver with its timing behaviour, it can be stated that an increase in precision comes with higher computation times. For this example, using the perfect simulated data for the magnetic field, the estimation is not always fast enough, to match the observed sensor system frequency of \SI{20}{\Hz}. However it is evaluated, that the estimation results won't degrade drastically, if one or two measurements would be skipped, due to the computation time. The actually estimated system state is only used as initial starting guess for the next estimation. It is observed that the solver is capable, to intercept changes of a minimum of $ \pm 0.2 \si{\radian} $, between two measurements. So the initial starting point plays a not so important role for the solvability. For the assumed maximum angular velocity of \SI[per-mode=symbol]{0.175}{\radian \per \second} this change would reflect to a missing of one data set. What is more critical is the capability of estimating the state almost at real time. For the utilized simulated magnetic field values the best configuration for the minimizer to estimate the system state with an adequate frequency would be given by using the cylindrical magnetic model with adduction-abduction and taking the anatomic constraints into account. This would result in an estimation frequency of around \SI{7}{\Hz}, since the time needed to solve the problem is about \SI{0.148}{\second}. Compared to other hand tracking systems, this value is very high. However for getting a rough feedback on the actual finger state, this value should be sufficient. \\
+
+
+\begin{table}[h]
+\centering
+\begin{tabular}{l l c c c c}
+\toprule
+ & &         			\multicolumn{2}{c}{Unconstrained}		 & 	\multicolumn{2}{c}{Constrained}\\ \cmidrule(lr){3-4} \cmidrule(lr){5-6}
+ & & 								Dipole & Cylindrical & Dipole & Cylindrical \\ \midrule[2pt]
+\multirow{2}{*}{11} & no ad-ab    & 0.037 & 0.077 & 0.008 & 0.017 \\ 
+					& ad-ab		 & 0.089  & 0.119 & 0.029 & 0.037 \\ \midrule
+\multirow{2}{*}{12} & no ad-ab    & 0.063 & 0.139 & 0.014 & 0.031 \\ 
+					& ad-ab		 & 0.114 & 0.214 & 0.031 & 0.074  \\ \midrule
+\multirow{2}{*}{14} & no ad-ab    & 0.110 &  0.251 & 0.025 & 0.059 \\ 
+					& ad-ab		 & 0.216 & 0.409 & 0.056 & 0.148 \\										
+\bottomrule
+\end{tabular}
+\caption{\todo{Estimation time! caption! Write, that it is in seconds!}}
+\label{tab:timeOneFing}
+\end{table}
+
+
+For estimating the movement of multiple fingers, an adequate motion pattern is deployed. The simulated sequence consists only of 100 datapoints, reflecting a measurement time of only \SI{10}{\second}. This short time period is chosen, since first tests showed a very slow behaviour of the estimation stage. The utilized motion is visualized for each finger and each state in \ref{fig:multiFing}. As one can see, the finger are moving individually, to test whether the estimation is capable of that.
+\begin{figure}
+\centering
+\includegraphics{pictures/plots/multiStates.png}
+\caption{\todo{caption}}
+\label{fig:multiFing}
+% python script: 160224_plotSequenceMulti.py
+\end{figure}
+For getting an insight, how good the states for multiple magnets can be estimated, several sensor-magnet configurations are simulated. The evaluation is done for two fingers (the index and middle) and all four. As learned from the previous results, four sensors are used for the estimation of two fingers, to ensure overdetermindeness. However for estimating all four finger state vectors the introduced system can only satisfy determinedness. For reasons of completeness, four additional sensors were introduced to the simulation, placed behind the four existing ones. As for the estimation of one finger, the values are simulated using the cylindrical model. The results are listed in \ref{tab:multFing}. The corresponding parameters are typed in the same manner as beforehand. 
+
+\begin{table}[h]
+\centering
+\begin{tabular}{l l c c c c}
+\toprule
+ & &          				\multicolumn{2}{c}{Unconstrained}          &		\multicolumn{2}{c}{Constrained}\\ \cmidrule(lr){3-4}\cmidrule(lr){5-6}
+ & & 								Dipole   			   & Cylindrical 	 			 & 		Dipole 			& 		Cylindrical \\ \midrule[2pt]
+\multirow{2}{*}{24} & no ad-ab    & $ 0.119 \pm 0.000 $ & $ 0.081 \pm 0.000 $ & $ 0.051 \pm 0.000 $ & $ 0.039 \pm 0.000 $ \\ 
+					& ad-ab		 & $ 0.114 \pm 0.000 $ & $ 0.000 \pm 0.000 $ & $ 0.085 \pm 0.000 $ & $ 0.005 \pm 0.000 $ \\ \midrule
+\multirow{2}{*}{44} & no ad-ab    & $ 0.941 \pm 0.006 $ & $ 0.484 \pm 0.001 $ & $ 0.314 \pm 0.000 $ & $ 0.216 \pm 0.000 $ \\
+					& ad-ab		 & $ 1.361 \pm 0.022 $ & $ 0.024 \pm 0.000 $ & $ 0.223 \pm 0.000 $ & $ 0.140 \pm 0.000 $ \\ \midrule
+\multirow{2}{*}{48} & no ad-ab    & $ 0.543 \pm 0.001 $ & $ 0.509 \pm 0.001 $ & $ 0.236 \pm 0.000 $ & $ 0.183 \pm 0.000 $ \\ 
+					& ad-ab		 & $ 0.494 \pm 0.000 $ & $ 0.005 \pm 0.000 $ & $ 0.385 \pm 0.000 $ & $ 0.098 \pm 0.000 $\\										
+\bottomrule
+\end{tabular}
+\caption{\todo{Means and standard deviations multiple! Write, that it is in radians!}}
+\label{tab:multFing}
+\end{table}
+
+By looking at the results for the estimation of the state vectors for multiple fingers, a similar behaviour as mentioned for the case $ N = 1 $ can be obtained. \todo{Hier muss ich nicht nochmal das gleich schreiben oder?} However one interesting change can be observed. The unconstrained minimization method, described by the cylindrical model and taking $ \phi_{MCP} $ into account show here a better behaviour, than the constrained one. This is observable for each configuration of $ N $ and $ K $. One reason could be, that the \ac{BFGS} algorithm gives for those cases a better approximation for the search direction, than the constrained \ac{SLSQP} method. With the increasing number of system states, also the complexity increases. Therefore the constrained solver reaches its bounds, by using not good enough search directions. The unconstrained method however has more freedom, to look in each direction. For the estimation of two finger states, the unconstrained method using the cylindrical model with adduction-abduction serves the best result. For the estimation of all four fingers however, the minimization is not capable to reflect the perfect system states anymore. The overall smallest error for the estimation of four fingers with four sensors is \SI{0.024}{\radian}. So for the actually built system, comprising four sensors, an estimation of all four fingers will not lead to reasonable results. For getting an impression on the estimated states, compared to the perfect ones, those obtained values are plotted \todo{44CylAUc} However by introducing four additional sensors (case \grqq 48 \grqq), the results will get better. A mean error of \SI{0.005}{\radian} is observed by the unconstrained method, using the cylindrical model with adduction-abduction. However, as stated beforehand, the introduction of such a high number of magnets would break the goal of constructing a mobile and unobtrusive system. \\
+By looking at the required estimation time of the several methods, a tremendous rise can be observed. To still observe reasonable results of the estimated states, more than \SI{1}{\second} is needed. This can be observed by almost all minimization configurations. This means a proper real time evaluation of the finger pose estimation is not possible anymore. By increasing the number of sensors $ N $ to 8, about \SI{17}{\second} would be needed to achieve reasonable results, which is obviously far away from real time behaviour or acceptance for post processing. To show the quality of the still best acceptable computation time, the estimated states for the fastest method for two finger state vectors is plotted in \todo{24dipNaC}. 
+
+\begin{table}[h]
+\centering
+\begin{tabular}{l l c c c c}
+\toprule
+ & &         			\multicolumn{2}{c}{Unconstrained}		 & 	\multicolumn{2}{c}{Constrained}\\ \cmidrule(lr){3-4} \cmidrule(lr){5-6}
+ & & 								Dipole & Cylindrical & Dipole & Cylindrical \\ \midrule[2pt]
+\multirow{2}{*}{24} & no ad-ab    & 0.920 & 1.632 & 0.291 & 0.382 \\ 
+					& ad-ab		 & 2.129  & 3.346 & 0.602 & 1.275 \\ \midrule
+\multirow{2}{*}{44} & no ad-ab   & 3.365 & 5.012 & 0.629 & 0.947 \\ 
+					& ad-ab		  & 8.322  & 8.419 & 1.696 & 2.684 \\ \midrule
+\multirow{2}{*}{48} & no ad-ab    & 7.130 &  9.670 & 1.137 & 1.988 \\ 
+					& ad-ab		 & 14.346 & 17.558 & 3.945 & 4.677 \\										
+\bottomrule
+\end{tabular}
+\caption{\todo{Estimation time multi! caption! Write, that it is in seconds!}}
+\label{tab:timeMultFing}
+\end{table}
+
+The presented results visualize the behaviour and influence of different system configurations $ N $ and $ M $ for different ways of describing minimization problem, based on perfect, simulated magnetic field values. The following concluding statements can be derived:
+\begin{itemize}
+\item The system has to be overdetermined, i.e. $ N > K $.
+\item The estimation time increases significantly with the size $ K $ of the system state.
+\item The estimation time increases in an acceptable size with the number of deployed sensors $ N $.
+\item Therefore an estimation of four fingers with the designed system, consisting of four sensors is not possible in an adequate quality or real time behaviour.
+\item The state $ \phi_{MCP} $ for adduction-abduction introduces higher estimation times, but can be estimated and should be used, to better reflect the human hand motion.
+\end{itemize}
+Since the results are based on perfect simulated values from the cylindrical model, the estimation procedures comprising this model lead also the best results. It is evaluated, that the cylindrical method, including adduction-abduction and anatomic constraints leads to the overall best results for the estimation of one finger. However when porting the observations to real measurements on a human hand, one has to note that several additional distortion factors are added to the system. Therefore in the ongoing estimation of real datasets, the cylindrical and the dipole method (both including the state $ \phi_{MCP} $ and constraints), are both used for the state estimation.
+
+
+
+
+
+\subsection{Results for recorded/real data} \label{subsec:resMeas}
+
+Describe the recording procedure
+
+\begin{itemize}
+
+%
+\item \textbf{estimation of four fingerstates}
+	\begin{itemize}
+	\item very slow! And very poor results!
+	\item 160210\_set6 nice for showing things for all fingers
+	\item no good results without ad-ab (for 90 fitted gesture)
+	\item moving together can a bit be tracked (initialization gesture reconstructed, for dip better than cyl)
+	\item individual movement can not be tracked! (values 257:471)
+	\item $ \rightarrow $ so no further details about four - four estimation, it is not possible!
+	\end{itemize}
+
+\item textbf{estimation one - one}
+	\begin{itemize}
+	\item results are \grqq a bit\grqq worse than with four sensors (should be valid for all sets, tested for 160217\_set3 (no ad-ab))
+	\item results are much worse than with four sensors (160210\_set2)
+	\item ad-ab can also be recognized (160217\_set4)
+	\item \todo{more comparison of datasets!}
+	\item estimation is ca. \textbf{two times} faster than one - four!
+	\item e.g. four-one better than one-one 160210\_set4 (beginning of fist)
+	\end{itemize}
+
+%
+\item \textbf{recognizing movements}
+	\begin{itemize}
+	\item not constantly \grqq good or bad\grqq, it differs and is dependent on beforehand movements (seen by almost all datasets) and movement of hand
+	\item 160217\_set3 nice detection between 50s and 70s by cyl\_A (but directly afterwards, stretched position is not recognized...)
+	\end{itemize}
+
+
+\item \textbf{difference between model with and without ad-ab}:
+	\begin{itemize}
+	\item with ad-ab results are better (even for doing no movement in ad-ab)
+	\item $ \rightarrow $ no ad-ab results over all are not so good...
+	\item 160217\_set7: for simple movements almost no difference to with ad-ab
+	\item 160210\_set1: big difference (no ad-ab worse...)
+	\end{itemize}
+
+
+\item \textbf{comparing results/difference for using cyl and dip}
+	\begin{itemize}
+	\item dip is much faster than cyl (around 7 times faster!)
+	\item regarding accuracy, no clear statement possible...
+	\item sometimes cyl is better, sometimes dip
+
+	\end{itemize}
+
+\item \textbf{detectability of ad-ab / comparing cyl\_A with dip\_A}
+	\begin{itemize}
+	\item 160210\_set4 shows that dip and cyl without ad-ab show only small differences!
+	\item in the end: cylindrical estimation with ad-ab is more accurate than dipole with ad-ab! (160217\_set3)
+	\item well it really depends... sometimes dip is better, sometimes cyl...
+	\item but ad-ab can be estimated much better by cyl model, but only if finger is stretched! (160217\_set2)
+	\item and only slow and clear ad-ab movements can be detected (160210\_set3 nothing is detected...)
+	\item 160217\_set4 cyl\_A detects negative AND positive ad-ab!
+	\item $ \rightarrow $ ad-ab is hard to detect. Even Leap is not capable
+	\end{itemize}
+
+\item \textbf{comparison to Leap}
+	\begin{itemize}
+	\item comparison is difficult, since it is also not perfect...
+	\item 160210\_set1-2 are good examples, which show, that Leap is not perfect!
+	\item 160210\_set2 however also shows, that it can work pretty good!
+	\item values for ad-ab are not very good (e.g. 160210\_set3)
+	\item 160210\_set4 also shows clearly (especially at the end), that Leap is not perfect!
+	\item 160210\_set4 shows, that ad-ab can be detected quite good (70s-90s)
+	\end{itemize}
+
+\item \textbf{issues/observations with Leap}
+	\begin{itemize}
+	\item when finger are close together, tracking is harder
+	\item DIP and PIP show the same constraint as I am using ($ PIP = 2/3 DIP $)
+	\item angle in MCP introduces most times also angle in DIP/PIP (160210\_set2) \\
+			$ \rightarrow $ my system is better for this!
+	\end{itemize}
+
+%
+\item \textbf{influence of normed fitting gesture / use fist? and observed fitting values}
+	\begin{itemize}
+	\item scaling to flat scale fitting values leads to very bad results!
+	\item fist is not good for fitting, since it is slightly different each time and everyone makes it different (pictures of videos and observed B-fields)
+	\item (cardboard) has only slightly influence (dataset 160212\_set1)
+	\item do it during the video (also with cardboard perhaps)
+	\item because you change the height and orientation of your hand too much during calibration...
+	\item so just perform the gesture during your recording
+	\item fitting for ad-ab has almost no influence (dataset 160212\_set3), a clear, structured (performed alone) ad-ab can be detected (dataset 160212\_set4)
+	\end{itemize}
+
+%
+\item \textbf{influence of exact hand dimensions/parameters}
+	\begin{itemize}
+	\item e.g. dataset: 160217\_set3 with handDim from 160210 and 160217 (but every other set should return the same...)
+	\item for sPos there is a difference, but it is very small
+	\item for bone lengths it's the same, only small differences (sometimes my own lengths better, sometimes wooden better)
+	\item so in the end the parameters have to resemble the truth, but since the data is fitted to the calculated values, it's influence is not too big
+	\end{itemize}
+
+%
+\item \textbf{influence of distance sensor to magnets}
+	\begin{itemize}
+	\item changes in magnetic field are too small...
+	\item 160210\_set10 shows that the sensors are too far away! (the results within the methods vary a lot and they do not represent the truth!)
+	\end{itemize}
+
+%
+\item \textbf{tries with MPU}
+	\begin{itemize}
+	\item as expected not good...
+	\item start position can be \grqq detected\grqq after rotation again, but the results with rotation are bad...
+	\item sets: 160217\_set5-6
+	\end{itemize}
+
+\item \textbf{results with ring}
+	\begin{itemize}
+	\item 160217\_set7 no difference to glued magnet
+	\item 160217\_set8 very bad results... but I don't think that the ring is the reason
+	\item \todo{do some more?}
+	\end{itemize}
+
+\item \textbf{for identifying/measuring the difference}
+	\begin{itemize}
+	\item plot the two results for two/several methods in one graph (colors)
+	\item and plot numerical difference below
+	\end{itemize}
+
+\item \textbf{concluding observations}
+	\begin{itemize}
+	\item very fragile/sensitive system
+	\item sensitive to hand/body movements, calibration gesture
+	\item bad/difficult reproducibility of results/measurements
+	\item quality of results is not totally comparable/identifiable by Leap (since this system is also faulty)
+	\end{itemize}
+
+\item 160210\_set4 nice for showing that Leap cannot detect DIP/PIP movement alone...
+
+\item setting datarate to 25Hz has no effect... (160217\_set2)
+
+\end{itemize}
+
+Presentation and compare between EKF and minimizing approach
