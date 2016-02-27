@@ -10,7 +10,7 @@
 
 \chapter{System Design and Implementation} \label{cha:sysDesign}
 
-\section{System design} \label{cha:design}
+\section{System Design} \label{cha:design}
 
 Ma et al. \cite{ma2010magnetic} describe in their work an approach for hand pose estimation, using permanent magnets and sensors. Since this group is the only one using this passive approach for hand state estimation, the design in this work relies partly on theirs. However till now the group only presented results for reconstructing the motion of a single finger with six sensors. An image of their setup is shown in \ref{fig:MaSystem}.
 
@@ -75,7 +75,7 @@ PC & sensor data interpretation and state estimation \\ \hline
 
 
 
-\section{Deriving the Human hand model} \label{sec:handModel}
+\section{Human Hand Model} \label{sec:handModel}
 
 As already depicted in \ref{cha:relatedWork} and \ref{sec:anatomy}, the utilization of a proper kinematic model is a very important part, when it comes to pose interpretation and estimation. In this section the kinematic model, used to reconstruct the finger positions is described.
 
@@ -151,7 +151,7 @@ In the end every finger is modelled equally as a kinematic chain with 3 joints, 
 \end{figure}
 
 For the calculation of the magnetic flux density according to the models, introduced in \ref{sec:magneticFound}, the distance vector from sensor to magnet and the orientation of the latter one is needed. Those two components can be derived using forward kinematics and the positions of sensors and joints.\\
-The orientation vector $ \mathrm{H} $ is derived in the following way: \todo{allow Latex to break the equation... possible???}\\
+The orientation vector $ \mathrm{H} $ is derived in the following way:
 \begin{equation}\label{eq:orienH}
 \begin{aligned}
 \mathrm{H}_{x} =& \cos(-\theta_{MCP}-\theta_{PIP}-\theta_{DIP})\\[3pt]
@@ -190,7 +190,7 @@ The presented model shows a basic approach to model the index, middle, ring and 
 
 
 
-\section{Sensor design and data acquisition} \label{cha:sensors}
+\section{Sensor Design and Data Acquisition} \label{cha:sensors}
 
 For measuring the magnetic field, four LSM303D sensors \cite{STlsm2012} from ST are used. This device comprises a 3 axis accelerometer and a 3 axis magnetometer in one module. This sensor is chosen, because its magnetic full-scale range is selectable. It can be determined to $ \pm 0.2$, $ \pm 0.4 $, $ \pm 0.8 $ or $ \pm 1.2 $ \SI{}{\milli\tesla}. The magnetic values are stored in 2 Bytes in 2's complement. The sensitivity per \ac{LSB} is specified like shown in \ref{tab:magSensitivity}.
 
@@ -218,9 +218,9 @@ The data rate can be set to \SI{100}{\Hz}. The communication is established via 
 \end{figure}
 
 
-\section{Calibration and preprocessing of sensor data} \label{sec:caliPrepro}
+\section{Calibration and Preprocessing of Sensor Data} \label{sec:caliPrepro}
 
-\subsection{Calibration of hard and soft-iron coefficients} \label{subsec:hardSoft}
+\subsection{Calibration of Hard and Soft-Iron Coefficients} \label{subsec:hardSoft}
 
 Magnetic sensors in general suffer from two main distortion effects, being the hard and soft-iron coefficients. Those parameters are caused by manufacturing processes, ferromagnetic materials on the \ac{PCB} and the direct environment of the sensor \cite{ozyagcilar2012calibrating}. If the sensor is moved in a field, free of magnetic distortion, it should only measure the influence due to the earth's magnetic field. An ideal device would measure a constant value for the field strength, no matter in which way it is oriented. In other words, holding the device, such that the full earth field has only influence on the $ z $-axis, should provide the same result on the other axes, when rotating it. So in the end by measuring the earth magnetic field at various positions and plotting them, should result in a perfect sphere, centered at the origin. Due to the hard iron distortions the sphere is not perfectly located at the center. This effect is produced by materials, exhibiting a constant additive field, like wires or small ferromagnetic components, placed onto the PCB \cite{konv2009}. Soft iron effects however, cause that the shape of the sphere is deformed to an ellipsoid. Materials, influencing the pervasion of magnetic field lines and causing different gains on the axes. An example would be metallic materials like iron or nickel, which influence the direction of magnetic fields. So in the end the shape of the perfectly centered sphere is more like an ellipsoid, shifted from the origin. A visualization can be seen in \ref{fig:hardSoft}.
 
@@ -250,13 +250,13 @@ The 6 soft-iron parameters can be specified, by performing an ellipsoid fit. Kok
 In the end, independent on how the sensors get calibrated, one has to do this routine for each sensor to get the individual parameters. As an additional step, the sensors have to be scaled to the same measurement range. By calibrating the sensors with the Freescale method, one directly gets a value for the surrounding field. It turns out, that these values are not equal for different sensors, such that each device has slightly another sensitivity. So one has to determine a scale factor, to bring the sensors onto the same measurement range.
 
 
-\subsection{Fitting the sensor data to the model equations} \label{subsec:modelFit}
+\subsection{Fitting the Sensor Data to the Model Equations} \label{subsec:modelFit}
 
 Another preprocessing step concerning the measurements, is an additional adaptation of the observed sensor values to the model equations. After the calibration phase, it can happen, that on the one hand the sensor readings are calibrated and show all the same measurement range, but on the other hand, those values have to be set in relation to the actual model equations, to represent the de-facto magnetic flux density. In other words, the calibration of the sensors is improved through this step. The difference between the model and the observable sensor values comes also from the scaling to a common value for the earth magnetic field. No normed sensor was at hand to determine the real earth magnetic field at the calibration position at the lab, therefore just one value was chosen, to fit all sensors to. Further on the presented calibration procedures are not totally fault-free. The scaling factors are expected to be small. For this step, a rigid, non metallic construction would be ideal. However this was not available. In return an almost accurate fitting procedure is evaluated.
 
 The calibrated sensors are placed inside the rack and attached onto a small box. A magnet with known characteristics is moved on a predefined path with fixed orientation in front of them. The set up and the movement should result into a three dimensional influence for all sensors. By holding and moving the magnet, the distance vector $ \vec{r} $ and the orientation is known. So the values for the magnetic field can be estimated for each sensor. Those serve as a ground truth for the scaling of the sensor data. In \ref{fig:caliFlat} a picture of the set up is shown. Since this procedure is performed on a normal table, with self determined position and orientation parameters and done \grqq by-hand \grqq, this process is fault prone. However it should still be possible to verify the calibration procedure and push the sensor data towards the predictions of the model equations.
 
-Another calibration method would be the introduction of an initialization gesture on the hand. Beforehand the dimensions on the hand and the sensor and finger positions have to be measured. The gesture consists of bending all four \ac{MCP} joints simultaneously around \SI{90}{\degree}. To make this process reproducible, the gesture is performed along a rectangular piece of cardboard (Pictures are provided at \todo{find/make pictures!} \ref{fig:caliHand}). Again this movement can easily be simulated by the model equations and the measurements can be fitted to them. For this approach, the correct determination of the hand dimensions and positions is critical. A fit to a wrong set of localizations and dimensions could degrade the results of the pose estimation later on. This method represents an application driven fitting procedure and will probably lead to better results for the pose estimation, what is the overall aim of the system. Since the scaling values slightly change with the movement and placement of the sensor rack on the hand, those values have to be defined each time.
+Another calibration method would be the introduction of an initialization gesture on the hand. Beforehand the dimensions on the hand and the sensor and finger positions have to be measured. The gesture consists of bending all four \ac{MCP} joints simultaneously around \SI{90}{\degree}. To make this process reproducible, the gesture should be performed along a rectangular piece of cardboard (Pictures are provided at \todo{find/make pictures!} \ref{fig:caliHand}). Again this movement can easily be simulated by the model equations and the measurements can be fitted to them. For this approach, the exact determination of the hand dimensions is critical, since they play a fundamental role in the calculation of the position vector $ \vec{r} $ for the magnetic field models (see \ref{eq:posX}). Those values comprise the lengths of each bone, the sensor and joint positions. A fit to a wrong set of localizations and dimensions would lead to wrong predicted magnetic flux densities and could degrade the results of the pose estimation. Since it is not possible to determine those parameters exactly by hand, and since they vary slightly by movement, those scaling factors are expected to fluctuate within various measurement sets. However this method represents an application driven fitting procedure and will probably lead to better results for the pose estimation, what is the overall aim of the system. Since the scaling values slightly change with the movement and placement of the sensor rack on the hand and by the provided hand parameters, those values have to be defined each time.
 \begin{figure}[h]
 \centering
 \includegraphics[width=0.6\textwidth]{pictures/caliFlat1.JPG}
@@ -264,7 +264,7 @@ Another calibration method would be the introduction of an initialization gestur
 \label{fig:caliFlat}
 \end{figure}
 
-\subsection{Cancellation of the surrounding earth magnetic field} \label{subsec:earthEli}
+\subsection{Cancellation of the Surrounding Earth Magnetic Field} \label{subsec:earthEli}
 
 The magnetic models, introduced in \ref{sec:magneticFound} describe the influence of the magnet at a certain position and orientation, relative to the sensor. Another observation proven in that chapter is that multiple magnetic fields sum up. On earth we focus a static surrounding magnetic field, going from the north pole to the south pole. Depending on the position at the planet, this value ranges from 25 - \SI{65}{\micro \tesla}. This field cannot easily be shut down and automatically contributes to the sensor measurements. However for a proper interpretation of the surrounding field, solely determined by the permanent magnets, the earth field has to be eliminated. For a system with static geological sensor position and orientation, this would be easy. One would just measure the field without any artificial magnets and subtract this from every measurement. Obviously, the geological position and orientation of the human hand during normal tasks is naturally not static.\\
 However by knowing the orientation of the system and the corresponding earth magnetic field in absence of artificial magnets, this offset can be eliminated.\\
@@ -319,8 +319,12 @@ As already depicted in \ref{sec:magneticFound}, the exact solution of a \ac{CEL}
 
 
 
-\section{Hand state estimation} \label{sec:estimation}
+\section{Hand State Estimation} \label{sec:estimation}
 
+\todo{mention that you are trying to minimize a scalar (=single variable/value/... nothing but a scalar) \\ 
+		Introduce terms like \grqq finger state vector \grqq, \grqq objective function $ f(x) $ \grqq \\
+		Introduce initial state $ \mathrm{X}_{0} $\\
+		Mind consistency of estimation state size (3 or 2!)\\}
 Assumed is a system with $ K $ magnets and $ N $ sensors. The beforehand models for deriving the magnetic flux density are refereed equally as $ \mathrm{B}_{n}(x_{k}) $ representing the field at sensor $ n $, excited by the state $ x_{k} $ of magnet $ k $. Since magnetic fields sum up, for $ K > 1 $ this is a cumulative value over all the presented magnets $ k $, being
 \begin{equation}
 \mathrm{B}_{n} = \sum_{k=1}^{K} \mathrm{B}_n(x_{k})
@@ -365,7 +369,7 @@ In order to derive an estimate of the system state $ \mathrm{X}_K $, one can for
 				  & & -30/180 \cdot \pi & \leq {x}_K(\phi_{MCP}) \leq & 30/180 \cdot \pi
 \end{aligned}
 \end{equation}
-As constraints, the natural range of motion for each finger angle is plugged in. The solvability and the uniquness of the result for this minimization is dependent on the determinateness of the system. To gather unique and clear solutions, the system has to be fully determined at any time. Since one is trying to estimate the pose of 4 magnets, by also using 4 sensors, this condition is fulfilled. For minimizing such a function, one has to remember the mathematical form of the used models. The dipole model includes nonlinearities, the cylindrical model in contrary is solved by a numerical approximation, which in return means that differentiation or further mathematical operations can not be applied. Since the programming language \emph{Python} \cite{python} is used to solve this problem, it is refereed to methods provided by the \emph{SciPy} \cite{scipy} package . This library provides a minimize method, that is implemented just for such use cases. It comes with several user definable options, to provide the solver with additional information. In \ref{subsubsec:resSim} the utilized optimization methods are explained and the performance and quantity of the results are compared. Anyway, to speed up the computational time for solving the equations and the optimization problem, the functions are implemented in Cython \ref{cython}. This interface allows to write C-like Python code and to work with predefined variables. \todo{mention that you are trying to minimize a scalar (=single variable/value/... nothing but a scalar)}
+As constraints, the natural range of motion for each finger angle is plugged in. The solvability and the uniquness of the result for this minimization is dependent on the determinateness of the system. To gather unique and clear solutions, the system has to be fully determined at any time. Since one is trying to estimate the pose of 4 magnets, by also using 4 sensors, this condition is fulfilled. For minimizing such a function, one has to remember the mathematical form of the used models. The dipole model includes nonlinearities, the cylindrical model in contrary is solved by a numerical approximation, which in return means that differentiation or further mathematical operations can not be applied. Since the programming language \emph{Python} \cite{python} is used to solve this problem, it is refereed to methods provided by the \emph{SciPy} \cite{scipy} package . This library provides a minimize method, that is implemented just for such use cases. It comes with several user definable options, to provide the solver with additional information. In \ref{subsubsec:resSim} the utilized optimization methods are explained and the performance and quantity of the results are compared. Anyway, to speed up the computational time for solving the equations and the optimization problem, the functions are implemented in Cython \ref{cython}. This interface allows to write C-like Python code and to work with predefined variables. 
 
 Another way of solving such a state estimation problem is by applying a Kalman Filter. This filter comprises a prediction step, foreseeing the next system state and an update step, correcting this prediction with the actual measurements. The utilized recursive filter equations are described by
 
