@@ -75,24 +75,43 @@ params = {'text.usetex' : True,
           }
 plt.rcParams.update(params) 
 
-figHeight = 5
-figWidth = 5
-fig = plt.figure(figsize=(figWidth,figHeight),dpi=500)
+figHeight = 4
+figWidth = 4
+fig = plt.figure(figsize=(figWidth,figHeight),dpi=300)
+#fig = plt.figure()
 ax = plt.subplot(212)
 
 sX, = ax.plot(np.arange(0,6e-5,16e-1),'k-',label='x')
 sY, = ax.plot(np.arange(0,6e-5,16e-1),'k--',label='y')
 sZ, = ax.plot(np.arange(0,6e-5,16e-1),'k:',label='z')
 
-ax.plot(twoC[:,0]*con,'g-',label='With cancellation')
-ax.plot(twoC[:,1]*con,'g--')
-ax.plot(twoC[:,2]*con,'g:')
-ax.plot(twoR[:,0]*con,'y-',label='Raw')
-ax.plot(twoR[:,1]*con,'y--')
-ax.plot(twoR[:,2]*con,'y:')
+ax.plot(twoC[:,0]*con,'r-',label='With cancellation')
+ax.plot(twoC[:,1]*con,'r--')
+ax.plot(twoC[:,2]*con,'r:')
+ax.plot(twoR[:,0]*con,'g-',label='Raw')
+ax.plot(twoR[:,1]*con,'g--')
+ax.plot(twoR[:,2]*con,'g:')
 ax.set_xlabel('Measurement number')
 ax.set_ylabel('B-field [mT]')
+
+# 20 143
+ax.axvline(x=20)
+ax.axvline(x=143)
+
+textY = 0.064
+ax.annotate('initial\norientation', xy=(10, 0.02), xytext=(170, textY),
+                arrowprops=dict(arrowstyle="->",
+                            connectionstyle="arc3"))
+ax.annotate("",xy=(170, 0.02), xytext=(170,textY),
+                arrowprops=dict(arrowstyle="->",
+                            connectionstyle="arc3"))     
+                            
+ax.annotate('rotated\norientation', xy=(40, 0.04), xytext=(25, textY),
+                arrowprops=dict(arrowstyle="->",
+                            connectionstyle="arc3"))                            
+
+
 #plt.title('unit 2')
-ax.legend(loc='upper center',ncol=2,bbox_to_anchor=(0.5,1.65))
-plt.savefig("../thesis/pictures/plots/earthCanc.png", dpi=500)
+ax.legend(loc='upper center',ncol=2,bbox_to_anchor=(0.5,1.85))
+plt.savefig("../thesis/pictures/plots/earthCanc.png", dpi=300, bbox_inches='tight')
 

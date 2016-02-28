@@ -29,7 +29,7 @@ figWidth = 6.2
 colorL = ['r','g','b','y']
 styleL = ['solid','dashed','dotted','dash-dot']
 cnt = 0
-fig,ax = plt.subplots(3,4, sharex='col', sharey='row',
+fig,ax = plt.subplots(3,4, sharex=True, sharey=True,
                         figsize=(figWidth,figHeight),dpi=300)
 for i in range(0,4,1):
     ax[0][i].plot(xTime, simValues[:,i*4],color=colorL[cnt], linestyle='-')
@@ -38,14 +38,14 @@ for i in range(0,4,1):
     # plt.setp(a.get_xticklabels(), visible=False)
     # a.legend(loc='upper right', bbox_to_anchor=(legX,legY))
 
-    ax[1][i].plot(xTime, simValues[:,i*4+1],color=colorL[i],linestyle='--')
-    ax[1][i].plot(xTime, simValues[:,i*4+2],color=colorL[i],linestyle=':')
+    ax[1][i].plot(xTime, simValues[:,i*4+1],color=colorL[i],linestyle='-')
+    ax[1][i].plot(xTime, simValues[:,i*4+2],color=colorL[i],linestyle='--')
     if i == 0:
         ax[1][i].set_ylabel(r'$\theta_{PIP},\, \theta_{DIP}$ [rad]')
     # plt.setp(b.get_xticklabels(), visible=False)
     # b.legend(loc='upper right', bbox_to_anchor=(legX,legY))
 
-    ax[2][i].plot(xTime, simValues[:,i*4+3],color=colorL[i],linestyle='-.')
+    ax[2][i].plot(xTime, simValues[:,i*4+3],color=colorL[i],linestyle='-')
     if i == 0:
         ax[2][i].set_ylabel(r'$\phi_{MCP}$ [rad]')
     ax[2][i].set_xlabel('Time [sec]')

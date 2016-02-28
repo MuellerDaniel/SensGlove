@@ -22,35 +22,35 @@ params = {'text.usetex' : True,
 plt.rcParams.update(params)
 
 figHeight = 4
-figWidth = 15
+figWidth = 5
 legX = 1.3
 legY = 1
 fig = plt.figure(figsize=(figWidth,figHeight),dpi=300)
 # fig = plt.figure(dpi=100)
 
-a = plt.subplot(331)
+a = plt.subplot(311)
 plt.axis((xTime[0],xTime[-1], min(simValues[:,3]), 1.6))
 a.plot(xTime, simValues[:,0],'r-',label=r'$\theta_{MCP}$')
-# a.set_ylabel(r'$\theta_{MCP}$ [rad]')
-a.set_ylabel('Angle [rad]')
+a.set_ylabel(r'$\theta_{MCP}$ [rad]')
+#a.set_ylabel('Angle [rad]')
 # a.set_xlabel('Data point')
 plt.setp(a.get_xticklabels(), visible=False)
-a.legend(loc='upper right', bbox_to_anchor=(legX,legY))
+#a.legend(loc='upper right', bbox_to_anchor=(legX,legY))
 
-b = plt.subplot(334, sharex=a, sharey=a)
-b.plot(xTime, simValues[:,1],'g--',label=r'$\theta_{PIP}$')
-b.plot(xTime, simValues[:,2],'g:',label=r'$\theta_{DIP}$')
+b = plt.subplot(312, sharex=a, sharey=a)
+b.plot(xTime, simValues[:,1],'r-',label=r'$\theta_{PIP}$')
+b.plot(xTime, simValues[:,2],'r--',label=r'$\theta_{DIP}$')
 b.set_ylabel(r'$\theta_{PIP},\, \theta_{DIP}$ [rad]')
-b.set_ylabel('Angle [rad]')
+#b.set_ylabel('Angle [rad]')
 # b.set_xlabel('Data point')
 plt.setp(b.get_xticklabels(), visible=False)
-b.legend(loc='upper right', bbox_to_anchor=(legX,legY))
+#b.legend(loc='upper right', bbox_to_anchor=(legX,legY))
 
-c = plt.subplot(337, sharex=a, sharey=a)
-c.plot(xTime, simValues[:,3],'b-.',label=r'$\phi_{MCP}$')
-# c.set_ylabel(r'$\phi_{MCP}$ [rad]')
-c.set_ylabel('Angle [rad]')
+c = plt.subplot(313, sharex=a, sharey=a)
+c.plot(xTime, simValues[:,3],'r-',label=r'$\phi_{MCP}$')
+c.set_ylabel(r'$\phi_{MCP}$ [rad]')
+#c.set_ylabel('Angle [rad]')
 c.set_xlabel('Time [sec]')
-c.legend(loc='upper right', bbox_to_anchor=(legX,legY))
+#c.legend(loc='upper right', bbox_to_anchor=(legX,legY))
 # plt.show()
 plt.savefig("../thesis/pictures/plots/indexStates.png", dpi=300, bbox_inches='tight')
