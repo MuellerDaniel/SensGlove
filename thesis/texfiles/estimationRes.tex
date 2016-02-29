@@ -84,7 +84,7 @@ Also, while considering that the field values for estimation still comprise the 
 \centering
 \includegraphics{pictures/plots/difOne.png}
 \caption[Estimated states vs. perfect states for using one magnet, one sensor.]
-{The results and their deviation from the perfect values for one minimization procedure over time is displayed. The used objective function is described by the equation of the cylindrical model and does not comprise the movement of $ \phi_{MCP} $. For the constrained minimization one sensor reading is used to estimate the index finger states. This model represents the best expectable results for estimating one state vector with one magnet, with $ \mu = 0.035 \pm 0.000 $. , therefore the difference around \SI{40}{\second} are acceptable. At the end however the system tends to show bigger deviations from the perfect values. This behaviour is also observable for the overdetermined systems, which do not estimate the movement of adduction-abduction. The higher deviation at the end is induced, by the parallel movement of the other finger joints in combination with a change of $ \phi_{MCP} $. It is remarkable, that this behaviour does not already appear at \SI{40}{\second}.  \todo{Only one plot! (with states and deviation)}}
+{The results and their deviation from the perfect values for one minimization procedure over time is displayed. The used objective function is described by the equation of the cylindrical model and does not comprise the movement of $ \phi_{MCP} $. For the constrained minimization one sensor reading is used to estimate the index finger states. This model represents the best expectable results for estimating one state vector with one magnet, with $ \mu = 0.035 \pm 0.000 $. , therefore the difference around \SI{40}{\second} are acceptable. At the end however the system tends to show bigger deviations from the perfect values. This behaviour is also observable for the overdetermined systems, which do not estimate the movement of adduction-abduction. The higher deviation at the end is induced, by the parallel movement of the other finger joints in combination with a change of $ \phi_{MCP} $. It is remarkable, that this behaviour does not already appear at \SI{40}{\second}.  \todo{Only one plot! (with states and deviation) this eliminates also the caption...}}
 \label{fig:11cylNa1}
 % script: 160223_compareResults.py
 \end{figure}
@@ -267,12 +267,17 @@ The estimated values for each state from the magnetic and the Leap system are pl
 \label{fig:bestLeap}
 % script: 160226_leapVsEst.py
 \end{figure}
-% drawbacks Leap
-Till now, the estimation results were only compared to the Leap Motion, which is said to return the ground truth for the state. Well as already observed for set 4, those values are also not perfect and constant over time, which is showed for example by the very high changes for $ \phi_{MCP} $ in positive direction. This would mean, that the bones move about \SI{0.8}{\radian} (=\SI{45}{\degree}) towards the middle finger, which was definitely not performed. Most of the datasets from the Leap show a high deviation for the state of adduction-abduction from the de facto values for this. During most of the time, the motions were performed to mainly show contributions of flexion-extension, therefore the view of the camera is also aligned to capture those movements best. Therefore an exact value on the size of this deviation from the real state of $ \phi_{MCP} $ cannot be stated, due to the overall setup and focus on estimating flexion-extension. Further concerning the behaviour of the Leap system, one can head that a kind of relationship between $ \theta_{DIP} $ and $ \theta_{PIP} $ can be observed. In almost every set, a motion of \ac{PIP} introduces always also a motion on \ac{DIP}. A sequence of set 14 shows quite good, that there is a dependency on both states. Only the recorded states for those two values are plotted. However the connection between them is not static, as assumed by my hand model. The angle for the \ac{PIP} gets never smaller than for \ac{DIP}. This observation should not be a drawback or induce additional errors. As stated in \todo{reference anatomic} it is quite usual to induce a relationship between those two values. However from the information available for the Leap, a hard programmed/equation like explanation of this behaviour is not found.
+% % % drawbacks Leap
+% massive ad-ab movement
+Till now, the estimation results were only compared to the Leap Motion, which is said to return the ground truth for the state. Well as already observed for set 4, those values are also not perfect and constant over time, which is showed for example by the very high changes for $ \phi_{MCP} $ in positive direction. The recorded angles indicate, that the bones move about \SI{0.8}{\radian} (=\SI{45}{\degree}) towards the middle finger, which was definitely not performed. Most of the datasets from the Leap show a high deviation for the state of adduction-abduction from the de facto values for this. During most of the time, the motions were performed to mainly show contributions of flexion-extension, therefore the view of the camera is also aligned to capture those movements best. Therefore an exact value on the size of this deviation from the real state of $ \phi_{MCP} $ cannot be stated, due to the overall setup and focus on estimating flexion-extension. But it can be stated, that the Leap shows here quite often values, which do not represent the truth. One reason for this could be the underlying method for the estimation of the bone and hand directions. The angle for adduction-abduction is determined by \todo{describe here the method for ad-ab!!!}
+% movement of PIP induces movement of DIP
+Further concerning the behaviour of the Leap system, one can head that a kind of relationship between $ \theta_{DIP} $ and $ \theta_{PIP} $ can be observed. In almost every set, a motion of \ac{PIP} introduces always also a motion on \ac{DIP}. A sequence of \todo{set 14} shows quite good, that there is a dependency between both states. Only the recorded states for those two values are plotted. However the connection between them is not static, as assumed by my hand model. The angle for the \ac{PIP} gets never smaller than for \ac{DIP}. This observation should not be a drawback or induce additional errors. As stated in \todo{reference anatomic} it is quite usual to induce a relationship between those two values. However from the information available for the Leap, a hard programmed/equation like explanation of this behaviour is not found. 
+% small values of PIP while performing fist
+Further on, by regarding the state vector for performing a fist, the Leap returns quite often relative low values for $ \theta_{DIP} $ and $ \theta_{PIP} $ and $ \theta_{MCP} \simeq \pi/2 $. For example at set 4 \ref{fig:bestLeap} between \todo{18 and 22 seconds}. When examining the video data qualitative, one can recognize that the angle of $ \theta_{DIP} $ and $ \theta_{PIP} $ are actually much higher than \SI{0.5}{\radian}. By comparing the approximate angle of \ac{PIP} the magnetic estimation reflects this behaviour intuitively better than the Leap. 
 % % % qualitative evaluation/comparison
 % ++ motions similar to init movement
 % ++ slow motions of ad-ab (set4)
-By checking all sets qualitatively with the Leap Motion and the recorded video data, one could determine the following set of gestures, to be trackable by the magnetic system. On the one hand the gesture, where the values are fitted to can be observed pretty stable along one dataset. This sounds only reasonable, since the obtained magnetic flux densities are adjusted for this movement. On the other hand all motions, which induce mainly changes of flexion-extension on the \ac{MCP} joint fall also into this category. This is also observable by set 4, since at 10 and 5 \todo{seconds} the angle of \ac{MCP} is estimated not to be totaly \SI{90}{\degree}, which is also observed by the Leap and can be verified qualitatively with the pictures. Further on, as already observed by set 4, a slow change of $ \phi_{MCP} $ can be tracked quite well. 
+By checking all sets qualitatively with the Leap Motion and the recorded video data, one could determine the following set of gestures, to be able to estimate and reconstruct by the magnetic system. On the one hand the gesture, where the values are fitted to can be observed pretty stable along one dataset. This sounds only reasonable, since the obtained magnetic flux densities are adjusted for this movement. On the other hand all motions, which induce mainly changes of flexion-extension on the \ac{MCP} joint fall also into this category. This is also observable by set 4, since at 10 and 5 \todo{seconds} the angle of \ac{MCP} is estimated not to be totaly \SI{90}{\degree}, which is also observed by the Leap and can be verified qualitatively with the pictures. Further on, as already observed by set 4, a slow change of $ \phi_{MCP} $ can be tracked quite well. 
 % -- ad-ab more complex
 By adding the results of other datasets, where the state of $ \phi_{MCP} $ changed during a flexioned \ac{MCP} joint, it is evaluated, that it cannot be estimated very reliably. \todo{Set 11} shows this quite good. Also the motions are performed quite fast during this set. Also the zero-phases for performing a fist can be noted here! So say the things for set 5 here and plot also set 5. 
 % -- set5 -> fist
@@ -280,7 +285,21 @@ The rapid fluctuations especially for $ \theta_{MCP} $ can be stated here. Those
 % -- motion velocity
 However, \todo{formulate it as \grqq the overall motion velocity, angular velocity is not allowed to be to high \grqq} when it is performed to fast, the estimation is not capable anymore of this movement. This is assumed to be on the one hand induced by the small movement range of adduction-abduction, but the main reason is the overall system frequency. Since it is with \SI{20}{\Hz} quite slow, rapid or staccato like movements can not be tracked quite well. A faster data acquisition rate would therefore lead to probably better results. So to reconstruct the motion reliably with the magnetic system, they should be performed with an adequate speed. As an additional time critical factor one could state the estimation phase. Beforehand it was stated, that a maximum duration of \todo{how fast is the worst?} seconds would not really degrade the impression of real time data. For the overall system frequency this is also true. However if the data acquisition rate could be increased, the time limiting factor would be represented by the estimation time. However, since the speed of the motions was not tracked, a detailed value for the maximum angular velocity of the motion could unfortunately not be provided.\\
 
+\begin{figure}
+\centering
+\subfloat{\includegraphics{pictures/statePics/bestLeap/30sec.jpg}}\\
+\subfloat{\includegraphics{pictures/statePics/bestLeap/bla.jpg}}
+%\caption{mCap}
 
+\subfloat{
+\includegraphics{pictures/plots/bestEstTEST.png}
+%\caption{try as x-labels}
+}
+\caption{try as x-labels}
+\end{figure}
+
+
+\todo{So summarize why the estimated results differ so much from the Leap data}
  
 
 
@@ -314,12 +333,15 @@ However, \todo{formulate it as \grqq the overall motion velocity, angular veloci
 Further things to talk about... \\
 \subsubsection{Influence of Different System Parameteres}
 
+In order to tune and improve the magnetic system for the estimation the hand poses, several methods were evaluated. 
+
 \textbf{influence of normed fitting gesture / use fist? and observed fitting values}
 	\begin{itemize}
-	\item scaling to flat scale fitting values leads to very bad results! (just use a nice estimation set and apply both methods)
-	\item \todo{set for showing this: }
+	\item scaling to flat scale fitting values leads to very bad results! $ \rightarrow $ because of the incorrect measured hand dimensions!
 	\item fist is not good for fitting, since it is slightly different each time and everyone makes it different (pictures of videos and observed B-fields)
-	\item cardboard fitting has only slight influence. After all it worsens the results, because additional movements are made while placing the cardboard and so on. Further on the Leap detection is not very good, since it is not capable of the high brightness change\\
+	\item \todo{plot magnetic values of 160210\_set1 till second fist and extract pictures for each init gesture to state that 90 fit is more stable!} \\
+	$ \rightarrow $ explain with it the shape of the 90 deg fit, too
+	\item cardboard fitting has only slight influence. After all it worsens the results, because additional movements are made while placing the cardboard and so on. Further on the Leap cannot detect the hand any more. It refocuses because of the change in brightness and cannot detect the already presented hand. \\
 	$ \rightarrow $ do it during the recording
 	 
 	\end{itemize}
@@ -327,15 +349,14 @@ Further things to talk about... \\
 
 \textbf{influence of exact hand dimensions/parameters}
 	\begin{itemize}
-	\item so in the end the parameters have to resemble the truth, but since the data is fitted to the calculated values, it's influence is not too big
-	\item show it on one dataset exemplary (just a normal set...)
-	\item \todo{dataset: }
+	\item so in the end the parameters have to resemble the truth, but since the data is fitted to the calculated values, it's influence is not too big \\
+		$ \rightarrow $ the hand dimensions are very critical! Since they cannot be measured accurately by hand, this worsening factor cannot be eliminated! This is one of the biggest drawbacks of the system, since those values are used to reconstruct the magnetic field. So set 4 is just a lucky set, where the dimensions were measured most accurate or more or less, where the sensor rack moved very less.  
+		
 	\end{itemize}
 
 \textbf{influence of distance sensor to magnets}
 	\begin{itemize}
-	\item changes in magnetic field are too small...
-	\item dataset: 160210\_set10 (Leap is down at the end, but for an impression it is sufficient)
+	\item changes in magnetic field are too small...	
 	\item the results within the methods vary a lot and they do not represent the truth!
 	\end{itemize}
 
@@ -346,7 +367,6 @@ Further things to talk about... \\
 	\item MPU results as expected not good...
 	\item start position can be \grqq detected\grqq after rotation again, but the results with rotation are bad...
 	\item sets: 160217\_set6 (also with Leap!)
-	\item \todo{record one more set: }
 	\end{itemize}
 
 %
@@ -355,11 +375,11 @@ Further things to talk about... \\
 
 \subsubsection{Concluding Observations}
 	\begin{itemize}
-	\item very fragile/sensitive system
+	\item very fragile system
 	\item sensitive to hand/body movements, calibration gesture
+	\item bad accuracy of hand dimensions is staed to be the biggest worsening factor 
 	\item bad/difficult reproducibility of results/measurements
-	\item quality of results is not totally comparable/identifiable by Leap (since this system is also faulty)
+	\item Leap motion returns almost reproducible and stable results. However drawbacks can be observed. So the applied direct comparison has to be handled with care
+	\item motions, where magnetic estimation works good...
 	\end{itemize}
 
-
-Presentation and compare between EKF and minimizing approach
