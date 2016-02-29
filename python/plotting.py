@@ -91,7 +91,7 @@ def plotIt2d(data, title, sizeData, shareAxis, mtitle, typ):
                 lst[cnt].set_title(title[cnt])
                 if typ == 'mag':
                     lst[cnt].set_xlabel('meas Nr')
-                    lst[cnt].set_ylabel(r'B-field[$\mu$ T]')
+                    lst[cnt].set_ylabel(r'B-field[mT]')
                 else:
                     lst[cnt].set_xlabel('meas Nr')
                     lst[cnt].set_ylabel('angle [rad]')
