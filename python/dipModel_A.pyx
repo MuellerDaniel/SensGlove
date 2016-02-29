@@ -17,8 +17,12 @@ def calcB_cy(np.ndarray r, np.ndarray h_in):
 
     cdef long double no = sqrt(float(r[0]**2+r[1]**2+r[2]**2))
     cdef np.ndarray b = np.array([((3*r*np.dot(h,r))/(no**5)) - (h/(no**3))]) * (mu_0/(4.*np.pi))
-    cdef long double convert = 1e+6
-    return b[0]*convert
+
+    cdef np.ndarray res = b[0]
+    # cdef long double convert = 1e+3
+    # res *= convert
+
+    return res
 
 
 def angToP_cy(np.ndarray thetaIn, np.ndarray finger, np.ndarray off):

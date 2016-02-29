@@ -202,6 +202,11 @@ d = datAc.textAcquisition("160208_calDat")
 #print "off0 ", off
 #print "mag0 ", mag
 
+d[0] *= 1e-4    # convert to mT
+d[1] *= 1e-4
+d[2] *= 1e-4
+d[3] *= 1e-4
+
 (off0, b0, free0) = calcFreescale(d[0])
 (off1, b1, free1) = calcFreescale(d[1])
 (off2, b2, free2) = calcFreescale(d[2])
@@ -234,17 +239,17 @@ print "scale2 ", scale2
 print "scale3 ", scale3
 
 
-diffFree = calcDif(free0*1e-4,b0*1e-4)
-diffHs = calcDif(hs0[0]*1e-4,b0*1e-4)
+diffFree = calcDif(free0,b0)
+diffHs = calcDif(hs0[0],b0)
 
 
 ''' plotting for .tex '''
-#plt.close('all')
-#
-#dFree = free0*1e-4
-#bFree = b0*1e-4
-#dHs = hs0[0]*1e-4
-#raw = d[0]*1e-4
+plt.close('all')
+
+dFree = free0
+bFree = b0
+dHs = hs0[0]
+raw = d[0]
 #
 #Direct input 
 plt.rcParams['text.latex.preamble']=[r"\usepackage{lmodern}"]
@@ -257,73 +262,73 @@ params = {'text.usetex' : True,
           'figure.autolayout': True
           }
 plt.rcParams.update(params) 
+
+figHeight = 3
+figWidth = 3
+rad = 2
+sh = 0.5
+fig = plt.figure(figsize=(figWidth,figHeight),dpi=300)
+#fig = plt.figure()
+plt.axis('equal')
+plt.grid(True)
+plt.scatter(dFree[:,0],dFree[:,1],color='green', s=rad, alpha=sh)
+plt.scatter(dHs[:,0], dHs[:,1],color='cyan', s=rad, alpha=sh)
+plt.scatter(raw[:,0], raw[:,1],color='red', s=rad, alpha=sh)
+circ = plt.Circle((0.,0.),bFree, fill=False, color='blue')
+plt.axhline(0,0,1,c='k',ls='--')
+plt.axvline(0,0,1,c='k',ls='--')
+plt.gcf().gca().add_artist(circ)
+plt.axis([ -0.06, 0.06, -0.07, 0.07])
+plt.xlabel('measurements x-axis [mT]')
+plt.ylabel('measurements y-axis [mT]')
+plt.savefig("../thesis/pictures/plots/cali_xy.png", dpi=300)
 #
-#figHeight = 3
-#figWidth = 3
-#rad = 2
-#sh = 0.5
-#fig = plt.figure(figsize=(figWidth,figHeight),dpi=500)
-##fig = plt.figure()
-#plt.axis('equal')
-#plt.grid(True)
-#plt.scatter(dFree[:,0],dFree[:,1],color='green', s=rad, alpha=sh)
-#plt.scatter(dHs[:,0], dHs[:,1],color='cyan', s=rad, alpha=sh)
-#plt.scatter(raw[:,0], raw[:,1],color='red', s=rad, alpha=sh)
-#circ = plt.Circle((0.,0.),bFree, fill=False, color='blue')
-#plt.axhline(0,0,1,c='k',ls='--')
-#plt.axvline(0,0,1,c='k',ls='--')
-#plt.gcf().gca().add_artist(circ)
-#plt.axis([ -0.06, 0.06, -0.07, 0.07])
-#plt.xlabel('measurements x-axis [mT]')
-#plt.ylabel('measurements y-axis [mT]')
-#plt.savefig("../thesis/pictures/plots/cali_xy.png", dpi=500)
-#
-#fig = plt.figure(figsize=(figWidth,figHeight),dpi=500)
-##fig = plt.figure()
-#plt.axis('equal')
-#plt.grid(True)
-#plt.scatter(dFree[:,1],dFree[:,2],color='green', s=rad, alpha=sh)
-#plt.scatter(dHs[:,1], dHs[:,2],color='cyan', s=rad, alpha=sh)
-#plt.scatter(raw[:,1], raw[:,2],color='red', s=rad, alpha=sh)
-#circ = plt.Circle((0.,0.),bFree, fill=False, color='blue')
-#plt.axhline(0,0,1,c='k',ls='--')
-#plt.axvline(0,0,1,c='k',ls='--')
-#plt.gcf().gca().add_artist(circ)
-#plt.axis([ -0.06, 0.06, -0.07, 0.07])
-#plt.xlabel('measurements y-axis [mT]')
-#plt.ylabel('measurements z-axis [mT]')
+fig = plt.figure(figsize=(figWidth,figHeight),dpi=300)
+#fig = plt.figure()
+plt.axis('equal')
+plt.grid(True)
+plt.scatter(dFree[:,1],dFree[:,2],color='green', s=rad, alpha=sh)
+plt.scatter(dHs[:,1], dHs[:,2],color='cyan', s=rad, alpha=sh)
+plt.scatter(raw[:,1], raw[:,2],color='red', s=rad, alpha=sh)
+circ = plt.Circle((0.,0.),bFree, fill=False, color='blue')
+plt.axhline(0,0,1,c='k',ls='--')
+plt.axvline(0,0,1,c='k',ls='--')
+plt.gcf().gca().add_artist(circ)
+plt.axis([ -0.06, 0.06, -0.07, 0.07])
+plt.xlabel('measurements y-axis [mT]')
+plt.ylabel('measurements z-axis [mT]')
 #plt.savefig("../thesis/pictures/plots/cali_yz.png", dpi=500)
 #
 #
 #
-#fig = plt.figure(figsize=(6,3),dpi=500)
-#ax = plt.subplot(121)
-#ax.grid(True)
-#ax.axis('equal')
-#ax.scatter(dFree[:,0],dFree[:,2],color='green', s=rad, alpha=sh, label='Freescale')
-#ax.scatter(dHs[:,0], dHs[:,2],color='cyan', s=rad, alpha=sh, label='Winer')
-#ax.scatter(raw[:,0], raw[:,2],color='red', s=rad, alpha=sh, label='Raw')
-#circ = plt.Circle((0.,0.),bFree, fill=False, color='blue')
-#ax.axhline(0,0,1,c='k',ls='--')
-#ax.axvline(0,0,1,c='k',ls='--')
-#ax.add_artist(circ)
-#ax.set_xlabel('measurements x-axis [mT]')
-#ax.set_ylabel('measurements z-axis [mT]')
-#ax.legend(loc='upper center', bbox_to_anchor=(1.5,1))
-#plt.savefig("../thesis/pictures/plots/cali_xz.png", dpi=500)
+fig = plt.figure(figsize=(6,3),dpi=300)
+ax = plt.subplot(121)
+ax.grid(True)
+ax.axis('equal')
+ax.scatter(dFree[:,0],dFree[:,2],color='green', s=rad, alpha=sh, label='Freescale')
+ax.scatter(dHs[:,0], dHs[:,2],color='cyan', s=rad, alpha=sh, label='Naive appr.')
+ax.scatter(raw[:,0], raw[:,2],color='red', s=rad, alpha=sh, label='Raw')
+circ = plt.Circle((0.,0.),bFree, fill=False, color='blue')
+ax.axhline(0,0,1,c='k',ls='--')
+ax.axvline(0,0,1,c='k',ls='--')
+ax.add_artist(circ)
+ax.set_xlabel('measurements x-axis [mT]')
+ax.set_ylabel('measurements z-axis [mT]')
+ax.legend(loc='upper center', bbox_to_anchor=(1.5,1))
+plt.savefig("../thesis/pictures/plots/cali_xz.png", dpi=300)
 
 
 
 
-fig = plt.figure(figsize=(4,3), dpi=500)
-plt.hist([diffFree, diffHs], color=['green', 'cyan'], histtype='bar', label=['Freescale','Winer'])
+fig = plt.figure(figsize=(4,3), dpi=300)
+plt.hist([diffFree, diffHs], color=['green', 'cyan'], histtype='bar', label=['Freescale','Naive appr.'])
 plt.xlabel(r'Deviation [$\%$]')
-plt.legend(loc='west')
-plt.text(-9, 150, r'$\mu_{Free}$=-0.02 mT', color='green')
-plt.text(-9, 135, r'$\sigma_{Free}$=4.7', color='green')
-plt.text(-9, 115, r'$\mu_{Winer}$=-0.8 mT', color='blue')
-plt.text(-9, 100, r'$\sigma_{Winer}$=5.6', color='blue')
-plt.savefig("../thesis/pictures/plots/cali_devi.png", dpi=500)
+plt.legend(loc='left')
+plt.text(-9, 150, r'$\mu_{Free}$=-0.02 \%', color='green')
+plt.text(-9, 135, r'$\sigma_{Free}$=4.75', color='green')
+plt.text(-9, 115, r'$\mu_{Naive}$=-0.8 \%', color='blue')
+plt.text(-9, 100, r'$\sigma_{Naive}$=5.76', color='blue')
+plt.savefig("../thesis/pictures/plots/cali_devi.png", dpi=300)
 
 
 

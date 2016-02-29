@@ -1,6 +1,7 @@
 import numpy as np
 from scipy.optimize import *
 import dipModel_A as cy
+import math
 
 def calcB(r,h_in):
     Br = 1.26
@@ -14,7 +15,7 @@ def calcB(r,h_in):
     b = np.array([((3*r*np.dot(h,r))/(no**5)) - (h/(no**3))]) * (mu_0/(4.*np.pi))
 
     res = b[0]
-    # convert = 1e+6      # output is in muT
+    # convert = 1e+3      # output is in muT
     # res = b[0]*convert
     return res
 
@@ -111,6 +112,8 @@ def minimizeAng(theta,finger,S,off,B):
 
         return res
 
+def magnitude(x):
+    return int(math.floor(math.log10(abs(-x))))
 
 def estimate_BtoAng(theta_0, fingerL, sL, offL, measB,bnds=None, method=0):
     """Estimates the angles for a certain (measured) B-field
@@ -130,7 +133,7 @@ def estimate_BtoAng(theta_0, fingerL, sL, offL, measB,bnds=None, method=0):
     bnds : tuple
         the static (inequality) bounds for the angles
     """
-    dif = 1e-05
+    dif = 1*10**(magnitude(measB[0])-7)
 
     # res = minimize(minimizeAng, theta_0,
     #               args=(fingerL, sL, offL, measB),
@@ -151,7 +154,7 @@ def estimate_BtoAng(theta_0, fingerL, sL, offL, measB,bnds=None, method=0):
     if method == 2:
         res = minimize(cy.minimizeAng_cy, theta_0,
                          args=(fingerL, sL, offL, measB),
-                         method='cobyla', tol=dif)
+                         method='L-BFGS-B', bounds=bnds, tol=dif)
     return res
 
 

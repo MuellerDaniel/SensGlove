@@ -13,10 +13,10 @@ import time
 
 sensList = [h.sInd,h.sMid,h.sRin,h.sPin]
 #sensList = [h.sInd]
-fingList = [h.phalInd, h.phalMid, h.phalRin, h.phalPin]
-#fingList = [h.phalInd]
-jointList = [h.jointInd, h.jointMid, h.jointRin, h.jointPin]
-#jointList = [h.jointInd]
+#fingList = [h.phalInd, h.phalMid, h.phalRin, h.phalPin]
+fingList = [h.phalInd]
+#jointList = [h.jointInd, h.jointMid, h.jointRin, h.jointPin]
+jointList = [h.jointInd]
 
 
 
@@ -25,11 +25,11 @@ t = np.arange(0,np.pi/2,0.1)       # describing the angles
 angles_cyl = np.zeros((len(t),2*len(fingList)))
 cnt = 0
 for i in t:
-#    TODO adjust it on the number of fingers you want to measure
-    angles_cyl[cnt] = np.array([i, 0,    # angle index
-                                i, 0.,    # angle mid
-                                i, 0.,    # angle rin
-                                i, 0])   # angle pin
+    angles_cyl[cnt] = np.array([i, 0])
+#    angles_cyl[cnt] = np.array([i, 0,    # angle index
+#                                i, 0.,    # angle mid
+#                                i, 0.,    # angle rin
+#                                i, 0])   # angle pin
         
     cnt += 1
     
@@ -43,10 +43,10 @@ for i in range(len(t)):
     
 #plt.close('all')    
 #plo.plotter2d((b_cyl,b_dip),("cyl","dip"),shareAxis=False)
-#plo.plotter2d((b_dip[:,:3], b_dip[:,3:6], b_dip[:,6:9], b_dip[:,9:]),
-#              ("dipole index","dipole middle","dipole ring","dipole pinky"))
-#plo.plotter2d((b_cyl[:,:3], b_cyl[:,3:6], b_cyl[:,6:9], b_cyl[:,9:]),
-#              ("cyl index","cyl middle","cyl ring","cyl pinky"))  
+plo.plotter2d((b_dip[:,:3], b_dip[:,3:6], b_dip[:,6:9], b_dip[:,9:]),
+              ("dipole index","dipole middle","dipole ring","dipole pinky"))
+plo.plotter2d((b_cyl[:,:3], b_cyl[:,3:6], b_cyl[:,6:9], b_cyl[:,9:]),
+              ("cyl index","cyl middle","cyl ring","cyl pinky"))  
 #plo.plotter2d((b_cyl,),("mid",))  
 
 

@@ -51,6 +51,11 @@ sPin = np.array([-0.016, -0.069, 0.030])
 # sRin = np.array([-0.017, -0.046, 0.026])
 # sPin = np.array([-0.017, -0.066, 0.026])
 
+# sInd = np.array([-0.017,  -0.007, 0.023])       # for 160226
+# sMid = np.array([-0.017,  -0.027, 0.023])
+# sRin = np.array([-0.015, -0.047, 0.023])
+# sPin = np.array([-0.014, -0.067, 0.023])
+
 
 # WOODEN HAND
 # joint positions Cartesian

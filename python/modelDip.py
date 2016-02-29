@@ -2,6 +2,7 @@ import numpy as np
 from scipy.optimize import *
 from sympy import *
 import dipModel as cy
+import math
 
 ''' BEWARE!!!
     only for list elements and multiple sensor/magnet constelations! '''
@@ -117,6 +118,8 @@ def minimizeAng(theta,finger,S,off,B):
 
         return res
 
+def magnitude(x):
+    return int(math.floor(math.log10(abs(-x))))
 
 def estimate_BtoAng(theta_0, fingerL, sL, offL, measB,bnds=None, method=0):
     """Estimates the angles for a certain (measured) B-field
@@ -137,7 +140,7 @@ def estimate_BtoAng(theta_0, fingerL, sL, offL, measB,bnds=None, method=0):
         the static (inequality) bounds for the angles
     """
 
-    dif = 1e-05
+    dif = 1*10**(magnitude(measB[0])-7)
 
     # res = minimize(minimizeAng, theta_0,
     #                args=(fingerL, sL, offL, measB),
@@ -162,7 +165,7 @@ def estimate_BtoAng(theta_0, fingerL, sL, offL, measB,bnds=None, method=0):
     if method == 2:
         res = minimize(cy.minimizeAng_cy, theta_0,
                          args=(fingerL, sL, offL, measB),
-                         method='cobyla', tol=dif)
+                         method='L-BFGS-B', bounds=bnds, tol=dif)
         return res
 
 
@@ -197,10 +200,14 @@ def estimateSeries(meas, fingerL, sL, offL, bnds=False, met=0, theta_0=None):
     dips = np.zeros((len(estAng),len(estAng[0])/2))
     for i in range(0,int(len(estAng[0])/2)):
         dips[:,i] = (estAng[:,i*2+1]*(2./3.))
-    cnt = 0
-    for i in range(2,int(len(estAng[0])+2),3):
-        estAng = np.insert(estAng,i,dips[:,cnt],1)
-        cnt += 1
+
+    estAng = np.append(estAng,dips[:,-1].reshape((len(estAng),1)),axis=1)
+
+    if len(estAng[0]) > 3:
+        cnt = 0
+        for i in range(2,int(len(estAng[0])),3):
+            estAng = np.insert(estAng,i,dips[:,cnt],1)
+            cnt += 1
 
     return estAng
 

@@ -1,6 +1,7 @@
 import numpy as np
 from scipy.optimize import *
 import cylModel as cy
+import math
 
 def cel_bul(kc,p,c,s):
     ''' approximate a complete elliptical integral with Bulirsch algorithm '''
@@ -207,6 +208,8 @@ def minimizeAng_cyl(ang, fingerL, sPos, jointPos, measB):
 
     return res
 
+def magnitude(x):
+    return int(math.floor(math.log10(abs(-x))))
 
 def estimateAng_cyl(theta_0, fingerL, sL, offL, measB, bnds=None, method=0):
     ''' estimating the joint angles
@@ -229,7 +232,7 @@ def estimateAng_cyl(theta_0, fingerL, sL, offL, measB, bnds=None, method=0):
 
     '''
 
-    dif = 1e-05
+    dif = 1*10**(magnitude(measB[0])-7)
 
     # res = minimize(minimizeAng_cyl,theta_0,args=(fingerL, sL, offL, measB),method='bfgs', tol=1.e-05)
 
@@ -253,7 +256,7 @@ def estimateAng_cyl(theta_0, fingerL, sL, offL, measB, bnds=None, method=0):
     if method == 2:
         res = minimize(cy.minimizeAng_cyl, theta_0,
                          args=(fingerL, sL, offL, measB),
-                         method='cobyla', tol=dif)
+                         method='L-BFGS-B', bounds=bnds, tol=dif)
         return res
 
 
@@ -287,10 +290,14 @@ def estimateSeries(meas, fingerL, sL, offL, bnds=False, met=0, theta_0=None):
     dips = np.zeros((len(estAng),len(estAng[0])/2))
     for i in range(0,int(len(estAng[0])/2)):
         dips[:,i] = (estAng[:,i*2+1]*(2./3.))
-    cnt = 0
-    for i in range(2,int(len(estAng[0])+2),3):
-        estAng = np.insert(estAng,i,dips[:,cnt],1)
-        cnt += 1
+
+    estAng = np.append(estAng,dips[:,-1].reshape((len(estAng),1)),axis=1)
+
+    if len(estAng[0]) > 3:
+        cnt = 0
+        for i in range(2,int(len(estAng[0])),3):
+            estAng = np.insert(estAng,i,dips[:,cnt],1)
+            cnt += 1
 
     return estAng
 

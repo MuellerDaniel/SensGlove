@@ -12,6 +12,7 @@ def saveToFile(data,f):
         for j in i:
             fil.write(str(j) + '\t')
         fil.write('\n')
+    fil.close()
 
 ''' routine for recognizing the sigint '''
 def cleanup(signum, frame):
@@ -22,7 +23,7 @@ def cleanup(signum, frame):
 #        print i
 #    print type(frame)
 #    datAc.saveToFile(m[8:],"160209_mag")
-    saveToFile(m[1:],"160217_mag")
+    saveToFile(m[1:],"160226_mag")
     sys.exit()
 
 
@@ -41,7 +42,7 @@ timOut = 1
 t = np.zeros((1,))
 cnt = 0
 try:
-    
+
 #    startT = time.time()
 #    while time.time()-startT < 10:
     while True:
@@ -50,11 +51,11 @@ try:
 #        print time.time()-startT
 #        startT = time.time()
 #        print datAc.readMagPacket(proc,sensStamp=False)
-        
+
         m = np.append(m,[np.concatenate(([time.time()],datAc.readMagPacket(proc,sensStamp=False).flatten()*1e-7))],0)
         print "MAG\t\tup!"
         cnt += 1
-        
+
 
 except KeyboardInterrupt:
     pass

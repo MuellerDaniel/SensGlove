@@ -1,7 +1,7 @@
 import numpy as np
 from scipy.optimize import *
 import cylModel_A as cy
-
+import math
 
 def cel_bul(kc,p,c,s):
     ''' approximate a complete elliptical integral with Bulirsch algorithm '''
@@ -118,7 +118,7 @@ def calcB_cyl(pos, angles):
     B = np.array([B_lat, B_rho*np.sin(phi), B_rho*np.cos(phi)])
     B = np.dot(B,np.linalg.inv(rotG))
 
-    # convert = 1e+6  # output is in muT
+    # convert = 1e+3  # output is in muT
     # B *= convert
 
     return B
@@ -216,6 +216,8 @@ def minimizeAng_cyl(ang, fingerL, sPos, jointPos, measB):
 
     return res
 
+def magnitude(x):
+    return int(math.floor(math.log10(abs(-x))))
 
 def estimateAng_cyl(theta_0, fingerL, sL, offL, measB, bnds=None, method=0):
     ''' estimating the joint angles
@@ -237,7 +239,7 @@ def estimateAng_cyl(theta_0, fingerL, sL, offL, measB, bnds=None, method=0):
     res : OptimizeResult
 
     '''
-    dif = 1e-05
+    dif = 1*10**(magnitude(measB[0])-7)
 #    res = minimize(minimizeAng_cyl,ang_0,
 #                   args=(fingerL, sPos, jointPos, measB),
 #                    method='bfgs', tol=1.e-05)
@@ -261,7 +263,7 @@ def estimateAng_cyl(theta_0, fingerL, sL, offL, measB, bnds=None, method=0):
     if method == 2:
         res = minimize(cy.minimizeAng_cyl, theta_0,
                          args=(fingerL, sL, offL, measB),
-                         method='cobyla', tol=dif)
+                         method='L-BFGS-B', bounds=bnds, tol=dif)
         return res
 
 
@@ -295,7 +297,7 @@ def estimateSeries(meas, fingerL, sL, offL, bnds=False, met=0, theta_0=None):
         #     res = estimateAng_cyl(estAng[i-1], fingerL, sL, offL, meas[i],method=0)
         #     estAng[i] = res.x
 
-        # add the DIP states
+    # add the DIP states
     dips = np.zeros((len(estAng),len(estAng[0])/3))
     for i in range(0,int(len(estAng[0])/3)):
         dips[:,i] = (estAng[:,i*3+1]*(2./3.))
