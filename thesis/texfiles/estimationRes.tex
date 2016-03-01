@@ -329,27 +329,15 @@ Some of the recorded sets were also evaluated with slightly different dimensiona
 
 As another approach, the influence of the distance from the sensors to the magnets was evaluated. For the recorded datasets, the sensors were always located at the back of the hand at around \SI{2}{\cm} beneath the joints. From there the corresponding bone lengths contributed, such that in full flexion, a maximum distance of around \SI{12}{\cm} was established between sensors and magnets. A few recordings were done, by placing the sensor rack at the wrist. This lead to an overall sensor to magnet distance of around \SI{17}{\cm}. The measurable magnetic flux densities, excited by the magnets at the fingertips were very low. Since the earth magnetic field cannot be eliminated reliably enough, even small motions of the hand induce here errors. The estimation results were accordingly bad.
 
+As one critical influence factor, the earth magnetic field is determined. However the approach, presented in \ref{subsec:earthEli} showed non-satisfiable results (see \ref{subsec:resEarthEli}). To also verify it with the whole system, some experiments where executed, with different hand positions. The motions were recorded, with the hand facing different axes. This means, that the hand is also facing different oriented, compared to the Leap Controler, such as upward or downward, sideways or with the back to the camera. The results from the Leap suffered from inconsistencies, caused by occlusion of fingers or the wrist. The magnetic system, only showed reasonable results if the hand was oriented in the initial position.
 
-%
-\textbf{tries with MPU / sensor frequency}
-	\begin{itemize}
-	\item setting sensor frequency to 50 or 25 Hz has no influence on results
-	\item MPU results as expected not good...
-	\item start position can be \grqq detected\grqq after rotation again, but the results with rotation are bad...
-	\item sets: 160217\_set6 (also with Leap!)
-	\end{itemize}
-
-%
+A further analysis of the sensor data acquisition rate was also evaluated. Since the system frequency for acquiring magnetic readings from all four sensors is evaluated to be \SI{20}{\Hz}, the sensor readings, which are actually sampled with \SI{50}{\Hz} should show a degraded quality. Therefore the sampling frequency of the sensors was set at \SI{25}{\Hz}, to try to align the sensor and system frequency. However after evaluation, the estimation results, based on the sensor data, acquired with the slower sampling rate showed the same quality as set to the higher sensor rate.
 
 
 \todo{So summarize why the estimated results differ so much from the Leap data}
 \subsubsection{Concluding Observations}
-	\begin{itemize}
-	\item very fragile system
-	\item sensitive to hand/body movements, calibration gesture
-	\item bad accuracy of hand dimensions is staed to be the biggest worsening factor 
-	\item bad/difficult reproducibility of results/measurements
-	\item Leap motion returns almost reproducible and stable results. However drawbacks can be observed. So the applied direct comparison has to be handled with care
-	\item motions, where magnetic estimation works good...
-	\end{itemize}
+
+Based on the presented results from the experiments, one could state that the system is quite complex and dependent on a lot of variables. It can be stated, that the presented approach in combination with the utilized system cannot lead to constant and reliable results for hand pose estimation. In comparison to an existing camera based system, which is in turn also not error-prone, the states of one finger could only be estimated with an accuracy of up to \SI{0.467}{\radian} (=\SI{26.757}{\degree}). This high difference is induced by several, not reasonable accurate determinable system dimensions. The utilized hand model simplifies the actual behaviour and constrains the range of motion in a reasonable way. By using simulated magnetic values by this model, the finger states can be estimated in a reasonable manner. However on the real human hand, the position parameters, which are critical for the utilized model, can only be determined by hand with a caliper. Therefore trying to reproduce the actual measurements by the hand model with error-prone position information leads to a bad model description and therefore to unsatisfying results. Further on, the utilized models for describing the magnetic field at a certain position does not comprise a surrounding magnetic field. However this is permanently measured, dependent on the actual orientation, and cannot be eliminated through the presented approach. Therefore the mobility of the finger pose estimation system is highly restricted. It has to be noted, that the measurable magnetic flux density, induced by a single magnet on the fingertip, excites a field, only slightly higher, than the disturbing environment. A fitting gesture is proposed to overcome those distortion factors to the measurement system. A flexion-extension about \SI{90}{\degree} of the \ac{MCP} joint is evaluated to be a reconstructible gesture for this. In the end reasonable results for motions, which are similar to this introduced gesture were evaluated. 
+
+
 
