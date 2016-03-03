@@ -1,6 +1,6 @@
 %% LyX 2.0.2 created this file.  For more info, see http://www.lyx.org/.
 %% Do not edit unless you really know what you are doing.
-\documentclass[12pt,a4paper,english,intoc,bibliography=totoc,index=totoc,BCOR10mm,captions=tableheading,titlepage,fleqn]{scrbook}
+\documentclass[12pt,a4paper,english,intoc,bibliography=totoc,index=totoc,BCOR10mm,captions=tableheading,titlepage,fleqn,hidelinks]{scrbook}
 \usepackage{lmodern}
 \renewcommand{\sfdefault}{lmss}
 \renewcommand{\ttdefault}{lmtt}
@@ -22,7 +22,8 @@
 \usepackage{rotating} 
 \usepackage[nohyperlinks, printonlyused]{acronym}
 %\usepackage[numbers]{alphanat}
-\usepackage{hyperref}
+%\usepackage{hyperref}
+\usepackage[hidelinks]{hyperref}
 %\usepackage[square,sort,comma]{natbib}
 %\usepackage{biblatex}
 
@@ -39,7 +40,9 @@
 \usepackage{multirow}
 \usepackage{caption}
 \captionsetup[table]{skip=10pt}
-%\usepackage{subfigure}
+\usepackage[section]{placeins}
+
+
 
 % the following is useful when we have the old nomencl.sty package
 \providecommand{\printnomenclature}{\printglossary}
@@ -196,6 +199,11 @@ habe und alle Stellen, die wörtlich oder sinngemäß aus veröffentlichten
 Schriften entnommen wurden, als solche kenntlich gemacht habe. Darüber
 hinaus erkläre ich, dass diese Abschlussarbeit nicht, auch nicht auszugsweise,
 bereits für eine andere Prüfung angefertigt wurde.
+\\[30ex]
+\noindent\begin{tabular}{ll}
+\makebox[2.5in]{\hrulefill} & \makebox[2.5in]{\hrulefill}\\
+Ort, Datum & Daniel Müller
+\end{tabular}
 
 \cleardoublepage{}
 
@@ -237,6 +245,7 @@ bereits für eine andere Prüfung angefertigt wurde.
 \begin{acronym}
 \acro{IMU}{Inertial Measurement Unit}
 \acro{ROI}{Region of Interest}
+\acro{IR}{Infra Red}
 \acro{EKF}{Extended Kalman Filter}
 \acro{DOF}{Degree of Freedom}
 \acro{SDK}{Software Development Kit}
@@ -257,6 +266,7 @@ bereits für eine andere Prüfung angefertigt wurde.
 \acro{GATT}{Generic Attribute Profile}
 \acro{BFGS}{Broyden-Fletcher-Goldfarb-Shanno}
 \acro{SLSQP}{Sequential Least Squares Programming}
+\acro{ROM}{Range of Movement}
 \end{acronym}
 
 \cleardoublepage{}
@@ -290,8 +300,6 @@ bereits für eine andere Prüfung angefertigt wurde.
 % REMIND: only for compilation speed up!
 % when you are finished, comment this line out. The file is included by results.tex!
 %\include{texfiles/estimationRes}
-
-\include{texfiles/comparison}
 
 \include{texfiles/conclusion}
 
