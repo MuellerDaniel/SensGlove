@@ -3,17 +3,33 @@
 \chapter*{Abstract}
 
 \addcontentsline{toc}{chapter}{Abstract} 
+% Intro/Motivation
+The tracking and reconstruction of human hand motion can be used for modern human-machine interaction or as support for medical rehabilitation of stroke or impaired patients. State of the art motion tracking systems adopted for this purpose introduce often bulky constructions.  
+%to track the fine and complex movements of the hand. However those systems are often not only constructed for the estimation of finger postures and introduce therefore often the need bulky constructions. 
+The underlying work presents an approach for the reconstruction of human hand motion by measuring the magnetic field, induced by permanent magnets on the fingertips. When the fingers move, the cumulative sum of the magnetic flux density, excited by the magnets, is recorded with a sensor array, consisting of four measurement units. This data is used to estimate the finger poses, based on a kinematic hand model. 
 
-\todo{
-\begin{itemize}
-\item check for consistent spelling of 3D (3d, three dimensional...)
-\item check for consistent order of flexion-extension
-\item check for consistent order of adduction-abduction
-\item writing numbers out or not?
-\item do not cut adduction-abduction / flexion-extension $ \rightarrow $ define it as an accronym!
-\item centre vs center
-\item adjust the line breaks
-\item align the formulas in a pretty shape!
-\end{itemize}
-}
+% General approach
+The magnetic sensors are placed inside a bracket to be worn on the back of the hand. The recorded data is transferred via Bluetooth Low Energy to a host PC, where the actual state estimation is executed. The finger postures are estimated, by solving an optimization problem. The underlying human hand model is represented as a kinematic chain and uses the joint angles to describe finger postures. The thumb is neglected, for simplicity reasons. The mathematical problem is nonlinear. 
+
+% Results
+It is evaluated, that the performance of the developed system is highly dependent on several parameters. The most critical factor is the exact determination of the anatomic hand dimensions and the positions of the sensors. Those parameters have a nonlinear contribution to the model equations and are the base for the state estimation. However they can only be measured by hand with a calliper, which is very error-prone. Further on the elimination of the surrounding earth magnetic field is not possible. Therefore, the system is only usable in static hand positions. To overcome those nonlinear and highly critical distortion factors, a naive approach of scaling the sensor values to the model parameters is followed. The scaling factors are determined by a predefined fitting gesture.
+
+Several datasets were recorded with the magnetic system and the estimated states were compared to the data, provided by a commercially available vision based approach. The estimated states of a single finger can be reconstructed almost reliably by the developed system. The overall smallest predicted difference to the vision system is $ 0.467 \si{radian} \pm 0.027 $ (=$ 26.757 \si{\degree} \pm 1.547 $). Unfortunately the states of multiple fingers can not be estimated.
+
+%Several datasets were recorded with the magnetic system and a commercially available vision system, which is assumed to return almost ground truth values for the finger states. The estimated states of a single finger by the developed approach can be reconstructed almost reliably. The overall smallest predicted difference to the vision system is $ 0.467 \si{radian} \pm 0.027 $ (=$ 26.757 \si{\degree} \pm 1.547 $).
+
+
+
+%\todo{
+%\begin{itemize}
+%\item check for consistent spelling of 3D (3d, three dimensional...)
+%\item check for consistent order of flexion-extension
+%\item check for consistent order of adduction-abduction
+%\item writing numbers out or not?
+%\item do not cut adduction-abduction / flexion-extension $ \rightarrow $ define it as an accronym!
+%\item centre vs center
+%\item adjust the line breaks
+%\item align the formulas in a pretty shape!
+%\end{itemize}
+%}
 
