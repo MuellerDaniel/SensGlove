@@ -34,7 +34,7 @@ The presented system is constructed to estimate the pose of four human fingers, 
 \caption[Magnetic properties]{Magnetic and dimensional characteristics of the used cylindrical magnets.}
 \label{tab:magDimensions}
 \end{table}
-Those components have to be mounted onto the fingertips. With a 3D printer ring like supports are designed, to ease the donning and doffing of the magnets and to ensure a secure positioning on the fingers. The bottom of the ring is left open, to make the system flexible for various finger diameters. The socket on top of the ring is constructed to statically hold and align the magnet. The magnetic field is measured with four \acp{IMU} (see \ref{cha:sensors}), placed inside a self designed bracket. This bracket is constructed, to be worn on the back of the hand. It ensures, that the alignment and positioning of the sensors relative to each other is held static, which is important for the pose estimation (see \ref{sec:estimation}). Pictures of the individual parts and the designed system are shown in \ref{fig:designParts}. Since four magnets are used, the sensor array consists also of four measurement units. For an easy and reproducible first evaluation of the system, a wooden hand is used (see \ref{fig:sysWood}). This static setup ensures one to measure the positions and dimensions of the sensors, the joints and the bone lengths relatively accurate. To read out the sensor data, a RFduino microcontroller \cite{rfduino2015data} is used. This device is a clone of the well known Arduino environment \cite{arduino}, which eases the programming of the system. Since this part of the setup is only used to acquire the sensor data and perform basic signal processing tasks, the computational requirements are not very high. A plus of the RFduino device is, that a Bluetooth Low Energy module is already built in. So the data can be send to a host PC, where the main processing and estimation steps are realized. A summary of the individual parts and their purpose is given in \ref{tab:systemParts}.
+Those components have to be mounted onto the fingertips. With a 3D printer ring like supports are designed, to ease the donning and doffing of the magnets and to ensure a secure positioning on the fingers. The bottom of the ring is left open, to make the system flexible for various finger diameters. The socket on top of the ring is constructed to statically hold and align the magnet. The magnetic field is measured with four \acp{IMU} (see \ref{cha:sensors}), placed inside a self designed bracket. This bracket is constructed to be worn on the back of the hand. It ensures, that the alignment and positioning of the sensors relative to each other is held static, which is important for the pose estimation (see \ref{sec:estimation}). Pictures of the individual parts and the designed system are shown in \ref{fig:designParts}. Since four magnets are used, the sensor array consists also of four measurement units. For an easy and reproducible first evaluation of the system, a wooden hand is used (see \ref{fig:sysWood}). This static setup ensures one to measure the positions and dimensions of the sensors, the joints and the bone lengths relatively accurate. To read out the sensor data, a RFduino microcontroller \cite{rfduino2015data} is used. This device is a clone of the well known Arduino environment \cite{arduino}, which eases the programming of the system. Since this part of the setup is only used to acquire the sensor data and perform basic signal processing tasks, the computational requirements are not very high. A plus of the RFduino device is, that a \ac{BLE} module is already built in. So the data can be send to a host PC, where the main processing and estimation steps are realized. A summary of the individual parts and their purpose is given in \ref{tab:systemParts}.
 \begin{figure}[!h]
 \centering
 	\begin{tabular}{c c}
@@ -57,7 +57,7 @@ Those components have to be mounted onto the fingertips. With a 3D printer ring 
 \end{figure}
 \begin{table}[h]
 \centering
-\begin{tabular}{c|l}
+\begin{tabular}{l|l}
 %\hline
 \textbf{Component} & \textbf{Purpose} \\ \hline
 4 Magnets & causing the magnetic field \\ \hline
@@ -69,80 +69,26 @@ PC & sensor data interpretation and state estimation \\ %\hline
 \label{tab:systemParts}
 \end{table}
 
-
+\FloatBarrier
 
 \section{Human Hand Model} \label{sec:handModel}
 
 As already depicted in \ref{cha:relatedWork} and \ref{sec:anatomy}, the utilization of a proper kinematic model is a very important part, when it comes to pose interpretation and estimation. In this section the kinematic model, used to reconstruct the finger positions is described. It relies on the presented observations from \ref{sec:anatomy}.
 
-The underlying kinematic model tries to simplify the range of motion of the human hand, without loosing too much generality. Therefore the fingers are interpreted as ideal revolute joints. The complex movement of the thumb is totally neglected. The other four fingers naturally move mainly in one plane (by disregarding adduction-abduction), for the thumb however this does not hold. Trying to track the full five \ac{DOF} for this finger would make the model much more complex. Another point is, that the thumb moves mainly \grqq in front \grqq of the other fingers. This would cause remarkable influence on every sensor on the array, such that a distinction between the moving finger is more difficult. So for keeping the model and the pose estimation simple, the thumb will be neglected.\\
-As many other human hand models, the movement of the Metacarpal bones is neglected. Therefore the \ac{MCP} joints are assumed to be always at a static position. Since the presented approach focuses on finger pose estimation and that the sensors are mounted on the back of the hand, the movement of the whole palm does not need to be taken into account. As already stated, the index, middle, ring and pinky finger show four \ac{DOF} each and can move in two planes by flexion-extension and adduction-abduction. For deriving a simpler hand model, the intra finger constraint for the joint angles of the \ac{DIP} and \ac{PIP} of one finger is used, being $ \theta_{DIP} = \frac{2}{3} \theta_{PIP} $. So in the end one finger has 3 \ac{DOF}. As a further step, this model can even be more simplified, by neglecting adduction-abduction and resulting in a system with 2 \ac{DOF} per finger. The range of movement of the joints is assumed to be as described in \cite{lin2000modeling}. This means for the range of the flexion-extension angle for the \ac{MCP} being within $ \ang{0} \leq \theta_{MCP} \leq \ang{90} $ and the range of adduction/abduction $ \ang{-15} \leq \phi_{MCP} \leq \ang{+15} $. The flexion-extension range for the \ac{PIP} lies within $ \ang{0} \leq \theta_{PIP} \leq \ang{110} $\\
+The underlying kinematic model tries to simplify the range of motion of the human hand, without loosing too much generality. Therefore the fingers are interpreted as ideal revolute joints. The complex movement of the thumb is totally neglected. The other four fingers naturally move mainly in one plane (by disregarding adduction-abduction), for the thumb however this does not hold. Trying to track the full five \ac{DOF} for this finger would make the model much more complex. Another point is, that the thumb moves mainly ``in front'' of the other fingers. This would cause remarkable influence on every sensor on the array, such that a distinction between the moving finger is more difficult. So for keeping the model and the pose estimation simple, the thumb will be neglected.\\
+As many other human hand models, the movement of the Metacarpal bones is neglected. Therefore the \ac{MCP} joints are assumed to be always at a static position. Since the presented approach focuses on finger pose estimation and the sensors are mounted on the back of the hand, the movement of the whole palm does not need to be taken into account. As already stated, the index, middle, ring and pinky finger show four \ac{DOF} each and can move in two planes by flexion-extension and adduction-abduction. For deriving a simpler hand model, the intra finger constraint for the joint angles of the \ac{DIP} and \ac{PIP} of one finger is used, being $ \theta_{DIP} = \frac{2}{3} \theta_{PIP} $. So in the end one finger has 3 \ac{DOF}. As a further step, this model can even be more simplified, by neglecting adduction-abduction and resulting in a system with 2 \ac{DOF} per finger. The range of movement of the joints is assumed to be as described in \cite{lin2000modeling}. This means for the flexion-extension angle for the \ac{MCP} being within $ \ang{0} \leq \theta_{MCP} \leq \ang{90} $ and the range of adduction/abduction $ \ang{-15} \leq \phi_{MCP} \leq \ang{+15} $. The flexion-extension range for the \ac{PIP} lies within $ \ang{0} \leq \theta_{PIP} \leq \ang{110} $\\
 In the end every finger is modelled equally as a kinematic chain with 3 joints, having 3 \ac{DOF} in total. The position and orientation of the fingertip, and therefore of the magnet, is fully determined by the angles of the finger joints, using forward kinematics.\\
 For a better visualization, the kinematic chain and the relevant parts are sketched in \ref{fig:handMod} for a single finger. The Cartesian coordinate system, used in this drawing is adapted to the sensor alignment. This system convention is used throughout the whole thesis.
-\begin{figure}[h!]
+\begin{figure}[!htb]
 \centering
-\begin{tikzpicture}[x=0.5cm,y=0.5cm,z=0.3cm,>=stealth]
-% coordinate system axes
-\draw[->] (xyz cs:x=-8) -- (xyz cs:x= 2) node[above] {$z$};
-\draw[->] (xyz cs:y=-1) -- (xyz cs:y= 8) node[right] {$x$};
-\draw[->] (xyz cs:z= 1) -- (xyz cs:z=-8) node[above] {$y$};
-% the finger
-\newcommand\offx{-1}
+\subfloat[The lengths of the bones and the corresponding joint names are visualized. The positions of the magnet, the sensor and the direction vector $ \vec{r} $ is further drawn.]
+{\input{pictures/handModelJoin.tex}}
+\hfill
+\subfloat[The joint angles, as they are described in the text. The direction vector $ \vec{h} $ is pointing in the same direction as the magnetic dipole moment.]
+{\input{pictures/handModelAng.tex}}
 
-\coordinate (O) at (0,0,\offx);
-\coordinate (S) at (0,-2,\offx);
-\coordinate (O-) at (0,1.5,0);
-\coordinate (off) at (0,0,-2);
-\coordinate (MCP) at (120:4);
-\coordinate (MCP-) at (120:1.5);
-\coordinate (DIP) at (190:3);
-\coordinate (DIP-) at (190:1.5);
-\coordinate (PIP) at (240:2);
-\coordinate (PIP-) at (240:1.5);
-\coordinate (P) at (234:1.8);
-\coordinate (T) at (149.5:5.78);	% not a good solution...
-
-% lines, representing the phalanges
-\draw[dashed] (O) -- ++ (MCP) -- ++(MCP-);
-\draw[dashed] (O) -- ++ (O-);
-\draw[black,very thick] (S) -- node[left] {a} (O) -- node[below,pos=0.75]{$ l_{prox} $} ++ (MCP) -- node[below]{$ l_{mid} $} ++ (DIP) -- node[right]{$ l_{dist} $} ++ (PIP);
-\draw[dashed] (O) -- ++(MCP) -- ++ (DIP) -- ++(DIP-);
-\draw[dashed] (O) -- ++(-6,0,0);
-\draw[dashed] (O) -- ++(-3,0,-2);
-
-% the red dots for the joints
-\fill[red] (O) circle(2pt) node[right] {MCP};
-\fill[red] (O) ++ (MCP) circle(2pt) node[right] {DIP};
-\fill[red] (O) ++ (MCP) ++ (DIP) circle(2pt) node[above] {PIP};
-
-% the angles
-%\draw[<-] ((0,1,0)) arc (-270:-240:1);
-%($(<center>) + (<init angle>:<radius>)$)
-\draw[<-] ($(O)+(-270:1)$) arc (-270:-240:1);
-\path (O)+(90:1.5) node {$\theta_{MCP}$};
-\draw[<-] ($(O)+(MCP)+(-240:1)$) arc (-240:-170:1);
-\path (O)++(MCP)+(-1.4,0.6,0) node {$ \theta_{PIP} $};
-%\draw[<-] ([shift={(-170:0.7)}] T) arc (-170:-120:0.7);
-\draw[<-] ($(O)+(MCP)+(DIP)+(-170:0.7)$) arc (-170:-120:0.7);
-\path (O)++(MCP)++(DIP)+(-0.5,0.5,0) node {$ \theta_{DIP} $};
-\draw[->] ($(O)+(-4,0,0)$) arc(-180:-150:2);
-\path (O)++(-4,0,0)+(-1.0,-0.5,0) node{$ \phi_{MCP} $};
-%
-
-% the magnet
-\draw[fill=blue,rotate=240+180,shift={($(O) + (MCP) + (DIP) + (P)$)}] (0,0,0) rectangle(0.5,0.3,0);
-\draw[black,thick,->] ($(O) + (MCP) + (DIP) + (P) + (-0.1,0.15,0)$) -- ++ (240+180:0.9);
-\path (O) ++ (MCP) ++ (DIP) ++ (P) + (-0.5,0.6,0) node (H) {H};
-\path (O) ++ (MCP) ++ (DIP) ++ (P) + (-0.2,-0.5,0) node (P) {P};
-
-\draw[fill=yellow,rotate=90,shift={($(S)$)}] (0,-0.3,0) circle(0.3);
-\path (S) + (1.8,-0.2,0) node {Sensor};
-
-% vector R
-\draw[dashed, red, ->] (S) -- ++ (H);
-
-\end{tikzpicture}
-\caption{Kinematic chain for representation of a single finger. The cartesian coordinate system is aligned according to the sensor frame. This coordinate system defines the orientation, used throughout the whole thesis. The \ac{MCP} joint lies on the y-Axis. \todo{split it!}}
+\caption[The introduced hand model.]
+{The introduced representation of the human hand as a kinematic chain. For clarity, only a single finger is drawn. Figure a shows the location of the sensor, magnet and the joints. Also the direction vector $ \vec{r} $ is drawn. In figure b, the joint angles are visualized and the direction $ \vec{h} $ of the magnet is drawn. The cartesian coordinate system is aligned according to the sensor frame. This coordinate system defines the orientation, used throughout the whole thesis. The \ac{MCP} joint lies on the y-Axis.}
 \label{fig:handMod}
 \end{figure}
 For the calculation of the magnetic flux density according to the models, introduced in \ref{sec:magneticFound}, the distance vector from sensor to magnet and the orientation of the latter one is needed. Those two components can be derived using forward kinematics and the positions of the sensors and the joints.\\
@@ -158,13 +104,13 @@ h_{z} =& \sin(-\theta_{MCP}-\theta_{PIP}-\theta_{DIP})\cos(\phi)
 The position vector $ \vec{r} $ of the magnet is determined by
 \begin{equation}\label{eq:posX}
 \begin{aligned}
-r_{x} =& l_{Prox}\sin(\frac{\pi}{2}-\theta_{MCP}) +\\
+r_{x} =\,&  l_{Prox}\sin(\frac{\pi}{2}-\theta_{MCP}) +\\
 & l_{Mid}\sin(\frac{\pi}{2}-(\theta_{MCP}+\theta_{PIP})) +\\
 & l_{Dist}\sin(\frac{\pi}{2}-(\theta_{MCP}+\theta_{PIP}+\theta_{DIP})) + (P_{MCP_{x}} - P_{Sensor_{x}}) \\[4pt]
-r_{y} =& l_{Prox}\cos(\frac{\pi}{2}-\theta_{MCP}) +\\
+r_{y} =\,&  l_{Prox}\cos(\frac{\pi}{2}-\theta_{MCP}) +\\
 & l_{Mid}\cos(\frac{\pi}{2}-(\theta_{MCP}+\theta_{PIP})) +\\
 & l_{Dist}\cos(\frac{\pi}{2}-(\theta_{MCP}+\theta_{PIP}+\theta_{DIP}))\sin(\phi) + (P_{MCP_{y}} - P_{Sensor_{y}}) \\[4pt]
-r_{z} =& -l_{Prox}\cos(\frac{\pi}{2}-\theta_{MCP}) +\\
+r_{z} =&  -l_{Prox}\cos(\frac{\pi}{2}-\theta_{MCP}) +\\
 & l_{Mid}\cos(\frac{\pi}{2}-(\theta_{MCP}+\theta_{PIP})) +\\
 & l_{Dist}\cos(\frac{\pi}{2}-(\theta_{MCP}+\theta_{PIP}+\theta_{DIP}))\cos(\phi) +(P_{MCP_{z}} - P_{Sensor_{z}})
 \end{aligned}
@@ -182,11 +128,11 @@ x &= \begin{bmatrix}
 \end{equation*}
 This state vector is further also refereed as the finger state vector. Thus all four fingers have a state space of size 12. The presented model shows a basic approach to model the index, middle, ring and pinky finger of the human hand as ideal revolute joints. The constraints and simplifications introduced are comparable to other groups \cite{lin2000modeling}. The biggest simplification however is the disregard of the thumb movement.
 
-
+\FloatBarrier
 
 \section{Sensor Design and Data Acquisition} \label{cha:sensors}
 
-For measuring the magnetic field, four LSM303D sensors \cite{STlsm2012} from ST are used. This device comprises a 3 axis accelerometer and a 3 axis magnetometer in one module. This sensor is chosen, because its magnetic full-scale range is selectable. It can be determined to $ \pm 0.2$, $ \pm 0.4 $, $ \pm 0.8 $ or $ \pm 1.2\si{\milli\tesla} $. The magnetic values are stored in 2 Bytes in 2's complement. The sensitivity per \ac{LSB} is specified like shown in \ref{tab:magSensitivity}.
+For measuring the magnetic field, four LSM303D sensors from ST are used \cite{STlsm2012}. This device comprises a 3 axis accelerometer and a 3 axis magnetometer in one module. That sensor is chosen, because its magnetic full-scale range is selectable. It can be determined to $ \pm 0.2$, $ \pm 0.4 $, $ \pm 0.8 $ or $ \pm 1.2\si{\milli\tesla} $. The magnetic values are stored in 2 Bytes in 2's complement. The sensitivity per \ac{LSB} is specified like shown in \ref{tab:magSensitivity}.
 \begin{table}[h]
 \centering
 \begin{tabular}{c|l}
@@ -209,6 +155,7 @@ The data rate can be set to a maximium of \SI{100}{\Hz}. The communication is es
 \label{fig:breakout}
 \end{figure}
 
+\FloatBarrier
 
 \section{Calibration and Preprocessing of Sensor Data} \label{sec:caliPrepro}
 
@@ -230,12 +177,12 @@ To determine and overcome these two distortion factors, several methods exist. F
 \begin{equation} \label{eq:simpleOffset}
 \mathrm{off}_{x} = \frac{x_{max} + abs(x_{min})}{2}
 \end{equation}
-The 6 soft-iron parameters can be specified, by performing an ellipsoid fit. Kok et al. follow a very elaborated approach, by applying an elliptical fit in combination with measurements of inertial sensors. This approach also covers the alignment of the sensor axes of the magnetometer with the ones of the gyroscope and accelerometer. Since only the magnetic sensor is used for the further experiments, this can be neglected. The Application Note 4246 by Freescale \cite{ozyagcilar2012calibrating} presents a good and interesting calibration procedure. They reduce the determination of the three hard- and the nine soft-iron factors to four parameters. This is utilized, by assuming that the hard-iron offsets dominate the soft-iron effects and one is trying to minimize the error between the measured field $ \mathrm{B}_{meas} $ and the real, surrounding field $ \mathrm{B}_{earth} $. For this, they take a whole series of measurements into account, and not just the minimum and maximum, like for the naive approach in \ref{eq:simpleOffset}. As a result, one gets a vector with the three offset values $ H $ and the flux density of $ \mathrm{B}_{earth} $. However, by using the more naive approach and the assumption that the soft iron values do have an influence on the measurements, one could perform a simple compensation of those. One models the influence of the soft iron distortion as a one dimensional vector, increasing or decreasing the overall measured field of one axis. For this, the average amounts of the obtained magnetic field, representing the \grqq radius \grqq of each axis are determined. Those three values are averaged, to perform the overall radius $ \mathrm{rad}_{avg} $. \ref{eq:simpleScale} show how to derive this scaling factor for the $ x $-axis.
+The 6 soft-iron parameters can be specified, by performing an ellipsoid fit. Kok et al. \cite{kok2012calibration} follow a very elaborated approach, by applying an elliptical fit in combination with measurements of inertial sensors. This approach also covers the alignment of the sensor axes of the magnetometer with the ones of the gyroscope and accelerometer. Since only the magnetic sensor is used for the further experiments, this can be neglected. The Application Note 4246 by Freescale \cite{ozyagcilar2012calibrating} presents a good and interesting calibration procedure. They reduce the determination of the three hard- and the nine soft-iron factors to four parameters. This is utilized, by assuming that the hard-iron offsets dominate the soft-iron effects and one is trying to minimize the error between the measured field $ \mathrm{B}_{meas} $ and the real, surrounding field $ \mathrm{B}_{earth} $. For this, they take a whole series of measurements into account, and not just the minimum and maximum, like for the naive approach in \ref{eq:simpleOffset}. As a result, one gets a vector with the three offset values $ H $ and the flux density of $ \mathrm{B}_{earth} $. However, by using the more naive approach and the assumption that the soft iron values do have an influence on the measurements, one could perform a simple compensation of those. One models the influence of the soft iron distortion as a one dimensional vector, increasing or decreasing the overall measured field of one axis. For this, the average amounts of the obtained magnetic field, representing the  ``radius'' of each axis are determined. Those three values are averaged, to perform the overall radius $ rad_{avg} $. \ref{eq:simpleScale} show how to derive this scaling factor for the $ x $-axis.
 \begin{equation} \label{eq:simpleScale}
 \begin{aligned}
-\mathrm{rad}_{x} &= \frac{x_{max} - x_{min}}{2}\\
-\mathrm{rad}_{avg} &= \frac{\mathrm{rad}_{x} + \mathrm{rad}_{y} + \mathrm{rad}_{z}}{3}\\
-\mathrm{scale}_{x} &= \frac{\mathrm{rad}_{avg}}{rad_{x}}
+rad_{x} &= \frac{x_{max} - x_{min}}{2}\\
+rad_{avg} &= \frac{rad_{x} + rad_{y} + rad_{z}}{3}\\
+scale_{x} &= \frac{rad_{avg}}{rad_{x}}
 \end{aligned}
 \end{equation}
 In the end, independent on how the sensors get calibrated, one has to do this routine for each sensor to get the individual parameters. Due to the performed calibration procedure, the measurement range of the sensor is slightly varied. As an additional step, the sensors have to be scaled to the same measurement range. By calibrating the sensors with the Freescale method, one directly gets a value for the surrounding field. It turns out, that these values are not equal for particular sensors, such that each device has a slightly different sensitivity. So one has to determine a scale factor, to bring the sensors onto the same measurement range.
@@ -257,6 +204,8 @@ In the end, independent on how the sensors get calibrated, one has to do this ro
 %% or just google for "latex anotate figure"
 %\label{fig:caliFlat}
 %\end{figure}
+
+\FloatBarrier
 
 \subsection{Cancellation of the Surrounding Earth Magnetic Field} \label{subsec:earthEli}
 
@@ -309,8 +258,8 @@ Assumed is a system with $ K $ magnets and $ N $ sensors. The beforehand models 
 for sensor $ n $. Since the state $ x_{k} $ consists of 3 values, the complete system state vector has a shape of $ (3 \cdot K) \times 1 $ and is denoted by
 \begin{equation}
 \begin{aligned}
-& \mathrm{X}_K &= \begin{bmatrix} x_{1} & x_{2} & \cdots & x_{K}  \end{bmatrix}^{T}\\
-&  &= \begin{bmatrix} \theta_{MCP_{1}} & \theta_{PIP_{1}} & \phi_{MCP_{1}} & \theta_{MCP_{2}} & \cdots \end{bmatrix}^{T}
+\mathrm{X}_K &= \begin{bmatrix} x_{1} & x_{2} & \cdots & x_{K}  \end{bmatrix}^{T}\\
+ &= \begin{bmatrix} \theta_{MCP_{1}} & \theta_{PIP_{1}} & \phi_{MCP_{1}} & \theta_{MCP_{2}} & \cdots \end{bmatrix}^{T}
 \end{aligned}
 \end{equation}
 the overall measurable magnetic flux densities corresponding to a system state $ \mathrm{X}_{k} $ by the $ N $ sensor units is 
@@ -329,62 +278,53 @@ the overall measurable magnetic flux densities corresponding to a system state $
 The measurement of sensor $ n $ is denoted by $ \tilde{\mathrm{B}}_{n} $, the measurement array of all sensors $ N $ has a shape of $ (3 \cdot N) \times 1 $ and is represented by
 \begin{equation}
 \begin{aligned}
-& \tilde{\mathrm{M}} \equiv \begin{bmatrix} \tilde{\mathrm{B}_{1}} & \tilde{\mathrm{B}_{2}} & \cdots & \tilde{\mathrm{B}_{N}} \end{bmatrix}^{T}\\
+& \tilde{\mathrm{M}} \equiv \begin{bmatrix} \tilde{\mathrm{B}_{1}} & \tilde{\mathrm{B}_{2}} & \cdots & \tilde{\mathrm{B}_{N}} \end{bmatrix}^{T}\\[5pt]
 & \text{with: }  \tilde{\mathrm{B}}_{n} = \begin{bmatrix} \tilde{\mathrm{B}}_{n}(x) & \tilde{\mathrm{B}}_{n}(y) & \tilde{\mathrm{B}}_{n}(z) \end{bmatrix}
 \end{aligned}
 \end{equation}
 In order to derive an estimate of the system state $ \mathrm{X}_K $, one can formulate an optimization problem. The objective function $ f(\mathrm{X}_K) $ for the minimization of the residual between the actual sensor measurements and the state representation by the model is described by:
+\begin{equation}
+f(\mathrm{X}_K) = || \tilde{\mathrm{M}} - \mathrm{M}(\mathrm{X}_K) ||
+\end{equation}
+The optimization problem is defined by:
 \begin{equation} \label{eq:minimization}
+%\begin{aligned}
+%& \underset{\mathrm{X}_K}{\text{minimize}}  
+%& & f(\mathrm{X}_K) \\
+%& \text{subject to} 
+%& & 0  & \leq & \; {x}_1(\theta_{MCP}) & \leq & \; 1/2 \cdot \pi, \\
+%& & & 0  & \leq & \; {x}_1(\theta_{PIP}) & \leq & \; 110/180 \cdot \pi, \\
+%& & & -30/180 \cdot \pi & \leq & \; {x}_1(\phi_{MCP}) & \leq & \; 30/180 \cdot \pi, \\
+%& & & 0  & \leq & \; {x}_2(\theta_{MCP}) & \leq & \; 1/2 \cdot \pi, \\
+%& & & & &  \vdots \\
+%& & & -30/180 \cdot \pi & \leq & \; {x}_K(\phi_{MCP}) & \leq & \; 30/180 \cdot \pi
+%\end{aligned}
 \begin{aligned}
-\underset{\mathrm{X}_K}{\text{minimize}} & & f(\mathrm{X}_K) = || \tilde{\mathrm{M}} - \mathrm{M}(\mathrm{X}_K) ||\\
-\text{subject to} & & 0 & \leq {x}_1(\theta_{MCP}) \leq & 1/2 \cdot \pi, \\
-				  & & 0 & \leq {x}_1(\theta_{PIP})  \leq & 110/180 \cdot \pi, \\
-				  & & -30/180 \cdot \pi & \leq {x}_1(\phi_{MCP}) \leq & 30/180 \cdot \pi, \\
-				  & & 0 & \leq {x}_2(\theta_{MCP})  \leq & 1/2 \cdot \pi, \\
-				  & & \vdots \\
-				  & & -30/180 \cdot \pi & \leq {x}_K(\phi_{MCP}) \leq & 30/180 \cdot \pi
+\underset{\mathrm{X}_K}{\text{minimize}} & & f(\mathrm{X}_K) \\
+\text{subject to} & & 0 & \leq {x}_1(\theta_{MCP}) & \leq & 1/2 \cdot \pi, \\
+				  & & 0 & \leq {x}_1(\theta_{PIP}) & \leq & 110/180 \cdot \pi, \\
+				  & & -30/180 \cdot \pi & \leq {x}_1(\phi_{MCP}) & \leq & 30/180 \cdot \pi, \\
+				  & & 0 & \leq {x}_2(\theta_{MCP}) & \leq & 1/2 \cdot \pi, \\
+				  & & & \vdots \\
+				  & & -30/180 \cdot \pi & \leq {x}_K(\phi_{MCP}) & \leq & 30/180 \cdot \pi
 \end{aligned}
 \end{equation}
-As constraints, the natural range of motion for each finger angle is utilized. The solvability and the uniquness of the result for this minimization is dependent on the determinedness of the system. To gather unique solutions, the system has to be fully determined at any time. Since one is trying to estimate the pose of 4 magnets, by also using 4 sensors, this condition is fulfilled \todo{check it! Something with the rank?}. For minimizing such a function, one has to remember the mathematical form of the introduced magnetic models. The dipole model includes nonlinearities, the cylindrical model in contrary is solved by a numerical approximation, which in return means that differentiation or further mathematical operations can not be applied. Since the programming language \emph{Python} \cite{python} is used to solve this problem, it is refereed to methods provided by the \emph{SciPy} \cite{scipy} package . This library provides a minimize method, that is implemented just for such use cases. It comes with several user definable options, to provide the solver with additional information. In \ref{subsubsec:resSim} the utilized optimization methods are explained and the performance and quantity of the results are compared. Anyway, to speed up the computational time for solving the equations and the optimization problem, the functions are implemented in Cython \ref{cython}. This interface allows to write C-like Python code and to work with predefined variables. 
-
-%Another way of solving such a state estimation problem is by applying a Kalman Filter. This filter comprises a prediction step, foreseeing the next system state and an update step, correcting this prediction with the actual measurements. The utilized recursive filter equations are described by
-%
-%\emph{Prediction step:}
-%\begin{equation}
-%\begin{aligned}
-%\hat{\mathrm{X}}_{K}(t) &= \mathrm{X}_{K}(t-1)\\
-%P(t) &= P(t-1) + Q
-%\end{aligned}
-%\end{equation}
-%\emph{Update step:}
-%\begin{equation}
-%\begin{aligned}[l|l]
-%G &= \frac{P(t) J_{\mathrm{M}}}{(J_{\mathrm{M}} P(t) J_{\mathrm{M}}^{T} + R)} \\
-%\hat{\mathrm{X}}_{K}(t+1) &= \mathrm{X}_{K}(t) + G[\tilde{\mathrm{M}} - \mathrm{M}(\hat{\mathrm{X}}_{K}(t))]\\
-%P(t+1) &= (I - G J_{\mathrm{M}}) P(t)
-%\end{aligned}
-%\end{equation}
-%As one can see, some simplifications have been applied to the \ac{EKF}. A state transition model, describing the behaviour of the system between two measurements, is left out. This assumption is made, because the intention of the user and therefore the evolution of the state is not known. So the predicted system state is assumed to stay constant. The process noise matrix $ Q $ and the measurement noise $ R $ are assumed to be diagonal matrices. This can be said, since the measurements of each axis and sensor do not effect each other. Nonetheless, it would be possible to bring in inter finger constraints by a $ Q $ matrix, showing contributions on the off-diagonals. Since those restrictions can not be generalized for every human hand, they are left out. The \ac{EKF} uses the Jacobian of the model, to linearize around the actual predicted state. This is denoted by
-%\begin{equation}
-%J_{M} = \left . \frac{\partial \mathrm{M}}{\partial \mathrm{X}} \right \vert _{\hat{\mathrm{X}}_{K}(t)}
-%\end{equation}
-%This method is computationally fast, since only matrix calculations have to be performed. Casually spoken, the $ Q $ matrix gives a measure how much the system state will change. By introducing big values, the state is assumed to change much, vice versa for small values. Via $ R $ it can be determined, how much one can trust the obtained sensor values. Small entries assume to have exact measurement data, big values the contrary. By adjusting those two matrices, one can tune the filter equations and therefore the result. One drawback of this method is, that it cannot be constrained.
-
-
-
+As constraints, the natural range of motion for each finger angle is utilized. The solvability and the uniquness of the result for this minimization is dependent on the determinedness of the system. To gather unique solutions, the system has to be fully determined. Since one is trying to estimate the pose of four magnets, by also using four sensors, this condition is fulfilled \todo{check it! Something with the rank?}. For minimizing such a function, one has to remember the mathematical form of the introduced magnetic models. The dipole model includes nonlinearities, the cylindrical model in contrary is solved by a numerical approximation, which in return means that differentiation or further mathematical operations can not be applied. Since the programming language \emph{Python} \cite{python} is used to solve this problem, it is refereed to methods provided by the \emph{SciPy} \cite{scipy} package. This library provides a minimize method, that is implemented just for such use cases. It comes with several user definable options, to provide the solver with additional information. In \ref{subsubsec:resSim} the utilized optimization methods are explained and the performance and quantity of the results are compared. Anyway, to speed up the computational time for solving the equations and the optimization problem, the functions are implemented in Cython \ref{cython}. This interface allows to write C-like Python code and to work with predefined variables. 
 
 
 \section{Visualization} \label{sec:visual}
 
-Another part of the system is the visualization of the estimated state. On the one hand, the values could be displayed with a graph. This way is very good, to get an accurate insight in the outcome of the estimation phase and for comparing it to ground truth data or similar state sets. However this approach is not very intuitive and for untrained\todo{(unskilled/people how know about the state estimation background...)} people, like patients of a clinical study not very helpful. For this, an application with the Blender Game Engine \cite{blender} is implemented, displaying a 3D human hand. The utilized hand model already provides a rig, representing the bone structure. This eases the further manipulation and setting of the corresponding finger angles. The bending of a joint can be modelled by rotating the corresponding points of the model. Blender provides a Python programming interface, for modifying and animating 3D models. The underlying script, changing the orientation of bones, concentrates on the very basics for representing the state. For communicating with the state estimation script, a simple text file is used. The real time state estimation writes its values each time at the very beginning of the file. This ensures, to keep additional disk space on the executing system small, since only $ 3 \times K $ float values are written each step. The Blender Game is situated in a loop, constantly reading the first line of this file. To ensure transmission security, one has to note that the estimation phase should only be allowed to write complete lines, describing the whole actual state. Some screenshots of the application are provided in \ref{fig:blendGame}
+Another part of the system is the visualization of the estimated state. On the one hand, the values could be displayed with a graph. This way is very good, to get an accurate insight in the outcome of the estimation phase and for comparing it to ground truth data or similar state sets. However this approach is not very intuitive and for untrained people, like patients of a clinical study not very helpful. For this, an application with the Blender Game Engine \cite{blender} is implemented, displaying a 3D human hand. The utilized hand model already provides a rig, representing the bone structure. This eases the further manipulation and setting of the corresponding finger angles. The bending of a joint can be modelled by rotating the corresponding points of the model. Blender provides a Python programming interface, for modifying and animating 3D models. The underlying Python script, changing the orientation of bones, concentrates on the very basics for representing the state. For communicating with the state estimation script, a simple text file is used. The real time state estimation writes its values each time at the very beginning of the file. This ensures to keep additional disk space on the executing system small, since only $ 3 \times K $ float values are written each step. The Blender Game is situated in a loop, constantly reading the first line of this file. To ensure transmission security, one has to note that the estimation phase should only be allowed to write complete lines, describing the whole actual state. Some screenshots of the application are provided in \ref{fig:blendGame}
 
 \begin{figure}[h]
 \centering
-	\subfloat[Fingers in stretched position]
-	{\includegraphics[width=0.5\textwidth]{pictures/game2.png}\label{fig:gameStretch}}
-	\hfill
-	\subfloat[Fingers in crooked position]
-	{\includegraphics[width=0.5\textwidth]{pictures/game1.png}\label{fig:gameCrooked}}
+\subfloat[Fingers in stretched position]
+{\includegraphics[width=0.35\textwidth]{pictures/game2_.png}\label{fig:gameStretch}}
+\hfill
+\subfloat[Fingers in crooked position]
+{\includegraphics[width=0.35\textwidth]{pictures/game1_.png}\label{fig:gameCrooked}}
 \caption{Screenshots of the visual representation with Blender}
 \label{fig:blendGame}
 \end{figure}
+
+\FloatBarrier

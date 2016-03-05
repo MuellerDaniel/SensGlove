@@ -1,0 +1,44 @@
+
+\lhead[\chaptername~\thechapter]{\rightmark}
+
+
+\rhead[\leftmark]{}
+
+
+\lfoot[\thepage]{}
+
+
+\cfoot{}
+
+
+\rfoot[]{\thepage}
+
+
+\chapter{Conclusion and Future Work}
+
+A magnetic sensor system for hand pose reconstruction is designed and evaluated. 
+% Sensors
+Since the objective was to develop a mobile and unobstrusive system, four sensors are utilized. They are mounted into a rack which can be worn at the back of the hand. The overall frequency for acquiring the most recent measurements of all four sensor units is evaluated to be \SI{20}{\Hz}. The calibration for hard and soft iron distortion factors of the sensors is implemented via a fit over a dataset of 1000 measurements.\\
+% Magnetic models
+To estimate the finger states, static magnets are mounted onto the fingertips with a ring aperture. The induced magnetic fields are used, to estimate the angles of flexion-extension and adduction-abduction for each finger joint. For describing the magnetic flux density, induced by the utilized bar magnets, two different models for the description of the magnetic field lines were established. The cylindrical bar magnet model led to better results, since it is the more accurate description of the two.\\
+% Hand model
+To represent the human hand, a kinematic chain with 12 \ac{DOF} is chosen, in order to represent the pose of the index, middle, ring and pinky finger. The movement of the thumb is left out. The introduced kinematic model is constraint to natural ranges of movement and can in the end describe the pose of one finger by three angular values. The angles of flexion-extension and adduction-abduction of the \ac{MCP} and the flexion-extension angle for the \ac{PIP} joint. Via an introduced intra finger constraint, the angle of the \ac{DIP} joint is derived via the \ac{PIP} angle. So in the end, by knowing the dimensions of the bone lengths and the positions of the joints and sensors, one can calculate the distance and orientation of the fingertip (and therefore of the magnet) relative to the sensor unit. Those distance and orientation vectors $ \vec{r} $ and $ \vec{h} $ can be plugged into the magnetic models, to estimate the cumulative measurement at the sensor units.\\
+% Estimation stage
+An optimization problem is formulated, which reduces the error between model and sensor measurement, by minimizing for the finger state angles. In this way the actual states for each finger are estimated. By using a certain number of sensors to estimate the position of the four fingers, it is evaluated, that the system has to be overdetermined. Therefore the results for estimating all four magnets with the deployed four sensor units doesn't lead to reasonable results. Further on it can be stated, that the problem has to be constrained and that the slight lateral movements of the \ac{MCP} joint can be reconstructed.\\
+% Results and Leap Motion
+For evaluating the system performance, the estimated finger states were compared to the vision based Leap Motion system. The estimated states show a non static difference to the Leap system for most of the measurement sets. 
+%Only a qualitative measure for the direction of the angular movement of a single finger state vector can be estimated. 
+For the evaluated recorded sets, the overall smallest difference to the Leap Motion was observed to be $ 0.467 \si{radian} \pm 0.027 $ (=$ 26.757 \si{\degree} \pm 1.547 $), for predicting the states of the index finger with the measurements of two magnetic sensor units. This high deviation is due to the following drawbacks, the magnetic system suffers from:
+\begin{itemize}
+\item The parameteres of the underlying hand model can not be measured accurate enough. This causes nonlinear errors for the predictable magnetic flux densities. This is tried to be compensated by introducing a fitting gesture.
+\item The surrounding magnetic field can not be eliminated dynamically. This is critical, since the observable magnetic field, induced by the static magnets is in the range of the earth magnetic field.
+\item The hand, trying to be tracked has to be held calm during the measurements.
+\item The achievable acquisition frequency for four sensor units is only capable of slow finger motions
+\end{itemize} 
+
+% Future work
+In the end it can be stated, that the presented approach can only be used to track finger poses reliably and dynamically under the named conditions. However the detection of several movements and finger gestures can be distinguished and identified. The exact determination of the actual human hand parameters is critical for achieving good estimation results. So for the future work on this concept, one could investigate more in the exact determination of the anatomic hand dimensions. Also the dynamic and reliable cancellation of the surrounding magnetic field would be important, to remove the influence of the external magnets from the measurements. It is shown, that the determinateness of the system plays an important role for the estimation accuracy. Therefore designing a still wearable system by deploying more sensors could also be evaluated in the future. As another point, one could improve the overall acquisition frequency, to also being capable of faster finger movements. Further on it can be evaluated whether an approach, based on a learned set of motions would lead to better results for reconstructing finger postures. This work concentrated on solving this problem by mathematical minimization.
+
+ 
+
+
