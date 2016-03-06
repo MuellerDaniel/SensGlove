@@ -1,6 +1,7 @@
 %% LyX 2.0.2 created this file.  For more info, see http://www.lyx.org/.
 %% Do not edit unless you really know what you are doing.
-\documentclass[12pt,a4paper,english,intoc,bibliography=totoc,index=totoc,BCOR10mm,captions=tableheading,titlepage,fleqn,hidelinks]{scrbook}
+\documentclass[12pt,a4paper,english,intoc,bibliography=totoc,index=totoc,BCOR10mm,captions=tableheading,titlepage,hidelinks,fleqn]{scrbook}
+%\documentclass[12pt,a4paper,english,titlepage,fleqn]{scrbook}
 \usepackage{lmodern}
 \renewcommand{\sfdefault}{lmss}
 \renewcommand{\ttdefault}{lmtt}
@@ -23,12 +24,15 @@
 \usepackage[nohyperlinks, printonlyused]{acronym}
 %\usepackage[numbers]{alphanat}
 %\usepackage{hyperref}
-\usepackage[hidelinks]{hyperref}
+
 %\usepackage[square,sort,comma]{natbib}
 %\usepackage{biblatex}
+%\hypersetup{hidelinks=true,
+%			pdfborder={0,0,0},
+%			colorlinks=false}
 
 
-\usepackage{lipsum}
+%\usepackage{lipsum}
 \usepackage{textcomp}
 \usepackage{gensymb}
 \usepackage[binary-units]{siunitx}
@@ -41,6 +45,7 @@
 \usepackage{caption}
 \captionsetup[table]{skip=10pt}
 \usepackage{placeins}
+\usepackage[hidelinks,colorlinks=false]{hyperref}
 
 
 
@@ -53,8 +58,8 @@
 % bookmarks=true,bookmarksnumbered=true,bookmarksopen=true,bookmarksopenlevel=1,
 % breaklinks=false,pdfborder={0 0 0},backref=false,colorlinks=false]
 % {hyperref}
-%\hypersetup{pdftitle={Ihr Titel},
-% pdfauthor={Ihr Name},
+%\hypersetup{pdftitle={Magnetic Human Hand Motion Reconstrution},
+% pdfauthor={Daniel Müller},
 % pdfsubject={Arbeit zur Erlangung des Masters der Technischen Fakultät der Albert-Ludwigs-Universität Freiburg im Breisgau},
 % pdfkeywords={Masterarbeit},
 % pdfpagelayout=OneColumn, pdfnewwindow=true, pdfstartview=XYZ, plainpages=false}
@@ -90,7 +95,7 @@
 
 % Setzt den Link für Sprünge zu Gleitabbildungen
 % auf den Anfang des Gelitobjekts und nicht aufs Ende
-\usepackage[figure]{hypcap}
+%\usepackage[figure]{hypcap}
 
 % Die Seiten des Inhaltsverzeichnisses werden römisch numeriert,
 % ein PDF-Lesezeichen für das Inhaltsverzeichnis wird hinzugefügt
@@ -107,7 +112,7 @@
 \setcapindent{1em}
 
 
-\usepackage{xcolor}
+%\usepackage{xcolor}
 \newcommand{\note}[1]{\textcolor{red}{#1}}
 
 %sections with pagebreak
@@ -243,32 +248,31 @@ Ort, Datum & Daniel Müller
 
 \section*{Acronyms}
 \begin{acronym}
-\acro{IMU}{Inertial Measurement Unit}
-\acro{ROI}{Region of Interest}
-\acro{IR}{Infra Red}
-\acro{EKF}{Extended Kalman Filter}
-\acro{DOF}{Degree of Freedom}
-\acro{SDK}{Software Development Kit}
-\acro{PCB}{Printed Circuit Board}
-\acro{EMG}{Electromyography}
-\acro{HCI}{Human Computer Interface}
-\acro{CT}{Computed Tomography}
-\acro{CMC}{Carpometacarpal}
-\acro{MCP}{Metacarpophalangeal} 
-\acro{PIP}{proximal Interphalangeal}
-\acro{DIP}{Distal interphalangeal}
-\acro{TM}{Trapeziometacarpal}
-\acro{CEL}{complete elliptical integral}
-\acro{FEM}{Finite element method}
-\acro{LSB}{Least Significant Bit}
-\acro{BLE}{Bluetooth Low Energy}
-\acro{EKF}{Extended Kalman Filter}
-\acro{GATT}{Generic Attribute Profile}
 \acro{BFGS}{Broyden-Fletcher-Goldfarb-Shanno}
-\acro{SLSQP}{Sequential Least Squares Programming}
-\acro{ROM}{Range of Movement}
-\acro{FFT}{Fast Fourier Transform}
+\acro{BLE}{Bluetooth Low Energy}
+\acro{CEL}{complete elliptical integral}
 \acro{CGS}{Centimetre-Gram-Second}
+\acro{CMC}{Carpometacarpal}
+\acro{CT}{Computed Tomography}
+\acro{DIP}{Distal interphalangeal}
+\acro{DOF}{Degree of Freedom}
+\acro{EKF}{Extended Kalman Filter}		% needed???
+\acro{EMG}{Electromyography}
+\acro{FEM}{Finite Element Method}
+\acro{FFT}{Fast Fourier Transform}
+\acro{GATT}{Generic Attribute Profile}
+\acro{HCI}{Human Computer Interface}
+\acro{IMU}{Inertial Measurement Unit}
+\acro{IR}{Infra Red}
+\acro{LSB}{Least Significant Bit}
+\acro{MCP}{Metacarpophalangeal} 
+\acro{PCB}{Printed Circuit Board}
+\acro{PIP}{proximal Interphalangeal}
+\acro{ROI}{Region of Interest}
+\acro{ROM}{Range of Movement}
+\acro{SDK}{Software Development Kit}
+\acro{SLSQP}{Sequential Least SQuares Programming}
+\acro{TM}{Trapeziometacarpal}
 \end{acronym}
 
 \cleardoublepage{}
@@ -310,12 +314,12 @@ Ort, Datum & Daniel Müller
 \cleardoublepage{}
 
 
-\lhead[]{Acknowledgment}
-\rhead[Acknowledgment]{}
-\include{texfiles/acknowledgment}
+%\lhead[]{Acknowledgment}
+%\rhead[Acknowledgment]{}
+%\include{texfiles/acknowledgment}
 
-\appendix
-\include{texfiles/appendix}
+%\appendix
+%\include{texfiles/appendix}
 
 \cleardoublepage{}
 
