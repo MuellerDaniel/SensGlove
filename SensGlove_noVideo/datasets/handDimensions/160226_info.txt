@@ -1,0 +1,42 @@
+------------- SENSOR NEAR TO ANGLES -------------
+dimensions:
+sInd_car_m = np.array([-0.017,  -0.007, 0.023])
+sMid_car_m = np.array([-0.017,  -0.027, 0.023])
+sRin_car_m = np.array([-0.015, -0.047, 0.023])
+sPin_car_m = np.array([-0.014, -0.067, 0.023])
+
+----------- Sensor sensitivity at 2 gauss -----------
+- set1: index
+  video start:  sec
+  90 fit:  [180:280]
+
+# second video is bad
+- set2:
+  90 fit: [40:80]
+
+# third vid shit
+# video shit
+# shitvid
+
+- set3:   # massive movement of ad-ab detected by Leap...
+  90 fit: [120:180]
+
+
+- set4:
+ 90 fit: [120:160]
+
+----------- Sensor sensitivity at 4 gauss -----------
+- set5: [120:180]
+
+# shitvid
+- set6: [120:160]
+
+- set7: [140:180]
+
+- set8: [130:175]
+
+- set9: [220:300]
+
+- set10: [140:180]
+
+- set11: [110:160]

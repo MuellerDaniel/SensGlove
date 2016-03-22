@@ -1,0 +1,42 @@
+SESSION WITH A NORMED CALIBRATION GESTURE (hand around box)
+CAMERA LOOKING FROM LEFT
+DIFFERENT ACQUIRING FREQUENCIES
+
+------- Dimensions -------
+sInd = np.array([-0.021,  -0.006, 0.026])      # for 160212 NEAR to joints
+sMid = np.array([-0.021,  -0.026, 0.026])
+sRin = np.array([-0.017, -0.046, 0.026])
+sPin = np.array([-0.017, -0.066, 0.026])
+
+------- index finger -------
+set1: Index, no ad-ab, f=25Hz, with cali --- LEAP DOWN
+  - video start:  sec
+  - 90 fit:
+
+set2: Index, with ad-ab, f=25Hz, with cali    LEAP DOWN
+  - video start: 22 sec
+  - 90 fit: [42:85]
+
+set3: Index, no ad-ab, f=50Hz, with cali    LEAP DOWN
+  - video start: 25 sec
+  - 90 fit: [28:71]
+
+set4: Index, with ad-ab, f=50Hz, with cali    LEAP DOWN
+  - video start: 26 sec
+  - 90 fit: [40:90]
+
+set5 : Index, MPU, on ring         LEAP UP
+  - video start:
+  - 90 fit: [28:57]
+
+set6 : Index, MPU, on ring         LEAP UP
+  - video start: 4 sec
+  - 90 fit: [14:57]
+
+set7 : Index, ring, no ad-ab    LEAP DOWN
+  - video start: 8 sec
+  - 90 fit: [14:57]
+
+set8 : Index, ring, ad-ab     LEAP UP
+  - video start: 6 sec
+  - 90 fit: [50:90]

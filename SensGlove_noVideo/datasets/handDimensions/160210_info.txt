@@ -1,0 +1,96 @@
+------------- SENSOR NEAR TO ANGLES -------------
+dimensions:
+sInd_car_m = np.array([-0.02,  -0.009, 0.030])
+sMid_car_m = np.array([-0.02,  -0.029, 0.030])
+sRin_car_m = np.array([-0.018, -0.049, 0.030])
+sPin_car_m = np.array([-0.016, -0.069, 0.030])
+
+------------- index finger -------------
+- set1: Index, no ad-ab, 90 deg ini + fist ini
+  video start: 17 sec
+  90 fit:   [42:85]
+  fist fit: [157:315]
+
+- set2: Index, no ad-ab, 90 deg ini + fist ini
+  video start: 14 sec
+  90 fit:   [480:529]
+  fist fit: [242:357]
+
+- set3: Index, with ad-ab, 90 deg ini + fist ini (without ad-ab) ---
+  (fast ad-ab movement...)
+  video start: 31 sec
+  90 fit:   [728:799]
+  fist fit: []
+
+- set4: Index, with ad-ab, 90 deg ini + fist ini (without ad-ab)
+  (fast ad-ab movement...)
+  video off: 15 sec
+  90 fit:   [99:185]
+
+------------- whole hand -------------
+- set5: no ad-ab, moving all fingers together, 90 deg ini + fist ini (all together)
+  90 fit:   [27:57]
+  fist fit: [185:285]
+
+- set6: no ad-ab, moving fingers independently, 90 deg ini + fist ini (all together)
+  90 fit:   [42:85]
+  fist fit: [128:199]
+
+- set7: index and pinky ad-ab, 90 deg ini + fist ini (without ad-ab)
+  90 fit:   [114:157]
+  fist fit: [199:257]
+
+- set8: all ad-ab, 90 deg ini + fist ini (without ad-ab)
+  90 fit:   [114:157]
+  fist fit: [199:257]
+
+
+earthoff: 160210_earthOff (with moving)
+          160210_earthOff2 (without moving)
+
+
+
+
+
+------------- SENSOR FAR FROM ANGLES -------------
+dimensions:
+sInd_car_m = np.array([-0.057,  -0.00, 0.027])
+sMid_car_m = np.array([-0.057,  -0.02, 0.027])
+sRin_car_m = np.array([-0.051, -0.04, 0.027])
+sPin_car_m = np.array([-0.048, -0.06, 0.027])
+
+------------- index finger -------------
+- set9: Index, no ad-ab, 90 deg ini + fist ini
+  (bad set...)
+  90 fit:   [128:171]
+  fist fit: [371:428]
+
+- set10: Index, no ad-ab, 90 deg ini + fist ini
+  90 fit:   [228:271]
+  fist fit: [328:371]
+  video start: 20 sec
+
+- set11: Index, with ad-ab, 90 deg ini + fist ini (without ad-ab)
+  90 fit:   [28:71]
+  fist fit: [214:257]
+
+- set12: Index, with ad-ab, 90 deg ini + fist ini (without ad-ab)
+  90 fit:   [28:71]
+  fist fit: [257:271]
+
+------------- whole hand -------------
+- set13: no ad-ab, moving all fingers together, 90 deg ini + fist ini (all together)
+  90 fit:   [85:128]
+  fist fit: [257:299]
+
+- set14: no ad-ab, moving fingers independently, 90 deg ini + fist ini (all together)
+  90 fit:   [157:185]
+  fist fit: [271:298]
+
+- set15: index and pinky ad-ab, 90 deg ini + fist ini (without ad-ab)
+  90 fit:   [99:128]
+  fist fit: [314:342]
+
+- set16: all ad-ab, 90 deg ini + fist ini (without ad-ab)
+  90 fit:   [98:128]
+  fist fit: [285:314]
